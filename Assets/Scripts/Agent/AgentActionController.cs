@@ -28,10 +28,10 @@ public class AgentCommand
 {
     [JsonConverter(typeof(StringEnumConverter))]
     public ACTION_TYPE Action;
-    public Vector3Int TargetGridPos;
+    public Vector2Int TargetGridPos;
 
     public AgentCommand() { }
-    public AgentCommand(ACTION_TYPE act, Vector3Int target)
+    public AgentCommand(ACTION_TYPE act, Vector2Int target)
     {
         Action = act;
         TargetGridPos = target;
@@ -43,9 +43,9 @@ public class AgentActionController : MonoBehaviour
     Transform _agent;
 
     [SerializeField]
-    bool _isBusy = false;
+    TileManager _tileMng;
     [SerializeField]
-    Grid _grid;
+    bool _isBusy = false;
     [SerializeField]
     float _moveSpeed = 2f;
 
@@ -89,27 +89,32 @@ public class AgentActionController : MonoBehaviour
                     yield return StartCoroutine(HarvestRoutine(currentCommand.TargetGridPos));
                     break;
             }
+            Debug.Log("다음 명령으로");
         }
 
         _isBusy = false;
         _actionCoroutine = null;
     }
 
-    private IEnumerator MoveToRoutine(Vector3Int targetPos)
+    private IEnumerator MoveToRoutine(Vector2Int targetPos)
     {
-        Vector3 targetWorldPos = _grid.GetCellCenterWorld(targetPos);
-        targetWorldPos.z = _agent.position.z;
-
-        while (Vector3.Distance(_agent.position, targetWorldPos) > 0.01f)
+        if(_tileMng.TryGetTile(targetPos, out TileData tile))
         {
-            _agent.position = Vector3.MoveTowards(_agent.position, targetWorldPos, _moveSpeed * Time.deltaTime);
+            Vector2 targetWorldPos = tile.transform.position;
+            while (Vector2.Distance(_agent.position, targetWorldPos) > 0.01f)
+            {
+                _agent.position = Vector2.MoveTowards(_agent.position, targetWorldPos, _moveSpeed * Time.deltaTime);
+                yield return null;
+            }
+
+            _agent.position = targetWorldPos;
+        } else
+        {
             yield return null;
         }
-
-        _agent.position = targetWorldPos;
     }
 
-    private IEnumerator HarvestRoutine(Vector3Int targetPos)
+    private IEnumerator HarvestRoutine(Vector2Int targetPos)
     {
         yield return new WaitForSeconds(1f);
     }
