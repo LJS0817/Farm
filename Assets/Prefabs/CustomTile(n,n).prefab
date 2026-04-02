@@ -134,6 +134,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tileManager: {fileID: 0}
+  tileInfoPanel: {fileID: 0}
+  changeTileToSoilOnClick: 0
 --- !u!61 &741915155653868283
 BoxCollider2D:
   m_ObjectHideFlags: 0

@@ -69,6 +69,20 @@ public class MiddleDB : MonoBehaviour
         return TryGetTileState(coord, out TileState state) ? state : null;
     }
 
+    public bool TryGetTileStateById(int tileId, out TileState state)
+    {
+        EnsureInitialized();
+
+        if (tileId < 0 || tileId >= TileCount)
+        {
+            state = null;
+            return false;
+        }
+
+        state = tileStates[tileId];
+        return state != null;
+    }
+
     public void CacheTile(TileData tileData)
     {
         if (tileData == null)
