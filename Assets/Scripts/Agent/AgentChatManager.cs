@@ -49,7 +49,6 @@ public class AgentChatManager : MonoBehaviour
         _curChatBoxAgent.SetText(_actor.ParseLLMResponse(_agentAnswer));
         _curChatBoxAgent = null;
         _agentAnswer = "";
-        //Debug.Log("The AI has finished replying");
     }
 
     private void SubmitInput()
@@ -63,7 +62,6 @@ public class AgentChatManager : MonoBehaviour
         _inputField.ActivateInputField();
         _inputField.Select();
         if (input.Length < 1 || input.Trim().Length < 1) return;
-        Debug.Log("Input submitted: " + input);
 
         GameObject obj = Instantiate(_chatBoxPlayer, _chatHistory);
         obj.GetComponent<ChatBox>().SetText(input);
