@@ -119,6 +119,51 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &3938839
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3938840}
+  - component: {fileID: 3938841}
+  m_Layer: 0
+  m_Name: CropManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3938840
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3938839}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 198501743}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3938841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3938839}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2155e57f0e1134a3da4c4e3bb4c3d65f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cropDatas: []
 --- !u!1 &198501742
 GameObject:
   m_ObjectHideFlags: 0
@@ -151,6 +196,7 @@ Transform:
   - {fileID: 2070860604}
   - {fileID: 884189655}
   - {fileID: 512116119}
+  - {fileID: 3938840}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &452496466
@@ -904,6 +950,7 @@ MonoBehaviour:
   tilePrefab: {fileID: 2147363288498076874, guid: 30793584832564aeca368f19274b2169, type: 3}
   tileRoot: {fileID: 1840654267}
   soilSprite: {fileID: 21300000, guid: 2b576e6daf610aa468807b6685ea1f5f, type: 3}
+  carrotSprite: {fileID: 0}
   weedSprite: {fileID: 21300000, guid: 958ed1b0d26dd964cb936ec19507986b, type: 3}
   waterSprite: {fileID: 21300000, guid: 7e27adbd2eb9b71439341c8d10e32b0d, type: 3}
   tileSpacing: {x: 1, y: 1}

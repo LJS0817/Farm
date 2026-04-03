@@ -206,8 +206,6 @@ public class TileManager : MonoBehaviour
     {
         return tileType switch
         {
-            TileData.TileType.Soil => soilSprite,
-            TileData.TileType.Carrot => carrotSprite,
             TileData.TileType.Weed => weedSprite,
             TileData.TileType.Water => waterSprite,
             _ => null

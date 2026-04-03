@@ -284,7 +284,7 @@ public class MiddleDB : MonoBehaviour
 
         state.tileType = tileType;
 
-        if (tileType == TileData.TileType.Soil)
+        if (tileType == TileData.TileType.Weed)
         {
             state.isFarmable = true;
             return true;
@@ -374,7 +374,7 @@ public class MiddleDB : MonoBehaviour
             state.id = index;
             state.coord = coord;
             string resolvedTileType = !string.IsNullOrWhiteSpace(tileJson.tileType) ? tileJson.tileType : tileJson.cropType;
-            state.tileType = ParseEnum(resolvedTileType, TileData.TileType.Empty);
+            state.tileType = ParseEnum(resolvedTileType, TileData.TileType.Weed);
             state.isFarmable = tileJson.isFarmable;
 
             tileStates[index] = state;
@@ -433,7 +433,7 @@ public class MiddleDB : MonoBehaviour
         {
             id = index,
             coord = new Vector2Int(x, y),
-            tileType = TileData.TileType.Empty,
+            tileType = TileData.TileType.Weed,
             isFarmable = false
         };
     }

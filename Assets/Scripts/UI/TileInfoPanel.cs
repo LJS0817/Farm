@@ -65,11 +65,11 @@ public class TileInfoPanel : MonoBehaviour
         string tileName = GetTileDisplayName(state);
         string location = $" 위치 : ({state.coord.x}, {state.coord.y})";
         string tileState = $"경작 가능:{(state.isFarmable ? "예" : "아니오")}";
-        string timeText = state.tileType == TileData.TileType.Carrot ? "성장 시간 시스템 연결 필요" : "심어진 작물이 없습니다.";
+       // string timeText = state.cr == TileData.CropType.Carrot ? "성장 시간 시스템 연결 필요" : "심어진 작물이 없습니다.";
 
-        SetTexts(tileName, location, tileState, timeText);
+      //  SetTexts(tileName, location, tileState, timeText);
         SetTileImage(GetTileSprite(state.tileType));
-        SetSliderValue(state.tileType == TileData.TileType.Carrot ? 0.1f : 0f);
+     //   SetSliderValue(state.tileType == TileData.TileType.Carrot ? 0.1f : 0f);
     }
 
     public void ClearPanel()
@@ -95,11 +95,8 @@ public class TileInfoPanel : MonoBehaviour
     {
         return state.tileType switch
         {
-            TileData.TileType.Empty => $"타일명 : 빈 타일",
-            TileData.TileType.Soil => $"타일명 : 토양",
             TileData.TileType.Weed => $"타일명 : 잔디",
             TileData.TileType.Water => $"타일명 : 물",
-            TileData.TileType.Carrot => $"타일명 : 당근",
             _ => $"Tile #{state.id}"
         };
     }
