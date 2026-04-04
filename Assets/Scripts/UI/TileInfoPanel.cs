@@ -13,10 +13,12 @@ public class TileInfoPanel : MonoBehaviour
     public TMP_Text Text_Time;
     public Slider slider;
     public Image tileImage;
+    public int cacheID;
     public bool IsOpen { get; private set; }
 
     [SerializeField] private MiddleDB middleDB;
     [SerializeField] private TileManager tileManager;
+    [SerializeField] private Sprite weedPanelSprite;
 
     private void Awake()
     {
@@ -36,6 +38,16 @@ public class TileInfoPanel : MonoBehaviour
         ClearPanel();
         ClosePanel();
     }
+    private void Update()
+    {
+        if (!IsOpen)
+        {
+            return;
+        }
+
+        RefreshGrowthUI();
+    }
+
 
     public void OnClickTileInfoPanel(int tileID)
     {
@@ -61,16 +73,124 @@ public class TileInfoPanel : MonoBehaviour
             SetSliderValue(0f);
             return;
         }
+        cacheID = tileID;
 
         string tileName = GetTileDisplayName(state);
         string location = $" 위치 : ({state.coord.x}, {state.coord.y})";
-        string tileState = $"경작 가능:{(state.isFarmable ? "예" : "아니오")}";
-       // string timeText = state.cr == TileData.CropType.Carrot ? "성장 시간 시스템 연결 필요" : "심어진 작물이 없습니다.";
+        string tileState = $"경작 가능:{(state.isFarmable ? "예" : "아니오")} | 작물:{GetCropDisplayName(state.cropType)} | 상태:{GetCropStateDisplayName(state.cropState)}";
+        string timeText = state.cropState == TileData.CropState.IsGrowing
+            ? $"성장 남은 시간 : {state.growDuration:0.0}"
+            : "성장 중인 작물이 없습니다.";
 
-      //  SetTexts(tileName, location, tileState, timeText);
+        SetTexts(tileName, location, tileState, timeText);
         SetTileImage(GetTileSprite(state.tileType));
-     //   SetSliderValue(state.tileType == TileData.TileType.Carrot ? 0.1f : 0f);
+        SetSliderValue(state.cropState == TileData.CropState.IsGrowing ? 0.1f : 0f);
     }
+    public void PlantSelectedCrop(CropsData cropsData)
+    {
+        if (tileManager == null)
+        {
+            tileManager = FindFirstObjectByType<TileManager>();
+        }
+
+        if (middleDB == null)
+        {
+            middleDB = FindFirstObjectByType<MiddleDB>();
+        }
+
+        if (tileManager == null || middleDB == null)
+        {
+            Debug.LogError("Required reference is missing.", this);
+            return;
+        }
+
+        if (!middleDB.TryGetTileStateById(cacheID, out MiddleDB.TileState state))
+        {
+            Debug.LogWarning($"Selected tile not found. tileID: {cacheID}", this);
+            return;
+        }
+
+        bool success = tileManager.PlantCrop(state.coord, cropsData);
+
+        if (!success)
+        {
+            Debug.LogWarning($"Failed to plant crop on tile {state.coord}.", this);
+            return;
+        }
+
+        OnClickTileInfoPanel(cacheID);
+    }
+    private void RefreshGrowthUI()
+    {
+        if (!IsOpen)
+        {
+            return;
+        }
+
+        if (middleDB == null)
+        {
+            middleDB = FindFirstObjectByType<MiddleDB>();
+        }
+
+        if (tileManager == null)
+        {
+            tileManager = FindFirstObjectByType<TileManager>();
+        }
+
+        if (middleDB == null || tileManager == null)
+        {
+            return;
+        }
+
+        if (!middleDB.TryGetTileStateById(cacheID, out MiddleDB.TileState state))
+        {
+            SetSliderValue(0f);
+
+            if (Text_Time != null)
+            {
+                Text_Time.text = "-";
+            }
+
+            return;
+        }
+
+        if (!tileManager.TryGetTile(state.coord, out TileData tile) || tile == null)
+        {
+            SetSliderValue(0f);
+
+            if (Text_Time != null)
+            {
+                Text_Time.text = "-";
+            }
+
+            return;
+        }
+
+        if (tile.cropState != TileData.CropState.IsGrowing || tile.cropType == TileData.CropType.IsEmpty)
+        {
+            SetSliderValue(0f);
+
+            if (Text_Time != null)
+            {
+                Text_Time.text = "성장 중인 작물이 없습니다.";
+            }
+
+            return;
+        }
+
+        float progress = 1f - (tile.GrowDuration / tile.maxTime);
+        SetSliderValue(progress);
+
+        if (Text_Time != null)
+        {
+            Text_Time.text = $"성장 남은 시간 : {tile.GrowDuration:0.0}";
+        }
+    }
+
+
+
+
+
 
     public void ClearPanel()
     {
@@ -96,8 +216,31 @@ public class TileInfoPanel : MonoBehaviour
         return state.tileType switch
         {
             TileData.TileType.Weed => $"타일명 : 잔디",
+            TileData.TileType.Soil => $"타일명 : 흙",
             TileData.TileType.Water => $"타일명 : 물",
             _ => $"Tile #{state.id}"
+        };
+    }
+
+    private string GetCropDisplayName(TileData.CropType cropType)
+    {
+        return cropType switch
+        {
+            TileData.CropType.IsEmpty => "없음",
+            TileData.CropType.Carrot => "당근",
+            TileData.CropType.Onion => "양파",
+            _ => cropType.ToString()
+        };
+    }
+
+    private string GetCropStateDisplayName(TileData.CropState cropState)
+    {
+        return cropState switch
+        {
+            TileData.CropState.IsEmpty => "비어 있음",
+            TileData.CropState.IsGrowing => "성장 중",
+            TileData.CropState.IsHarvastable => "수확 가능",
+            _ => cropState.ToString()
         };
     }
 
@@ -123,8 +266,13 @@ public class TileInfoPanel : MonoBehaviour
             Text_Time.text = timeText;
         }
     }
-    private Sprite GetTileSprite(TileData.TileType tileType)
+        private Sprite GetTileSprite(TileData.TileType tileType)
     {
+        if (tileType == TileData.TileType.Weed)
+        {
+            return weedPanelSprite;
+        }
+
         if (tileManager == null)
         {
             tileManager = FindFirstObjectByType<TileManager>();

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Text;
 using System.Collections.Generic;
+using System.IO;
 using Newtonsoft.Json;
 
 [DisallowMultipleComponent]
@@ -12,169 +13,31 @@ public class MiddleDB : MonoBehaviour
         public int id;
         public Vector2Int coord;
         public TileData.TileType tileType;
+        public TileData.CropType cropType;
+        public TileData.CropState cropState;
         public bool isFarmable;
+        public float growDuration;
+        public float maxTime;
     }
 
     [System.Serializable]
     private class TileStateJson
     {
-        public int id;
-        public int x;
-        public int y;
+        public int? id;
+        public int? x;
+        public int? y;
         public string tileType;
-        public bool isFarmable;
         public string cropType;
+        public string cropState;
+        public float? growDuration;
     }
 
     [System.Serializable]
     private class MiddleDbMockJson
     {
-        public int width;
-        public int height;
         public TileStateJson[] tileStates;
     }
-
-    private const string MockJson = @"{
-  ""width"": 15,
-  ""height"": 9,
-  ""tileStates"": [
-    { ""x"": 0, ""y"": 0, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 1, ""y"": 0, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 2, ""y"": 0, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 3, ""y"": 0, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 4, ""y"": 0, ""tileType"": ""Water"", ""isFarmable"": false },
-    { ""x"": 5, ""y"": 0, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 6, ""y"": 0, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 7, ""y"": 0, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 8, ""y"": 0, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 9, ""y"": 0, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 10, ""y"": 0, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 11, ""y"": 0, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 12, ""y"": 0, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 13, ""y"": 0, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 14, ""y"": 0, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 0, ""y"": 1, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 1, ""y"": 1, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 2, ""y"": 1, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 3, ""y"": 1, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 4, ""y"": 1, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 5, ""y"": 1, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 6, ""y"": 1, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 7, ""y"": 1, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 8, ""y"": 1, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 9, ""y"": 1, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 10, ""y"": 1, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 11, ""y"": 1, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 12, ""y"": 1, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 13, ""y"": 1, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 14, ""y"": 1, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 0, ""y"": 2, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 1, ""y"": 2, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 2, ""y"": 2, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 3, ""y"": 2, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 4, ""y"": 2, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 5, ""y"": 2, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 6, ""y"": 2, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 7, ""y"": 2, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 8, ""y"": 2, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 9, ""y"": 2, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 10, ""y"": 2, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 11, ""y"": 2, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 12, ""y"": 2, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 13, ""y"": 2, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 14, ""y"": 2, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 0, ""y"": 3, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 1, ""y"": 3, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 2, ""y"": 3, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 3, ""y"": 3, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 4, ""y"": 3, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 5, ""y"": 3, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 6, ""y"": 3, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 7, ""y"": 3, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 8, ""y"": 3, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 9, ""y"": 3, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 10, ""y"": 3, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 11, ""y"": 3, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 12, ""y"": 3, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 13, ""y"": 3, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 14, ""y"": 3, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 0, ""y"": 4, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 1, ""y"": 4, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 2, ""y"": 4, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 3, ""y"": 4, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 4, ""y"": 4, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 5, ""y"": 4, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 6, ""y"": 4, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 7, ""y"": 4, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 8, ""y"": 4, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 9, ""y"": 4, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 10, ""y"": 4, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 11, ""y"": 4, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 12, ""y"": 4, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 13, ""y"": 4, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 14, ""y"": 4, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 0, ""y"": 5, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 1, ""y"": 5, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 2, ""y"": 5, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 3, ""y"": 5, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 4, ""y"": 5, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 5, ""y"": 5, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 6, ""y"": 5, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 7, ""y"": 5, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 8, ""y"": 5, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 9, ""y"": 5, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 10, ""y"": 5, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 11, ""y"": 5, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 12, ""y"": 5, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 13, ""y"": 5, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 14, ""y"": 5, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 0, ""y"": 6, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 1, ""y"": 6, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 2, ""y"": 6, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 3, ""y"": 6, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 4, ""y"": 6, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 5, ""y"": 6, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 6, ""y"": 6, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 7, ""y"": 6, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 8, ""y"": 6, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 9, ""y"": 6, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 10, ""y"": 6, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 11, ""y"": 6, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 12, ""y"": 6, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 13, ""y"": 6, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 14, ""y"": 6, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 0, ""y"": 7, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 1, ""y"": 7, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 2, ""y"": 7, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 3, ""y"": 7, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 4, ""y"": 7, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 5, ""y"": 7, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 6, ""y"": 7, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 7, ""y"": 7, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 8, ""y"": 7, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 9, ""y"": 7, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 10, ""y"": 7, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 11, ""y"": 7, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 12, ""y"": 7, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 13, ""y"": 7, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 14, ""y"": 7, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 0, ""y"": 8, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 1, ""y"": 8, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 2, ""y"": 8, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 3, ""y"": 8, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 4, ""y"": 8, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 5, ""y"": 8, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 6, ""y"": 8, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 7, ""y"": 8, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 8, ""y"": 8, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 9, ""y"": 8, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 10, ""y"": 8, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 11, ""y"": 8, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 12, ""y"": 8, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 13, ""y"": 8, ""tileType"": ""Empty"", ""isFarmable"": true },
-    { ""x"": 14, ""y"": 8, ""tileType"": ""Empty"", ""isFarmable"": true }
-  ]
-}";
+    [SerializeField] private string mockJsonFileName = "MiddleDBMock.json";
     private int width = 15;
     private int height = 9;
     private TileState[] tileStates = new TileState[0];
@@ -234,30 +97,33 @@ public class MiddleDB : MonoBehaviour
         return state != null;
     }
 
-    public void CacheTile(TileData tileData)
-    {
-        if (tileData == null)
-        {
-            return;
-        }
+    // public void CacheTile(TileData tileData)
+    // {
+    //     if (tileData == null)
+    //     {
+    //         return;
+    //     }
 
-        EnsureInitialized();
+    //     EnsureInitialized();
 
-        if (!IsInBounds(tileData.coord))
-        {
-            Debug.LogWarning($"Tile coord {tileData.coord} is out of MiddleDB bounds.", this);
-            return;
-        }
+    //     if (!IsInBounds(tileData.coord))
+    //     {
+    //         Debug.LogWarning($"Tile coord {tileData.coord} is out of MiddleDB bounds.", this);
+    //         return;
+    //     }
 
-        int index = ToIndex(tileData.coord.x, tileData.coord.y);
-        TileState state = tileStates[index] ?? CreateDefaultState(tileData.coord.x, tileData.coord.y, index);
+    //     int index = ToIndex(tileData.coord.x, tileData.coord.y);
+    //     TileState state = tileStates[index] ?? CreateDefaultState(tileData.coord.x, tileData.coord.y, index);
 
-        state.id = tileData.id;
-        state.coord = tileData.coord;
-        state.tileType = tileData.tileType;
-        state.isFarmable = tileData.isFarmable;
-        tileStates[index] = state;
-    }
+    //     state.id = tileData.id;
+    //     state.coord = tileData.coord;
+    //     state.tileType = tileData.tileType;
+    //     state.cropType = tileData.cropType;
+    //     state.cropState = tileData.cropState;
+    //     state.isFarmable = tileData.isFarmable;
+    //     state.growDuration = tileData.GrowDuration;
+    //     tileStates[index] = state;
+    // }
 
     public bool ApplyStateToTile(TileData tileData)
     {
@@ -284,16 +150,76 @@ public class MiddleDB : MonoBehaviour
 
         state.tileType = tileType;
 
-        if (tileType == TileData.TileType.Weed)
+        if (tileType == TileData.TileType.Soil)
         {
+            state.cropType = TileData.CropType.IsEmpty;
+            state.cropState = TileData.CropState.IsEmpty;
+            state.growDuration = 0f;
             state.isFarmable = true;
             return true;
+        }
+
+        if (tileType == TileData.TileType.Weed || tileType == TileData.TileType.Water)
+        {
+            state.cropType = TileData.CropType.IsEmpty;
+            state.cropState = TileData.CropState.IsEmpty;
+            state.growDuration = 0f;
         }
 
         state.isFarmable = false;
 
         return true;
     }
+
+    public bool PlantCrop(Vector2Int coord, CropsData cropsData)
+    {
+        //작물을 심는 함수
+        if (!TryGetTileState(coord, out TileState state))
+        {
+            return false;
+        }
+
+        if (!state.isFarmable)
+        {
+            return false;
+        }
+
+
+        state.cropType = cropsData.crop;
+        state.cropState = TileData.CropState.IsGrowing;
+        state.isFarmable = false;
+        state.maxTime = cropsData.growTime;
+        state.growDuration = cropsData.growTime;
+        
+       // Debug.Log($"coord:{coord}, tileType:{state.tileType}, isFarmable:{state.isFarmable}, cropType:{state.cropType}, cropState:{state.cropState}");
+
+
+        return true;
+    }
+    
+
+
+    //작물 생성 완료
+        public bool CompleteCropGrowth(Vector2Int coord)
+    {
+        if (!TryGetTileState(coord, out TileState state))
+        {
+            return false;
+        }
+
+        if (state.cropState != TileData.CropState.IsGrowing)
+        {
+            return false;
+        }
+
+        state.growDuration = 0f;
+        state.cropState = TileData.CropState.IsHarvastable;
+        state.isFarmable = false;
+
+        return true;
+    }
+
+
 
     [ContextMenu("Log All Tile States")]
     public void LogAllTileStates()
@@ -317,7 +243,7 @@ public class MiddleDB : MonoBehaviour
                 }
 
                 builder.AppendLine(
-                    $"  ({state.coord.x},{state.coord.y}) | id:{state.id} | tile:{state.tileType} | farmable:{state.isFarmable}");
+                    $"  ({state.coord.x},{state.coord.y}) | id:{state.id} | tile:{state.tileType} | crop:{state.cropType} | cropState:{state.cropState} | farmable:{state.isFarmable} | grow:{state.growDuration:0.##}/{state.maxTime:0.##}");
             }
         }
 
@@ -326,26 +252,31 @@ public class MiddleDB : MonoBehaviour
 
     private void ApplyMockJson()
     {
+        string mockJson = LoadMockJsonText();
+        if (string.IsNullOrWhiteSpace(mockJson))
+        {
+            EnsureInitialized();
+            return;
+        }
+
         MiddleDbMockJson parsed;
 
         try
         {
-            parsed = JsonConvert.DeserializeObject<MiddleDbMockJson>(MockJson);
+            parsed = JsonConvert.DeserializeObject<MiddleDbMockJson>(mockJson);
         }
         catch (JsonException exception)
         {
-            Debug.LogError($"Failed to parse MiddleDB MockJson.\n{exception.Message}", this);
+            Debug.LogError($"Failed to parse MiddleDB mock JSON file '{mockJsonFileName}'.\n{exception.Message}", this);
             return;
         }
 
         if (parsed == null)
         {
-            Debug.LogWarning("MiddleDB MockJson did not produce any data.", this);
+            Debug.LogWarning($"MiddleDB mock JSON file '{mockJsonFileName}' did not produce any data.", this);
             return;
         }
 
-        width = Mathf.Max(1, parsed.width);
-        height = Mathf.Max(1, parsed.height);
         tileStates = new TileState[TileCount];
 
         if (parsed.tileStates == null)
@@ -361,21 +292,28 @@ public class MiddleDB : MonoBehaviour
                 continue;
             }
 
-            Vector2Int coord = new Vector2Int(tileJson.x, tileJson.y);
+            if (!TryResolveCoord(tileJson, out Vector2Int coord, out int index))
+            {
+                Debug.LogWarning("Mock tile entry is missing a valid id/coord.", this);
+                continue;
+            }
+
             if (!IsInBounds(coord))
             {
                 Debug.LogWarning($"Mock tile coord {coord} is out of bounds.", this);
                 continue;
             }
 
-            int index = ToIndex(coord.x, coord.y);
             TileState state = CreateDefaultState(coord.x, coord.y, index);
 
             state.id = index;
             state.coord = coord;
-            string resolvedTileType = !string.IsNullOrWhiteSpace(tileJson.tileType) ? tileJson.tileType : tileJson.cropType;
+            string resolvedTileType = ResolveLegacyTileType(tileJson.tileType, tileJson.cropType);
             state.tileType = ParseEnum(resolvedTileType, TileData.TileType.Weed);
-            state.isFarmable = tileJson.isFarmable;
+            state.cropType = ParseEnum(tileJson.cropType, TileData.CropType.IsEmpty);
+            state.cropState = ParseEnum(tileJson.cropState, TileData.CropState.IsEmpty);
+            state.growDuration = Mathf.Max(0f, tileJson.growDuration ?? 0f);
+            state.isFarmable = ComputeIsFarmable(state.tileType, state.cropType, state.cropState);
 
             tileStates[index] = state;
         }
@@ -383,9 +321,63 @@ public class MiddleDB : MonoBehaviour
         EnsureInitialized();
     }
 
+    private string LoadMockJsonText()
+    {
+        string filePath = Path.Combine(Application.streamingAssetsPath, mockJsonFileName);
+        if (!File.Exists(filePath))
+        {
+            Debug.LogWarning($"MiddleDB mock JSON file not found at '{filePath}'.", this);
+            return null;
+        }
+
+        try
+        {
+            return File.ReadAllText(filePath);
+        }
+        catch (IOException exception)
+        {
+            Debug.LogError($"Failed to read MiddleDB mock JSON file '{filePath}'.\n{exception.Message}", this);
+            return null;
+        }
+    }
+
+    private bool TryResolveCoord(TileStateJson tileJson, out Vector2Int coord, out int index)
+    {
+        if (tileJson.id.HasValue)
+        {
+            index = tileJson.id.Value;
+            if (index < 0 || index >= TileCount)
+            {
+                coord = default;
+                return false;
+            }
+
+            coord = ToCoord(index);
+            return true;
+        }
+
+        if (tileJson.x.HasValue && tileJson.y.HasValue)
+        {
+            coord = new Vector2Int(tileJson.x.Value, tileJson.y.Value);
+            index = ToIndex(coord.x, coord.y);
+            return true;
+        }
+
+        coord = default;
+        index = -1;
+        return false;
+    }
+
     private int ToIndex(int x, int y)
     {
         return y * width + x;
+    }
+
+    private Vector2Int ToCoord(int index)
+    {
+        int x = index % width;
+        int y = index / width;
+        return new Vector2Int(x, y);
     }
 
     private TileState[] BuildInitializedStates()
@@ -434,8 +426,33 @@ public class MiddleDB : MonoBehaviour
             id = index,
             coord = new Vector2Int(x, y),
             tileType = TileData.TileType.Weed,
-            isFarmable = false
+            cropType = TileData.CropType.IsEmpty,
+            cropState = TileData.CropState.IsEmpty,
+            isFarmable = true,
+            growDuration = 0f
         };
+    }
+
+    private static bool ComputeIsFarmable(TileData.TileType tileType, TileData.CropType cropType, TileData.CropState cropState)
+    {
+        if (tileType == TileData.TileType.Water)
+        {
+            return false;
+        }
+
+        return cropType == TileData.CropType.IsEmpty
+            && cropState == TileData.CropState.IsEmpty;
+    }
+
+    private static string ResolveLegacyTileType(string tileType, string cropType)
+    {
+        string resolved = !string.IsNullOrWhiteSpace(tileType) ? tileType : cropType;
+        if (string.Equals(resolved, "Empty", System.StringComparison.OrdinalIgnoreCase))
+        {
+            return nameof(TileData.TileType.Soil);
+        }
+
+        return resolved;
     }
 
     private static TEnum ParseEnum<TEnum>(string value, TEnum fallback) where TEnum : struct

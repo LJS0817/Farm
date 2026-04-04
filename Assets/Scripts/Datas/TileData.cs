@@ -5,6 +5,7 @@ public class TileData : MonoBehaviour
     public enum TileType
     {
         Weed,
+        Soil,
         Water,
     }
     public enum CropType
@@ -26,14 +27,24 @@ public class TileData : MonoBehaviour
     public CropType cropType;
     public CropState cropState;
     public bool isFarmable;//이 타일에 새로운 작물을 심을 수 있는지
+    public float maxTime;
     private float growDuration;//성장 완료까지 남은 시간
+
+    public float GrowDuration
+    {
+        get => growDuration;
+        set => growDuration = Mathf.Max(0f, value);
+    }
 
     public void ApplyState(MiddleDB.TileState state)
     {
         id = state.id;
         coord = state.coord;
         tileType = state.tileType;
+        cropType = state.cropType;
+        cropState = state.cropState;
         isFarmable = state.isFarmable;
-       
+        GrowDuration = state.growDuration;
+        maxTime = state.maxTime;
     }
 }
