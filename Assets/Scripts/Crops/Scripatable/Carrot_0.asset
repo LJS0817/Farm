@@ -10,10 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9c70da7c79ca14276b2b1defd0601c5d, type: 3}
-  m_Name: 0
+  m_Name: Carrot_0
   m_EditorClassIdentifier: 
   cropId: 0
   crop: 1
   cropName: Carrot
-  growTime: 10
-  finalCropSprite: {fileID: -5859083586626064994, guid: 46493c3ed7e3a409895bb5071a22fb53, type: 3}
+  growTime: 5
+  finalCropSprite: {fileID: 21300000, guid: 3ed721ac7a896f64cb8c89cb067e7477, type: 3}
+  harvestItem: {fileID: 11400000, guid: 856e189744ca94acd80827eed6432f2c, type: 2}
+  harvestAmount: 1

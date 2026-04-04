@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class TileManager : MonoBehaviour
@@ -6,7 +7,6 @@ public class TileManager : MonoBehaviour
     [SerializeField] private GameObject tilePrefab;
     [SerializeField] private Transform tileRoot;
     [SerializeField] private Sprite soilSprite;
-    [SerializeField] private Sprite carrotSprite;
     [SerializeField] public Sprite weedSprite;
     [SerializeField] private Sprite waterSprite;
     [SerializeField] private Vector2 tileSpacing = Vector2.one;
@@ -217,6 +217,63 @@ public class TileManager : MonoBehaviour
         return true;
     }//
 
+    public bool HarvestCrop(Vector2Int coord, InventoryManager inventoryManager)
+    {
+        if (inventoryManager == null)
+        {
+            Debug.LogWarning("[TileManager] Harvest failed: InventoryManager reference is missing.", this);
+            return false;
+        }
+
+        if (!TryGetTile(coord, out TileData tile) || tile == null)
+        {
+            Debug.LogWarning($"[TileManager] Harvest failed: tile not found at {coord}.", this);
+            return false;
+        }
+
+        if (tile.cropState != TileData.CropState.IsHarvastable || tile.cropType == TileData.CropType.IsEmpty)
+        {
+            Debug.LogWarning($"[TileManager] Harvest failed: tile {coord} is not harvestable.", this);
+            return false;
+        }
+
+        if (CropManager.instance == null)
+        {
+            Debug.LogWarning("[TileManager] Harvest failed: CropManager reference is missing.", this);
+            return false;
+        }
+
+        CropsData cropData = CropManager.instance.GetCropData(tile.cropType);
+        if (cropData == null || cropData.harvestItem == null)
+        {
+            Debug.LogWarning($"[TileManager] Harvest failed: harvest item is not configured for {tile.cropType}.", this);
+            return false;
+        }
+
+        int harvestAmount = Mathf.Max(1, cropData.harvestAmount);
+        bool added = inventoryManager.AddItem(cropData.harvestItem, harvestAmount);
+        if (!added)
+        {
+            Debug.LogWarning($"[TileManager] Harvest failed: could not add {cropData.harvestItem.itemName} to inventory.", this);
+            return false;
+        }
+
+        if (middleDB == null || !middleDB.HarvestCrop(coord))
+        {
+            return false;
+        }
+
+        middleDB.ApplyStateToTile(tile);
+
+        TileView tileView = tileViews[coord.x, coord.y];
+        if (tileView != null)
+        {
+            tileView.Refresh();
+        }
+
+        return true;
+    }
+
 
     public void RefreshAllTiles()
     {
@@ -264,7 +321,7 @@ public class TileManager : MonoBehaviour
             // middleDB 반영 후 필요하면 다시 tile에도 적용
             middleDB.ApplyStateToTile(tile);
         }
-        
+
         TileView tileView = tileViews[tile.coord.x, tile.coord.y];
         if (tileView != null)
         {
@@ -288,8 +345,9 @@ public class TileManager : MonoBehaviour
     {
         return crop switch
         {
-            TileData.CropType.Carrot => carrotSprite,
-            TileData.CropType.Onion => carrotSprite,
+            TileData.CropType.Carrot => CropManager.instance.cropDatas[0].finalCropSprite,
+            TileData.CropType.Cherry => CropManager.instance.cropDatas[1].finalCropSprite,
+            TileData.CropType.IsEmpty => null,
             _ => null
         };
     }

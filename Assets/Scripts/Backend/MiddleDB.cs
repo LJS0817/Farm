@@ -200,7 +200,7 @@ public class MiddleDB : MonoBehaviour
 
 
     //작물 생성 완료
-        public bool CompleteCropGrowth(Vector2Int coord)
+    public bool CompleteCropGrowth(Vector2Int coord)
     {
         if (!TryGetTileState(coord, out TileState state))
         {
@@ -215,6 +215,27 @@ public class MiddleDB : MonoBehaviour
         state.growDuration = 0f;
         state.cropState = TileData.CropState.IsHarvastable;
         state.isFarmable = false;
+
+        return true;
+    }
+
+    public bool HarvestCrop(Vector2Int coord)
+    {
+        if (!TryGetTileState(coord, out TileState state))
+        {
+            return false;
+        }
+
+        if (state.cropState != TileData.CropState.IsHarvastable)
+        {
+            return false;
+        }
+
+        state.cropType = TileData.CropType.IsEmpty;
+        state.cropState = TileData.CropState.IsEmpty;
+        state.growDuration = 0f;
+        state.maxTime = 0f;
+        state.isFarmable = true;
 
         return true;
     }

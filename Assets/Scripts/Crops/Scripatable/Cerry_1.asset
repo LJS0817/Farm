@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c70da7c79ca14276b2b1defd0601c5d, type: 3}
+  m_Name: Cerry_1
+  m_EditorClassIdentifier: 
+  cropId: 1
+  crop: 2
+  cropName: Cherry
+  growTime: 10
+  finalCropSprite: {fileID: 21300000, guid: 37a69a07c3c06c848a653ceb5cef6cf2, type: 3}
+  harvestItem: {fileID: 11400000, guid: 0c28f859a0e764b458c465bf83c81976, type: 2}
+  harvestAmount: 1

@@ -32,4 +32,18 @@ public class CropManager : MonoBehaviour
         Debug.LogError($"[CropManager] CropData not found: {cropId}");
         return null;
     }
+
+    public CropsData GetCropData(TileData.CropType cropType)
+    {
+        foreach (var data in cropDatas)
+        {
+            if (data != null && data.crop == cropType)
+            {
+                return data;
+            }
+        }
+
+        Debug.LogError($"[CropManager] CropData not found for crop type: {cropType}");
+        return null;
+    }
 }

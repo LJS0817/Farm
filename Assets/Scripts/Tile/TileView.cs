@@ -30,17 +30,19 @@ public class TileView : MonoBehaviour
 
         spriteRenderer.sprite = tileManager != null ? tileManager.GetTileSprite(tileData.tileType) : null;
 
+        if (cropLayer0 != null)
+        {
+            cropLayer0.sprite = tileData.cropType == TileData.CropType.IsEmpty
+                ? null
+                : tileManager.GetTileSprite(TileData.TileType.Soil);
+        }
 
-
-        //작물이 자라는 중이면 땅 잔디 -> 흙으로 변경
-        if(tileData.cropState == TileData.CropState.IsGrowing)
-            cropLayer0.sprite = tileManager.GetTileSprite(TileData.TileType.Soil);
-        
-          //작물이 자라는 중이면 땅 잔디 -> 흙으로 변경
-        if(tileData.cropState == TileData.CropState.IsHarvastable)
-            cropLayer1.sprite = tileManager.GetCropSpirte(tileData.cropType);
+        if (cropLayer1 != null)
+        {
+            cropLayer1.sprite = tileData.cropState == TileData.CropState.IsHarvastable
+                ? tileManager.GetCropSpirte(tileData.cropType)
+                : null;
+        }
     }
-    
-
 
 }

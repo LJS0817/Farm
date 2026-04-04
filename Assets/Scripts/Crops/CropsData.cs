@@ -8,4 +8,6 @@ public class CropsData : ScriptableObject
     public string cropName;
     public float growTime;
     public Sprite finalCropSprite;
+    public ItemSO harvestItem;
+    public int harvestAmount = 1;
 }

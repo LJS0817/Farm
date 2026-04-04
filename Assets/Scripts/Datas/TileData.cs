@@ -12,7 +12,7 @@ public class TileData : MonoBehaviour
     {
         IsEmpty,//작물이 없을 경우
         Carrot,
-        Onion
+        Cherry
     }
     public enum CropState
     {
