@@ -11,8 +11,12 @@ public enum ACTION_TYPE
     [EnumMember(Value = "MoveTo")]
     E_MOVETO,
 
+    [EnumMember(Value = "Plant")]
+    E_PLANT,
+
     [EnumMember(Value = "Harvest")]
     E_HARVEST,
+
 }
 
 [System.Serializable]
@@ -29,12 +33,16 @@ public class AgentCommand
     [JsonConverter(typeof(StringEnumConverter))]
     public ACTION_TYPE Action;
     public Vector2Int TargetGridPos;
+    [JsonConverter(typeof(StringEnumConverter))]
+    public TileData.CropType Crop;
 
     public AgentCommand() { }
-    public AgentCommand(ACTION_TYPE act, Vector2Int target)
+    public AgentCommand(ACTION_TYPE act, Vector2Int target, TileData.CropType cType)
     {
         Action = act;
         TargetGridPos = target;
+        Crop = cType;
+
     }
 }
 
@@ -42,6 +50,8 @@ public class AgentActionController : MonoBehaviour
 {
     Transform _agent;
 
+    [SerializeField]
+    InventoryManager _inventoryMng;
     [SerializeField]
     TileManager _tileMng;
     [SerializeField]
@@ -85,11 +95,13 @@ public class AgentActionController : MonoBehaviour
                 case ACTION_TYPE.E_MOVETO:
                     yield return StartCoroutine(MoveToRoutine(currentCommand.TargetGridPos));
                     break;
+                case ACTION_TYPE.E_PLANT:
+                    yield return StartCoroutine(PlantRoutine(currentCommand.TargetGridPos, currentCommand.Crop));
+                    break;
                 case ACTION_TYPE.E_HARVEST:
                     yield return StartCoroutine(HarvestRoutine(currentCommand.TargetGridPos));
                     break;
             }
-            Debug.Log("다음 명령으로");
         }
 
         _isBusy = false;
@@ -114,8 +126,17 @@ public class AgentActionController : MonoBehaviour
         }
     }
 
+    private IEnumerator PlantRoutine(Vector2Int targetPos, TileData.CropType cType)
+    {
+        CropsData cropsData = CropManager.instance.GetCropData((int)cType - 1);
+
+        yield return new WaitForSeconds(1f);
+        bool success = _tileMng.PlantCrop(targetPos, cropsData);
+    }
+
     private IEnumerator HarvestRoutine(Vector2Int targetPos)
     {
         yield return new WaitForSeconds(1f);
+        bool success = _tileMng.HarvestCrop(targetPos, _inventoryMng);
     }
 }
