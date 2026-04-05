@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: eb8e9677c03cfb448b227f2b6a0f2b26
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 204475
+  packageName: PJ - 2D Farm / Crops
+  packageVersion: 1.0
+  assetPath: Assets/PotionJunkies/2DFarm/Prefabs/Walls-Pavers/GrassTile.prefab
+  uploadId: 456239
