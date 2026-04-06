@@ -34,10 +34,10 @@ public class ClickInputManager : MonoBehaviour
             return;
         }
 
-        if (TryHandleCharacterClick(screenPosition))
-        {
-            return;
-        }
+        //if (TryHandleCharacterClick(screenPosition))
+        //{
+        //    return;
+        //}
 
         TryHandleTileClick(screenPosition);
     }
