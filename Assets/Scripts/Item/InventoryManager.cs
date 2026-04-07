@@ -5,14 +5,22 @@ using System.Collections.Generic;
 // 수확 보상을 슬롯에 적재하고 현재 상태를 문자열 또는 로그로 확인할 수 있다.
 public class InventoryManager : MonoBehaviour
 {
-     public ItemSO[] itemDatabase;
+    public ItemSO[] itemDatabase;
     public int slotCount = 20;
 
     public List<InventorySlot> slots = new();
 
+    [SerializeField]
+    InventoryUI _inventoryUI; // UI를 제어
+
     private void Awake()
     {
         InitializeSlots();
+    }
+
+    private void Start()
+    {
+        RefreshUI();
     }
 
     private void InitializeSlots()
@@ -25,6 +33,14 @@ public class InventoryManager : MonoBehaviour
         for (int i = 0; i < slotCount; i++)
         {
             slots.Add(new InventorySlot());
+        }
+    }
+
+    private void RefreshUI()
+    {
+        if (_inventoryUI != null)
+        {
+            _inventoryUI.UpdateUI(slots);
         }
     }
 
@@ -59,6 +75,7 @@ public class InventoryManager : MonoBehaviour
                 if (remainingAmount <= 0)
                 {
                     Debug.Log($"[InventoryManager] Added {amount} x {item.itemName}.", this);
+                    RefreshUI(); // 아이템 획득 완료 후 UI 갱신
                     return true;
                 }
             }
@@ -78,6 +95,7 @@ public class InventoryManager : MonoBehaviour
             if (remainingAmount <= 0)
             {
                 Debug.Log($"[InventoryManager] Added {amount} x {item.itemName}.", this);
+                RefreshUI(); // 아이템 획득 완료 후 UI 갱신
                 return true;
             }
         }
@@ -86,7 +104,52 @@ public class InventoryManager : MonoBehaviour
         Debug.LogWarning(
             $"[InventoryManager] Inventory is full. Added {addedAmount}/{amount} x {item.itemName}.",
             this);
+        RefreshUI(); // 일부만 들어갔을 경우를 대비해 갱신
         return false;
+    }
+
+    public bool HasItem(ItemSO item, int amount = 1)
+    {
+        int totalCount = 0;
+        foreach (InventorySlot slot in slots)
+        {
+            if (!slot.IsEmpty && slot.item == item)
+            {
+                totalCount += slot.count;
+                if (totalCount >= amount) return true;
+            }
+        }
+        return false;
+    }
+
+    public bool RemoveItem(ItemSO item, int amount = 1)
+    {
+        if (!HasItem(item, amount)) return false;
+
+        int remainingToRemove = amount;
+
+        for (int i = slots.Count - 1; i >= 0; i--)
+        {
+            if (!slots[i].IsEmpty && slots[i].item == item)
+            {
+                if (slots[i].count > remainingToRemove)
+                {
+                    slots[i].count -= remainingToRemove;
+                    remainingToRemove = 0;
+                }
+                else
+                {
+                    remainingToRemove -= slots[i].count;
+                    slots[i].item = null;
+                    slots[i].count = 0;
+                }
+
+                if (remainingToRemove <= 0) break;
+            }
+        }
+
+        RefreshUI(); // 아이템 소모 완료 후 UI 갱신
+        return true;
     }
 
     // 현재 인벤토리 상태를 콘솔에 출력한다.
