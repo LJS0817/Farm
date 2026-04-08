@@ -199,7 +199,7 @@ public class TileManager : MonoBehaviour
         return true;
     }
 
-    //작물을 심는 함수
+    //작물을 심는 함수 *핵심
     // 지정 좌표에 작물을 심고 MiddleDB, TileData, TileView를 함께 갱신한다.
     public bool PlantCrop(Vector2Int coord, CropsData cropsData)
     {

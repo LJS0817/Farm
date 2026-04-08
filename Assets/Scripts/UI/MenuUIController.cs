@@ -8,4 +8,10 @@ public class MenuUIManager : MonoBehaviour
         if(ui.anchoredPosition.x > 0f) ui.anchoredPosition = new Vector2(-30f, 30f);
         else ui.anchoredPosition = new Vector2(3000f, 3000f);
     }
+      public void CloseUI(RectTransform ui)
+    {
+        if (ui == null) return;
+        if(ui.anchoredPosition.x > 0f) ui.anchoredPosition = new Vector2(-30f, 30f);
+        else ui.anchoredPosition = new Vector2(9000f, 9000f);
+    }
 }
