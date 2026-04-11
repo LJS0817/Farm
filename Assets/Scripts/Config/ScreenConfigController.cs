@@ -9,114 +9,208 @@ public class ScreenData
     public int resolutionHeight;
     public FullScreenMode screenMode = FullScreenMode.FullScreenWindow;
     public int vSyncCount = 1;
+
+    public ScreenData Clone()
+    {
+        return (ScreenData)this.MemberwiseClone();
+    }
 }
 
 public class ScreenConfigController : MonoBehaviour
 {
-    public TMP_Dropdown resolutionDropdown;
-    private bool _isChanged = false;
-    private ScreenData _currentData;
-    private List<Resolution> _filteredResolutions = new List<Resolution>();
+    [Header("UI References")]
+    [SerializeField] private TMP_Dropdown resolutionDropdown;
+    [SerializeField] private TMP_Dropdown screenModeDropdown;
 
-    // 매니저에서 접근할 수 있도록 프로퍼티 노출
+    private bool _isChanged = false;
+
+    private ScreenData _savedData;
+    private ScreenData _currentData;
+
+    private List<Resolution> _filteredResolutions = new List<Resolution>();
+    private List<string> _resolutionOptions = new List<string>();
+
     public bool IsChanged => _isChanged;
     public ScreenData CurrentData => _currentData;
 
     private void Awake()
     {
         _currentData = new ScreenData();
+        _savedData = new ScreenData();
     }
 
     private void Start()
     {
         InitResolutionOptions();
+        InitScreenModeOptions();
+
+        // 현재 화면 상태를 읽어온 후 원본(Saved)으로 확정
+        CommitChanges();
     }
 
     private void InitResolutionOptions()
     {
-        // 1. 기존 드롭다운 옵션 비우기
+        if (resolutionDropdown == null) return;
+
         resolutionDropdown.ClearOptions();
         _filteredResolutions.Clear();
+        _resolutionOptions.Clear();
 
-        // 2. 모니터가 지원하는 모든 해상도 가져오기
         Resolution[] rawResolutions = Screen.resolutions;
-        List<string> optionsTextList = new List<string>();
         int currentResolutionIndex = 0;
 
-        // 3. 주사율(Hz) 차이로 인한 중복 해상도 제거 및 리스트 구성
         for (int i = 0; i < rawResolutions.Length; i++)
         {
             bool isDuplicate = false;
-            foreach (var res in _filteredResolutions)
+            for (int j = 0; j < _filteredResolutions.Count; j++)
             {
-                if (res.width == rawResolutions[i].width && res.height == rawResolutions[i].height)
+                if (_filteredResolutions[j].width == rawResolutions[i].width &&
+                    _filteredResolutions[j].height == rawResolutions[i].height)
                 {
                     isDuplicate = true;
                     break;
                 }
             }
 
-            // 중복이 아닐 때만 리스트에 추가
             if (!isDuplicate)
             {
-                _filteredResolutions.Add(rawResolutions[i]);
-                optionsTextList.Add($"{rawResolutions[i].width} x {rawResolutions[i].height}");
+                Resolution res = rawResolutions[i];
+                _filteredResolutions.Add(res);
+                _resolutionOptions.Add($"{res.width} x {res.height}");
 
-                // 현재 화면 해상도와 일치하는 항목의 인덱스 찾기
-                if (rawResolutions[i].width == Screen.width && rawResolutions[i].height == Screen.height)
+                if (res.width == Screen.width && res.height == Screen.height)
                 {
                     currentResolutionIndex = _filteredResolutions.Count - 1;
                 }
             }
         }
 
-        // 4. 드롭다운에 텍스트 옵션 추가
-        resolutionDropdown.AddOptions(optionsTextList);
-
-        // 5. 드롭다운의 초기값을 현재 해상도로 설정
-        resolutionDropdown.value = currentResolutionIndex;
+        resolutionDropdown.AddOptions(_resolutionOptions);
+        resolutionDropdown.SetValueWithoutNotify(currentResolutionIndex);
         resolutionDropdown.RefreshShownValue();
 
-        // 데이터 초기화
         _currentData.resolutionWidth = _filteredResolutions[currentResolutionIndex].width;
         _currentData.resolutionHeight = _filteredResolutions[currentResolutionIndex].height;
     }
 
+    private void InitScreenModeOptions()
+    {
+        if (screenModeDropdown == null) return;
+
+        screenModeDropdown.ClearOptions();
+        List<string> optionsTextList = new List<string>(3) { "전체 창모드", "전체화면", "창모드" };
+        screenModeDropdown.AddOptions(optionsTextList);
+
+        int currentModeIndex = Screen.fullScreenMode switch
+        {
+            FullScreenMode.ExclusiveFullScreen => 1,
+            FullScreenMode.Windowed => 2,
+            _ => 0
+        };
+
+        screenModeDropdown.SetValueWithoutNotify(currentModeIndex);
+        screenModeDropdown.RefreshShownValue();
+
+        _currentData.screenMode = Screen.fullScreenMode;
+        _currentData.vSyncCount = QualitySettings.vSyncCount;
+    }
+
+    // --- 실제 Unity 시스템에 적용하는 헬퍼 메서드 ---
+    private void ApplyScreenSettingsToUnity()
+    {
+        // 해상도와 창 모드 즉시 적용
+        Screen.SetResolution(_currentData.resolutionWidth, _currentData.resolutionHeight, _currentData.screenMode);
+    }
+
+
+    // --- UI 이벤트 연동 메서드 ---
     public void SetResolutionByIndex(int index)
     {
         if (index < 0 || index >= _filteredResolutions.Count) return;
-        int newWidth = _filteredResolutions[index].width;
-        int newHeight = _filteredResolutions[index].height;
 
-        if (_currentData.resolutionWidth != newWidth || _currentData.resolutionHeight != newHeight)
+        Resolution targetRes = _filteredResolutions[index];
+        if (_currentData.resolutionWidth != targetRes.width || _currentData.resolutionHeight != targetRes.height)
         {
-            _currentData.resolutionWidth = newWidth;
-            _currentData.resolutionHeight = newHeight;
+            _currentData.resolutionWidth = targetRes.width;
+            _currentData.resolutionHeight = targetRes.height;
             _isChanged = true;
+
+            // 값 변경 시 실제 화면에 즉시 반영
+            ApplyScreenSettingsToUnity();
         }
     }
 
     public void SetScreenModeByIndex(int index)
     {
-        FullScreenMode mode = FullScreenMode.FullScreenWindow;
-        switch (index)
+        FullScreenMode mode = index switch
         {
-            case 0: mode = FullScreenMode.FullScreenWindow; break;
-            case 1: mode = FullScreenMode.ExclusiveFullScreen; break;
-            case 2: mode = FullScreenMode.Windowed; break;
-        }
+            1 => FullScreenMode.ExclusiveFullScreen,
+            2 => FullScreenMode.Windowed,
+            _ => FullScreenMode.FullScreenWindow
+        };
 
-        if (_currentData.screenMode != mode) { _currentData.screenMode = mode; _isChanged = true; }
+        if (_currentData.screenMode != mode)
+        {
+            _currentData.screenMode = mode;
+            _isChanged = true;
+
+            // 값 변경 시 실제 화면에 즉시 반영
+            ApplyScreenSettingsToUnity();
+        }
     }
 
     public void SetVSync(bool isOn)
     {
         int syncValue = isOn ? 1 : 0;
-        if (_currentData.vSyncCount != syncValue) { _currentData.vSyncCount = syncValue; _isChanged = true; }
+        if (_currentData.vSyncCount != syncValue)
+        {
+            _currentData.vSyncCount = syncValue;
+            _isChanged = true;
+
+            // VSync 즉시 반영
+            QualitySettings.vSyncCount = _currentData.vSyncCount;
+        }
     }
 
-    public void ResetChangeFlag()
+    // --- Commit & Revert ---
+    public void CommitChanges()
     {
+        _savedData = _currentData.Clone();
         _isChanged = false;
+    }
+
+    public void RevertChanges()
+    {
+        if (!_isChanged) return;
+
+        // 1. 데이터를 이전 저장된 상태로 복구
+        _currentData = _savedData.Clone();
+        _isChanged = false;
+
+        // 2. UI를 복구된 데이터에 맞게 다시 업데이트
+        UpdateUIFromData();
+
+        // 3. ⭐ 화면도 원래 상태(저장되어 있던 상태)로 다시 되돌리기
+        ApplyScreenSettingsToUnity();
+        QualitySettings.vSyncCount = _currentData.vSyncCount;
+    }
+
+    private void UpdateUIFromData()
+    {
+        int resIndex = _filteredResolutions.FindIndex(r => r.width == _currentData.resolutionWidth && r.height == _currentData.resolutionHeight);
+        if (resIndex >= 0)
+        {
+            resolutionDropdown.SetValueWithoutNotify(resIndex);
+            resolutionDropdown.RefreshShownValue();
+        }
+
+        int modeIndex = _currentData.screenMode switch
+        {
+            FullScreenMode.ExclusiveFullScreen => 1,
+            FullScreenMode.Windowed => 2,
+            _ => 0
+        };
+        screenModeDropdown.SetValueWithoutNotify(modeIndex);
+        screenModeDropdown.RefreshShownValue();
     }
 }

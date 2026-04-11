@@ -1,12 +1,15 @@
 using UnityEngine;
 
 public class MenuUIManager : MonoBehaviour
-{ 
+{
+    RectTransform _prevActiveUI = null;
     public void ControlWindow(RectTransform ui)
     {
         if (ui == null) return;
+        if (_prevActiveUI != null && !ReferenceEquals(_prevActiveUI.gameObject, ui.gameObject)) closeUI(_prevActiveUI);
         if (ui.anchoredPosition.x > 0f) openUI(ui);
         else closeUI(ui);
+        _prevActiveUI = ui;
     }
     void openUI(RectTransform ui)
     {

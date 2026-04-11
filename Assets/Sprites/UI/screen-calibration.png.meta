@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 6351e8ffc1d764543ad2f78e1a952db8
+guid: 310bfe977036e9849a80d4a2c6e8b02c
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6659447077290792336
-    second: bolt_0
+      213: -3905705587705170290
+    second: screen-calibration_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,12 +100,12 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: bolt_0
+      name: screen-calibration_0
       rect:
         serializedVersion: 2
-        x: 20
+        x: 0
         y: 0
-        width: 88
+        width: 128
         height: 128
       alignment: 0
       pivot: {x: 0, y: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 07aa19d9a24e493a0800000000000000
-      internalID: -6659447077290792336
+      spriteID: e86339716752cc9c0800000000000000
+      internalID: -3905705587705170290
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      bolt_0: -6659447077290792336
+      screen-calibration_0: -3905705587705170290
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
