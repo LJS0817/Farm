@@ -35,12 +35,6 @@ public class AgentInstructionManager : MonoBehaviour
     void ReplyCompleted()
     {
         string answer = _actor.ParseLLMResponse(_answer);
-        if (answer.StartsWith('_'))
-        {
-            answer = answer.Substring(1);
-            _feedback.ShowFeedbackUI(_instruction);
-            _instruction = "";
-        }
         _curChatBoxAgent.SetText(answer);
         _curChatBoxAgent = null;
         _answer = "";
@@ -66,8 +60,9 @@ public class AgentInstructionManager : MonoBehaviour
 
             if (response.commands != null && response.commands.Count > 0)
             {
-                response.answer = "_" + response.answer;
-                _actionController.ReceiveCommands(response.commands);
+                _actionController.ReceiveCommands(response.commands, () => {
+                    _feedback.ShowFeedbackUI(_instruction);
+                });
             }
 
             return response.answer;

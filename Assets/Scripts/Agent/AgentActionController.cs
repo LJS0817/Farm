@@ -83,7 +83,7 @@ public class AgentActionController : MonoBehaviour
 
     public bool IsBusy() { return _isBusy; }
 
-    public void ReceiveCommands(List<AgentCommand> commands)
+    public void ReceiveCommands(List<AgentCommand> commands, System.Action callback)
     {
         foreach (var cmd in commands)
         {
@@ -92,11 +92,11 @@ public class AgentActionController : MonoBehaviour
 
         if (!_isBusy)
         {
-            _actionCoroutine = StartCoroutine(ProcessCommandsCoroutine());
+            _actionCoroutine = StartCoroutine(ProcessCommandsCoroutine(callback));
         }
     }
 
-    private IEnumerator ProcessCommandsCoroutine()
+    private IEnumerator ProcessCommandsCoroutine(System.Action callback)
     {
         _isBusy = true;
 
@@ -123,6 +123,7 @@ public class AgentActionController : MonoBehaviour
 
         ChangeState(AgentState.Idle);
         ResetDirection();
+        callback?.Invoke();
     }
 
     private IEnumerator MoveToRoutine(Vector2Int targetPos)
