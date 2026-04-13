@@ -1,7 +1,10 @@
 using LLMUnity;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.Numerics;
 using UnityEngine;
+using static Unity.Burst.Intrinsics.X86.Avx;
 
 public class AgentInstructionManager : MonoBehaviour
 {
@@ -30,6 +33,7 @@ public class AgentInstructionManager : MonoBehaviour
     void HandleReply(string replySoFar)
     {
         _answer = replySoFar;
+        //_curChatBoxAgent.SetText(_answer);
     }
 
     void ReplyCompleted()
@@ -56,13 +60,15 @@ public class AgentInstructionManager : MonoBehaviour
         AgentResponse response = JsonConvert.DeserializeObject<AgentResponse>(jsonString);
         if (response != null)
         {
-            Debug.Log($"[LLM 답변]: {response.answer}");
-
             if (response.commands != null && response.commands.Count > 0)
             {
-                _actionController.ReceiveCommands(response.commands, () => {
-                    _feedback.ShowFeedbackUI(_instruction);
+                _actionController.ReceiveCommands(response.commands, (List<AgentCommand> cmd) => {
+                    _feedback.ShowFeedbackUI(new ChatLog(_instruction, new AgentResponse(response.answer, cmd)));
                 });
+            } else
+            {
+                // 대화 시 대화 내용 서버 전송
+                Debug.Log("대화 : " + JsonConvert.SerializeObject(new ChatLog(_instruction, new AgentResponse(response.answer, new List<AgentCommand>(0) { })), Formatting.Indented));
             }
 
             return response.answer;
