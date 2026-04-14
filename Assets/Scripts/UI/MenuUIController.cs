@@ -1,8 +1,11 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MenuUIManager : MonoBehaviour
 {
     RectTransform _prevActiveUI = null;
+
     public void ControlWindow(RectTransform ui)
     {
         if (ui == null) return;

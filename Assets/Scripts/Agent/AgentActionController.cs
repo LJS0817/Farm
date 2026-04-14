@@ -2,20 +2,14 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using UnityEngine;
 
 [JsonConverter(typeof(StringEnumConverter))]
 public enum ACTION_TYPE
 {
-    [EnumMember(Value = "MoveTo")]
-    E_MOVETO,
-
-    [EnumMember(Value = "Plant")]
-    E_PLANT,
-
-    [EnumMember(Value = "Harvest")]
-    E_HARVEST,
+    MoveTo,
+    Plant,
+    Harvest,
 }
 
 // 애니메이션 상태를 명확하게 관리하기 위한 Enum
@@ -31,9 +25,24 @@ public class AgentResponse
 {
     public string answer;
     public List<AgentCommand> commands;
+
+    public AgentResponse() { }
+    public AgentResponse(string ans, List<AgentCommand> cmd)
+    {
+        answer = ans;
+        commands = cmd;
+    }
+
+    public override string ToString()
+    {
+        string str = answer + "\n";
+        foreach (AgentCommand cmd in commands) str = str + cmd.ToString() + "\n";
+        return str;
+    }
 }
 
 [System.Serializable]
+[JsonConverter(typeof(AgentCommandConverter))]
 public class AgentCommand
 {
     [JsonConverter(typeof(StringEnumConverter))]
@@ -48,6 +57,11 @@ public class AgentCommand
         Action = act;
         TargetGridPos = target;
         Crop = cType;
+    }
+
+    public override string ToString()
+    {
+        return $"{Action}({TargetGridPos.x}, {TargetGridPos.y}, {Crop})";
     }
 }
 
@@ -69,7 +83,7 @@ public class AgentActionController : MonoBehaviour
     // "AniState" 문자열을 미리 해시값으로 변환하여 성능 최적화
     private readonly int _aniStateHash = Animator.StringToHash("AniState");
 
-    private Queue<AgentCommand> _commandQueue = new Queue<AgentCommand>();
+    //private Queue<AgentCommand> _commandQueue = new Queue<AgentCommand>();
     private Coroutine _actionCoroutine;
 
     Vector3 _agentScale;
@@ -83,36 +97,36 @@ public class AgentActionController : MonoBehaviour
 
     public bool IsBusy() { return _isBusy; }
 
-    public void ReceiveCommands(List<AgentCommand> commands, System.Action callback)
+    public void ReceiveCommands(List<AgentCommand> commands, System.Action<List<AgentCommand>> callback)
     {
-        foreach (var cmd in commands)
-        {
-            _commandQueue.Enqueue(cmd);
-        }
-
         if (!_isBusy)
         {
-            _actionCoroutine = StartCoroutine(ProcessCommandsCoroutine(callback));
+            _actionCoroutine = StartCoroutine(ProcessCommandsCoroutine(commands, callback));
         }
     }
 
-    private IEnumerator ProcessCommandsCoroutine(System.Action callback)
+    AgentCommand GetValidCommand(AgentCommand cmd)
+    {
+        if (cmd.Action != ACTION_TYPE.Plant && cmd.Crop != TileData.CropType.IsEmpty) cmd.Crop = TileData.CropType.IsEmpty;
+        return cmd;
+    }
+
+    private IEnumerator ProcessCommandsCoroutine(List<AgentCommand> commands, System.Action<List<AgentCommand>> callback)
     {
         _isBusy = true;
-
-        while (_commandQueue.Count > 0)
-        {
-            AgentCommand currentCommand = _commandQueue.Dequeue();
+        for(int i = 0; i < commands.Count; i++)
+        { 
+            AgentCommand currentCommand = GetValidCommand(commands[i]);
 
             switch (currentCommand.Action)
             {
-                case ACTION_TYPE.E_MOVETO:
+                case ACTION_TYPE.MoveTo:
                     yield return StartCoroutine(MoveToRoutine(currentCommand.TargetGridPos));
                     break;
-                case ACTION_TYPE.E_PLANT:
+                case ACTION_TYPE.Plant:
                     yield return StartCoroutine(PlantRoutine(currentCommand.TargetGridPos, currentCommand.Crop));
                     break;
-                case ACTION_TYPE.E_HARVEST:
+                case ACTION_TYPE.Harvest:
                     yield return StartCoroutine(HarvestRoutine(currentCommand.TargetGridPos));
                     break;
             }
@@ -123,7 +137,7 @@ public class AgentActionController : MonoBehaviour
 
         ChangeState(AgentState.Idle);
         ResetDirection();
-        callback?.Invoke();
+        callback?.Invoke(commands);
     }
 
     private IEnumerator MoveToRoutine(Vector2Int targetPos)

@@ -161,6 +161,17 @@ public class TileManager : MonoBehaviour
         }
     }
 
+    // 월드 좌표를 그리드 좌표로 변환하고, 그 좌표가 맵 범위 안인지 검사하여 타일 데이터를 반환한다.
+    // ======== 추가
+    public bool TryGetTileFromWorldPosition(Vector3 worldPosition, out TileData tile)
+    {
+        tile = null;
+
+        Vector2Int coord = WorldToCellPosition(worldPosition);
+
+        return TryGetTile(coord, out tile);
+    }
+
     // 좌표로 타일을 찾아 TileData 인스턴스를 반환한다.
     public bool TryGetTile(Vector2Int coord, out TileData tile)
     {
@@ -408,6 +419,13 @@ public class TileManager : MonoBehaviour
             topLeftOrigin.x + (x * tileSpacing.x),
             topLeftOrigin.y - (y * tileSpacing.y),
             0f);
+    }
+
+    // ======== 추가
+    private Vector2Int WorldToCellPosition(Vector3 worldPosition)
+    {
+        return new Vector2Int(Mathf.RoundToInt((worldPosition.x - topLeftOrigin.x) / tileSpacing.x), 
+            Mathf.RoundToInt((topLeftOrigin.y - worldPosition.y) / tileSpacing.y));
     }
 
     private Transform CreateLineParent(Transform root, int lineIndex)

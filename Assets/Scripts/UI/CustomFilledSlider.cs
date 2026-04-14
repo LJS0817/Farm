@@ -22,7 +22,6 @@ public class CustomSlicedSlider : MonoBehaviour, IDragHandler, IPointerDownHandl
     public float value = 0f;
 
     [Header("Events")]
-    // 3. 인스펙터에서 GUI로 등록할 수 있는 이벤트 변수
     public UnityEvent<float> onValueChanged = new UnityEvent<float>();
 
     // 상태 체크용 변수

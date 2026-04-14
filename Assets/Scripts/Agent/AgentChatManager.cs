@@ -1,8 +1,41 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+
+[Serializable]
+public class ChatLog
+{
+    public string instruct;
+    public string answer;
+    public List<AgentCommand> commands;
+    /// <summary>
+    /// 피드백 플래그
+    /// <para>0 = None</para>
+    /// <para>1 = Yes</para>
+    /// <para>2 = No</para>
+    /// </summary>
+    public int flag = 0;
+
+    public ChatLog() { }
+    public ChatLog(string inst, AgentResponse res)
+    {
+        instruct = inst;
+        answer = res.answer;
+        commands = res.commands;
+    }
+
+    public override string ToString()
+    {
+        string str = instruct + "\n";
+        str = str + answer + "\n";
+        foreach (AgentCommand cmd in commands) str = str + cmd.ToString() + "\n";
+        str += flag;
+        return str;
+    }
+}
 
 public class AgentChatManager : MonoBehaviour
 {
@@ -21,7 +54,6 @@ public class AgentChatManager : MonoBehaviour
 
     [SerializeField]
     GameObject _chatBoxPlayer;
-
 
     void Awake()
     {

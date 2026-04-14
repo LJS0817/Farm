@@ -8,7 +8,7 @@ public class ScreenData
     public int resolutionWidth;
     public int resolutionHeight;
     public FullScreenMode screenMode = FullScreenMode.FullScreenWindow;
-    public int vSyncCount = 1;
+    //public int vSyncCount = 1;
 
     public ScreenData Clone()
     {
@@ -44,7 +44,6 @@ public class ScreenConfigController : MonoBehaviour
         InitResolutionOptions();
         InitScreenModeOptions();
 
-        // 현재 화면 상태를 읽어온 후 원본(Saved)으로 확정
         CommitChanges();
     }
 
@@ -112,18 +111,15 @@ public class ScreenConfigController : MonoBehaviour
         screenModeDropdown.RefreshShownValue();
 
         _currentData.screenMode = Screen.fullScreenMode;
-        _currentData.vSyncCount = QualitySettings.vSyncCount;
+        //_currentData.vSyncCount = QualitySettings.vSyncCount;
     }
 
-    // --- 실제 Unity 시스템에 적용하는 헬퍼 메서드 ---
     private void ApplyScreenSettingsToUnity()
     {
         // 해상도와 창 모드 즉시 적용
         Screen.SetResolution(_currentData.resolutionWidth, _currentData.resolutionHeight, _currentData.screenMode);
     }
 
-
-    // --- UI 이벤트 연동 메서드 ---
     public void SetResolutionByIndex(int index)
     {
         if (index < 0 || index >= _filteredResolutions.Count) return;
@@ -159,18 +155,18 @@ public class ScreenConfigController : MonoBehaviour
         }
     }
 
-    public void SetVSync(bool isOn)
-    {
-        int syncValue = isOn ? 1 : 0;
-        if (_currentData.vSyncCount != syncValue)
-        {
-            _currentData.vSyncCount = syncValue;
-            _isChanged = true;
+    //public void SetVSync(bool isOn)
+    //{
+    //    int syncValue = isOn ? 1 : 0;
+    //    if (_currentData.vSyncCount != syncValue)
+    //    {
+    //        _currentData.vSyncCount = syncValue;
+    //        _isChanged = true;
 
-            // VSync 즉시 반영
-            QualitySettings.vSyncCount = _currentData.vSyncCount;
-        }
-    }
+    //        // VSync 즉시 반영
+    //        QualitySettings.vSyncCount = _currentData.vSyncCount;
+    //    }
+    //}
 
     // --- Commit & Revert ---
     public void CommitChanges()
@@ -192,7 +188,7 @@ public class ScreenConfigController : MonoBehaviour
 
         // 3. ⭐ 화면도 원래 상태(저장되어 있던 상태)로 다시 되돌리기
         ApplyScreenSettingsToUnity();
-        QualitySettings.vSyncCount = _currentData.vSyncCount;
+        //QualitySettings.vSyncCount = _currentData.vSyncCount;
     }
 
     private void UpdateUIFromData()
