@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using UnityEngine;
-using static Unity.Burst.Intrinsics.X86.Avx;
 
 public class AgentInstructionManager : MonoBehaviour
 {
@@ -70,25 +69,35 @@ public class AgentInstructionManager : MonoBehaviour
     {
         jsonString = jsonString.Replace("```json", "").Replace("```", "").Trim();
 
-        AgentResponse response = JsonConvert.DeserializeObject<AgentResponse>(jsonString);
-        if (response != null)
+        try
         {
-            if (response.commands != null && response.commands.Count > 0)
+            AgentResponse response = JsonConvert.DeserializeObject<AgentResponse>(jsonString);
+            if (response != null)
             {
-                _actionController.ReceiveCommands(response.commands, (List<AgentCommand> cmd) => {
-                    _feedback.ShowFeedbackUI(new ChatLog(_instruction, new AgentResponse(response.answer, cmd)));
-                });
-            } else
-            {
-                // 대화 시 대화 내용 서버 전송
-                Debug.Log("대화 : " + JsonConvert.SerializeObject(new ChatLog(_instruction, new AgentResponse(response.answer, new List<AgentCommand>(0) { })), Formatting.Indented));
-            }
+                if (response.commands != null && response.commands.Count > 0)
+                {
+                    _actionController.ReceiveCommands(response.commands, (List<AgentCommand> cmd) =>
+                    {
+                        _feedback.ShowFeedbackUI(new ChatLog(_instruction, new AgentResponse(response.answer, cmd)));
+                    });
+                }
+                else
+                {
+                    // 대화 시 대화 내용 서버 전송
+                    Debug.Log("대화 : " + JsonConvert.SerializeObject(new ChatLog(_instruction, new AgentResponse(response.answer, new List<AgentCommand>(0) { })), Formatting.Indented));
+                }
 
-            return response.answer;
+                return response.answer;
+            }
+            else
+            {
+                return "JSON 파싱 실패";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            return "JSON 파싱 실패";
+            Debug.Log(ex);
+            return "죄송합니다. 알아듣지 못했습니다.";
         }
     }
 }

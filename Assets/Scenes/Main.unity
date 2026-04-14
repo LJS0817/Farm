@@ -11938,7 +11938,16 @@ MonoBehaviour:
     knowledge to answer accurately.\nDo not contradict provided game knowledge.\n\n14.
     No Hallucination Rule:\nIf the user asks for a crop, rule, or coordinate interpretation
     that is not supported by the provided rules or allowed values, answer conservatively
-    in Korean.\nDo not invent unsupported crops or actions.\n\nExamples:\n\nInput:
+    in Korean.\nDo not invent unsupported crops or actions.\n\n15. Strict JSON Syntax
+    Rule (CRITICAL):\nYou are prone to making syntax errors in nested JSON objects.
+    You MUST obey these formatting rules:\n- KEY-VALUE SEPARATOR: You MUST use a
+    colon (:) to separate a key and its value. NEVER use a comma (,).\n  CORRECT:
+    \"TargetGridPos\": { \"x\": 0, \"y\": 0 }\n  WRONG: \"TargetGridPos\", { \"x\":
+    0, \"y\": 0 }\n- ARRAY CLOSING: NEVER close the \"commands\" array `]` before
+    listing all commands. If you have multiple commands, separate the objects with
+    a comma `,` inside the single array.\n  CORRECT: \"commands\": [ { \"Action\":
+    \"MoveTo\" ... }, { \"Action\": \"Plant\" ... } ]\n  WRONG: \"commands\": [ {
+    \"Action\": \"MoveTo\" ... } ], { \"Action\": \"Plant\" ... } ]\n\nExamples:\n\nInput:
     \"\uC88C\uD45C 3, 2\uC5D0 \uB2F9\uADFC\uC744 \uC2EC\uC5B4\uC918.\"\nOutput:\n{\n 
     \"answer\": \"\uC54C\uACA0\uC2B5\uB2C8\uB2E4. 3, 2 \uC88C\uD45C\uB85C \uC774\uB3D9\uD558\uC5EC
     \uB2F9\uADFC\uC744 \uC2EC\uACA0\uC2B5\uB2C8\uB2E4.\",\n  \"commands\": [\n   
