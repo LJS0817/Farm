@@ -41,7 +41,7 @@ public class ChatFeedback : MonoBehaviour
     public void ShowFeedbackUI(ChatLog chat)
     {
         _chat = chat;
-        _desc.SetText(chat.instruct);
+        _desc.SetText(chat.userCommand);
         _feedback.gameObject.SetActive(true);
 
         // 기존에 실행 중인 타이머가 있다면 중단

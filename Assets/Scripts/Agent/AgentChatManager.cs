@@ -8,8 +8,8 @@ using UnityEngine.UI;
 [Serializable]
 public class ChatLog
 {
-    public string instruct;
-    public string answer;
+    public string userCommand;
+    public string aiReply;
     public List<AgentCommand> commands;
     /// <summary>
     /// 피드백 플래그
@@ -22,15 +22,15 @@ public class ChatLog
     public ChatLog() { }
     public ChatLog(string inst, AgentResponse res)
     {
-        instruct = inst;
-        answer = res.answer;
+        userCommand = inst;
+        aiReply = res.answer;
         commands = res.commands;
     }
 
     public override string ToString()
     {
-        string str = instruct + "\n";
-        str = str + answer + "\n";
+        string str = userCommand + "\n";
+        str = str + aiReply + "\n";
         foreach (AgentCommand cmd in commands) str = str + cmd.ToString() + "\n";
         str += flag;
         return str;
