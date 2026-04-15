@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 using UnityEngine;
 
@@ -17,15 +18,17 @@ public static class APIController
                 commands = log.commands
             };
 
-            NetworkManager.Instance.Post<object, ServerResponse>(
-                url: APIConfig.LLM.SendChatLog,
-                requestData: requestData,
-                onSuccess,
-                onError: (errorMsg) =>
-                {
-                    Debug.LogError($"통신 실패: {errorMsg}");
-                }
-            );
+            Debug.Log(JsonConvert.SerializeObject(requestData));
+
+            //NetworkManager.Instance.Post<object, ServerResponse>(
+            //    url: APIConfig.LLM.SendChatLog,
+            //    requestData: requestData,
+            //    onSuccess,
+            //    onError: (errorMsg) =>
+            //    {
+            //        Debug.LogError($"통신 실패: {errorMsg}");
+            //    }
+            //);
         }
     }
 
