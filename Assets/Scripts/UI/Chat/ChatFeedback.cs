@@ -109,10 +109,10 @@ public class ChatFeedback : MonoBehaviour
         UpdateTimerText((int)_limitSlierTime);
         if(_chat != null)
         {
-            APIController.Chat(_chat, (response) =>
+            APIController.Chat.SendLog(_chat, (response) =>
                 {
                     Debug.Log($"저장 성공: {response.message}");
-                },
+                }
             );
         }
 
