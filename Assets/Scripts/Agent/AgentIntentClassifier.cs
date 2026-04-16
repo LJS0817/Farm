@@ -38,7 +38,7 @@ public class AgentIntentClassifier : MonoBehaviour
     private string BuildPrompt(string userInput, string rawResult)
     {
         string clean = rawResult.Trim().ToUpper();
-        //Debug.Log($"[1차 분류 라우터 결과] : {rawResult}");
+        Debug.Log($"[1차 분류 라우터 결과] : {rawResult}");
 
         string additionalData = "";
 
@@ -108,7 +108,45 @@ public class AgentIntentClassifier : MonoBehaviour
 
     private string GetInventoryState()
     {
-        return "[인벤토리] 당근 씨앗: 3개, 체리 씨앗: 3개";
+        if (_inventoryMng == null) return "[인벤토리 정보 없음]";
+
+        // 1. 아이템별로 수량을 합산하기 위한 딕셔너리
+        Dictionary<string, int> itemTotals = new Dictionary<string, int>();
+
+        // 2. 모든 슬롯을 순회하며 데이터 수집
+        foreach (var slot in _inventoryMng.slots)
+        {
+            if (slot != null && !slot.IsEmpty)
+            {
+                string itemName = slot.item.itemName;
+                if (itemTotals.ContainsKey(itemName))
+                {
+                    itemTotals[itemName] += slot.count;
+                }
+                else
+                {
+                    itemTotals[itemName] = slot.count;
+                }
+            }
+        }
+
+        // 3. 문자열 조립
+        if (itemTotals.Count == 0)
+        {
+            return "[인벤토리] 비어 있음";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.Append("[인벤토리] ");
+
+        List<string> entries = new List<string>();
+        foreach (var pair in itemTotals)
+        {
+            entries.Add($"{pair.Key}: {pair.Value}개");
+        }
+
+        sb.Append(string.Join(", ", entries));
+        return sb.ToString();
     }
 
     private string GetAgentPositionState()

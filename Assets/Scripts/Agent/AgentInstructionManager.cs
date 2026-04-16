@@ -35,13 +35,13 @@ public class AgentInstructionManager : MonoBehaviour
     void HandleReply(string replySoFar)
     {
         _answer = replySoFar;
-        //_curChatBoxAgent.SetText(_answer);
+        _curChatBoxAgent.SetText(_answer);
     }
 
     void ReplyCompleted()
     {
         string answer = _actor.ParseLLMResponse(_answer);
-        _curChatBoxAgent.SetText(answer);
+        //_curChatBoxAgent.SetText(answer);
         _curChatBoxAgent = null;
         _answer = "";
     }

@@ -95,6 +95,19 @@ public class AgentActionController : MonoBehaviour
         _agentScale = _agent.localScale;
     }
 
+    // 테스트용
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            _inventoryMng.AddItem(_inventoryMng.itemDatabase[2]);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            _inventoryMng.AddItem(_inventoryMng.itemDatabase[3]);
+        }
+    }
+
     public bool IsBusy() { return _isBusy; }
 
     public void ReceiveCommands(List<AgentCommand> commands, System.Action<List<AgentCommand>> callback)
@@ -169,6 +182,7 @@ public class AgentActionController : MonoBehaviour
         ResetDirection();
 
         CropsData cropsData = CropManager.instance.GetCropData((int)cType - 1);
+        //_inventoryMng.RemoveItem();
 
         yield return new WaitForSeconds(1f);
         bool success = _tileMng.PlantCrop(targetPos, cropsData);
