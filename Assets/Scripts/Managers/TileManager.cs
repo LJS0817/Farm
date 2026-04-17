@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -159,6 +160,17 @@ public class TileManager : MonoBehaviour
 
             middleDB.ApplyStateToTile(tile);
         }
+    }
+
+    // 월드 좌표를 그리드 좌표로 변환하고, 그 좌표가 맵 범위 안인지 검사하여 타일 데이터를 반환한다.
+    // ======== 추가
+    public bool TryGetTileFromWorldPosition(Vector3 worldPosition, out TileData tile)
+    {
+        tile = null;
+
+        Vector2Int coord = WorldToCellPosition(worldPosition);
+
+        return TryGetTile(coord, out tile);
     }
 
     // 좌표로 타일을 찾아 TileData 인스턴스를 반환한다.
@@ -410,6 +422,13 @@ public class TileManager : MonoBehaviour
             0f);
     }
 
+    // ======== 추가
+    private Vector2Int WorldToCellPosition(Vector3 worldPosition)
+    {
+        return new Vector2Int(Mathf.RoundToInt((worldPosition.x - topLeftOrigin.x) / tileSpacing.x), 
+            Mathf.RoundToInt((topLeftOrigin.y - worldPosition.y) / tileSpacing.y));
+    }
+
     private Transform CreateLineParent(Transform root, int lineIndex)
     {
         GameObject lineObject = new GameObject($"{lineIndex}line");
@@ -418,5 +437,33 @@ public class TileManager : MonoBehaviour
         lineObject.transform.localRotation = Quaternion.identity;
         lineObject.transform.localScale = Vector3.one;
         return lineObject.transform;
+    }
+
+    // ======== 추가
+    /// <summary>
+    /// 비어있지 않은(작물이 있는) 모든 타일 데이터를 리스트로 반환합니다.
+    /// </summary>
+    public List<TileData> GetNonEmptyTiles()
+    {
+        List<TileData> nonEmptyTiles = new List<TileData>();
+
+        if (tiles == null) return nonEmptyTiles;
+
+        int width = tiles.GetLength(0);
+        int height = tiles.GetLength(1);
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                TileData tile = tiles[x, y];
+                if (tile != null && tile.cropType != TileData.CropType.IsEmpty)
+                {
+                    nonEmptyTiles.Add(tile);
+                }
+            }
+        }
+
+        return nonEmptyTiles;
     }
 }

@@ -9,6 +9,7 @@ public class InventoryManager : MonoBehaviour
     public int slotCount = 20;
 
     public List<InventorySlot> slots = new();
+    Dictionary<string, ItemSO> _items = new Dictionary<string, ItemSO>();
 
     [SerializeField]
     InventoryUI _inventoryUI; // UI를 제어
@@ -34,6 +35,8 @@ public class InventoryManager : MonoBehaviour
         {
             slots.Add(new InventorySlot());
         }
+
+        foreach (ItemSO ele in itemDatabase) _items.Add(ele.itemName, ele);
     }
 
     private void RefreshUI()
@@ -43,6 +46,8 @@ public class InventoryManager : MonoBehaviour
             _inventoryUI.UpdateUI(slots);
         }
     }
+
+    public ItemSO GetItemSoWithName(string iName) { return _items.GetValueOrDefault(iName); }
 
     // 아이템을 기존 스택 또는 빈 슬롯에 추가한다.
     public bool AddItem(ItemSO item, int amount = 1)
@@ -121,6 +126,8 @@ public class InventoryManager : MonoBehaviour
         }
         return false;
     }
+
+    public bool RemoveItem(string itemName) { return RemoveItem(GetItemSoWithName(itemName)); }
 
     public bool RemoveItem(ItemSO item, int amount = 1)
     {
