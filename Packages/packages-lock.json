@@ -9,6 +9,13 @@
       },
       "hash": "306f69a1e4434192ec0ac768531451b14bc3fd6b"
     },
+    "com.rlabrecque.steamworks.net": {
+      "version": "https://github.com/rlabrecque/Steamworks.NET.git?path=/com.rlabrecque.steamworks.net",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "e4718c741df6161e3865f949adb7a9f89a1024b4"
+    },
     "com.unity.2d.animation": {
       "version": "10.2.1",
       "depth": 1,
