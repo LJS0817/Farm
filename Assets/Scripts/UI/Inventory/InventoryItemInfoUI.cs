@@ -4,38 +4,57 @@ using UnityEngine.UI;
 
 public class InventoryItemInfoUI : MonoBehaviour
 {
-    [SerializeField]
-    TMP_Text _itemName;
-    [SerializeField]
-    TMP_Text _itemDesc;
-    [SerializeField]
-    TMP_Text _itemAmount;
-    [SerializeField]
-    Image _itemImg;
+    [SerializeField] TMP_Text _itemName;
+    [SerializeField] TMP_Text _itemDesc;
 
-    [SerializeField]
-    Transform _typeParent;
+    [SerializeField] RectTransform _infoUI;
+    [SerializeField] GameObject _downArrow;
+    [SerializeField] GameObject _upArrow;
 
-    readonly Color _enableColor = new Color(0.3725491f, 0.7647059f, 0.4416048f);
-    readonly Color _disableColor = new Color(1f, 1f, 1f);
+    const float _yOffset = 175f;
 
-    public void SetDetails(InventorySlot item)
+    int _columnCount = 0;
+
+    public void Start()
     {
-        _itemName.SetText(item.item.itemName);
-        //_itemDesc.SetText(item.item.itemDesc);
-        _itemAmount.SetText($"x {item.count}");
-        _itemImg.sprite = item.item.icon;
-        EnableTypeUI(item.item.itemType);
+        _infoUI.gameObject.SetActive(false);
     }
 
-    void EnableTypeUI(ItemType t)
+    public void SetColumnCount(int n) { _columnCount = n; }
+
+    public void SetDetails(InventorySlotUI itemSlot)
     {
-        Image img = null;
-        for (int i = 0; i < _typeParent.childCount; i++)
+        if (itemSlot == null || itemSlot.GetItemInfo() == null)
         {
-            img = _typeParent.GetChild(i).GetComponent<Image>();
-            if((int)t == i) img.color = _enableColor;
-            else if(img.color.r != _disableColor.r) img.color = _disableColor;
+            _infoUI.gameObject.SetActive(false);
+            return;
+        }
+        _infoUI.gameObject.SetActive(true);
+
+        _downArrow.SetActive(false);
+        _upArrow.SetActive(false);
+
+        _infoUI.position = itemSlot.transform.position;
+
+        int slotIndex = itemSlot.transform.GetSiblingIndex();
+
+        if (slotIndex < _columnCount)
+        {
+            _upArrow.SetActive(true);
+            _infoUI.anchoredPosition += new Vector2(0, -_yOffset);
+        }
+        else
+        {
+            _downArrow.SetActive(true);
+            _infoUI.anchoredPosition += new Vector2(0, _yOffset);
+        }
+
+        InventorySlot item = itemSlot.GetItemInfo();
+        if (item != null && item.item != null)
+        {
+            _itemName.SetText(item.item.itemName);
+            _itemDesc.SetText("아이템 설명 1234\n아이템 설명 1234567");
+            //_itemDesc.SetText(item.item.itemDesc);
         }
     }
 }

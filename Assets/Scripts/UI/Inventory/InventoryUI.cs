@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class InventoryUI : MonoBehaviour
 {
@@ -8,61 +9,84 @@ public class InventoryUI : MonoBehaviour
     [SerializeField]
     InventoryItemInfoUI _infoUI;
 
-    List<InventorySlotUI> _slots;
+    InventorySlotUI[] _slots;
 
-    // Manager가 먼저 호출할 수 있으므로 Awake에서 리스트를 준비합니다.
+    InventorySlotUI _focusedSlot;
+    InventorySlotUI _hoveredSlot;
+
     void Awake()
     {
-        _slots = new List<InventorySlotUI>();
+        _slots = _slotParent.GetComponentsInChildren<InventorySlotUI>();
 
-        for (int pIdx = 0; pIdx < _slotParent.childCount; pIdx++)
+        _infoUI.SetColumnCount(_slotParent.GetComponent<GridLayoutGroup>().constraintCount);
+
+        foreach (var slotUI in _slots)
         {
-            Transform row = _slotParent.GetChild(pIdx);
-            for (int cIdx = 0; cIdx < row.childCount; cIdx++)
+            slotUI.OnSlotClickedEvent += OnFocusSlot;
+            slotUI.OnPointerEnterEvent += OnSlotPointerEnter;
+            slotUI.OnPointerExitEvent += OnSlotPointerExit;
+        }
+    }
+
+    public void UpdateUI(List<InventorySlot> currentSlots)
+    {
+        if (currentSlots == null) return;
+
+        int uiSlotIndex = 0;
+
+        for (int i = 0; i < currentSlots.Count; i++)
+        {
+            InventorySlot slot = currentSlots[i];
+            if (slot != null && !slot.IsEmpty)
             {
-                InventorySlotUI slotUI = row.GetChild(cIdx).GetComponent<InventorySlotUI>();
-                if (slotUI != null)
+                if (uiSlotIndex < _slots.Length)
                 {
-                    _slots.Add(slotUI);
-                    slotUI.OnSlotClickedEvent += ShowDetails;
+                    _slots[uiSlotIndex].UpdateSlot(slot);
+                    uiSlotIndex++;
                 }
             }
         }
-    }
 
-    // InventoryManager에서 인벤토리 데이터를 넘겨주며 호출하는 함수
-    public void UpdateUI(List<InventorySlot> currentSlots)
-    {
-        if (_slots == null || currentSlots == null) return;
-
-        // 1. 전달받은 데이터에서 빈칸을 제외한 실제 아이템만 추출 (시각적 압축)
-        List<InventorySlot> validItems = new List<InventorySlot>();
-        foreach (InventorySlot slot in currentSlots)
+        // 아이템을 다 채우고 남은 빈 UI 슬롯들 초기화
+        for (int i = uiSlotIndex; i < _slots.Length; i++)
         {
-            if (slot != null && !slot.IsEmpty)
-            {
-                validItems.Add(slot);
-            }
-        }
-
-        // 2. 찾아둔 _slots 리스트에 차례대로 데이터 적용
-        for (int i = 0; i < _slots.Count; i++)
-        {
-            if (i < validItems.Count)
-            {
-                _slots[i].UpdateSlot(validItems[i]);
-            }
-            else
-            {
-                _slots[i].ClearSlot();
-            }
+            _slots[i].ClearSlot();
         }
     }
 
-    public void ShowDetails(InventorySlot clickedSlot)
+    public void OnFocusSlot(InventorySlotUI clickedSlot)
     {
-        Debug.Log($"InventoryUI에서 처리 중: {clickedSlot.item.itemName}의 상세 정보를 표시합니다.");
+        if (GameObject.ReferenceEquals(_focusedSlot, clickedSlot)) return;
 
-        _infoUI.SetDetails(clickedSlot);
+        if (_focusedSlot != null)
+            _focusedSlot.UnfocusSlot();
+
+        clickedSlot.FocusSlot();
+        _focusedSlot = clickedSlot;
+    }
+
+    public void OnSlotPointerEnter(InventorySlotUI hoveredSlot)
+    {
+        if (GameObject.ReferenceEquals(_hoveredSlot, hoveredSlot)) return;
+
+        _infoUI.SetDetails(hoveredSlot);
+        _hoveredSlot = hoveredSlot;
+    }
+
+    public void OnSlotPointerExit(InventorySlotUI clickedSlot)
+    {
+        _infoUI.SetDetails(null);
+        _hoveredSlot = null;
+    }
+
+    void OnDestroy()
+    {
+        if (_slots == null) return;
+        foreach (var slotUI in _slots)
+        {
+            slotUI.OnSlotClickedEvent -= OnFocusSlot;
+            slotUI.OnPointerEnterEvent -= OnSlotPointerEnter;
+            slotUI.OnPointerExitEvent -= OnSlotPointerExit;
+        }
     }
 }
