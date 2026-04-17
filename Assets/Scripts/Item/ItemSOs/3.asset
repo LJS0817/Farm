@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8fa699ce9912449b4aeac0aa34e03c9a, type: 3}
-  m_Name: 0
+  m_Name: 3
   m_EditorClassIdentifier: 
-  itemId: 0
-  itemName: Carrot
+  itemId: 3
+  itemName: Cherry seeds
   itemType: 1
-  icon: {fileID: -5859083586626064994, guid: 46493c3ed7e3a409895bb5071a22fb53, type: 3}
+  icon: {fileID: 8920278682971026065, guid: e8e88390daf595d4bbc1f609e315824e, type: 3}
   stackable: 1
   maxStack: 99

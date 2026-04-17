@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -436,5 +437,33 @@ public class TileManager : MonoBehaviour
         lineObject.transform.localRotation = Quaternion.identity;
         lineObject.transform.localScale = Vector3.one;
         return lineObject.transform;
+    }
+
+    // ======== 추가
+    /// <summary>
+    /// 비어있지 않은(작물이 있는) 모든 타일 데이터를 리스트로 반환합니다.
+    /// </summary>
+    public List<TileData> GetNonEmptyTiles()
+    {
+        List<TileData> nonEmptyTiles = new List<TileData>();
+
+        if (tiles == null) return nonEmptyTiles;
+
+        int width = tiles.GetLength(0);
+        int height = tiles.GetLength(1);
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                TileData tile = tiles[x, y];
+                if (tile != null && tile.cropType != TileData.CropType.IsEmpty)
+                {
+                    nonEmptyTiles.Add(tile);
+                }
+            }
+        }
+
+        return nonEmptyTiles;
     }
 }
