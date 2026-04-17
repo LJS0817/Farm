@@ -2,10 +2,8 @@ using LLMUnity;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Numerics;
-using UnityEditor.PackageManager;
 using UnityEngine;
-using static Unity.Burst.Intrinsics.X86.Avx;
+
 
 public class AgentInstructionManager : MonoBehaviour
 {

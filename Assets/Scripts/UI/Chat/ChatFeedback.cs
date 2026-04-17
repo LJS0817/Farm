@@ -1,8 +1,4 @@
-using Mono.Cecil.Cil;
-using Newtonsoft.Json;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+using System.Collections;//사용되어지지않는 라이브러리 삭제(빌드에 영향을 끼칩니다)
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
