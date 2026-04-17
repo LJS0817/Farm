@@ -40,6 +40,7 @@ public class ChatLog
 
 public class AgentChatManager : MonoBehaviour
 {
+    LLM _llmController;
     AgentInstructionManager _instructionMng;
 
     [SerializeField]
@@ -62,6 +63,10 @@ public class AgentChatManager : MonoBehaviour
     void Awake()
     {
         _instructionMng = GetComponent<AgentInstructionManager>();
+        _llmController = GetComponent<LLM>();
+
+        Debug.Log(SystemInfo.operatingSystem);
+        if (SystemInfo.operatingSystem.Contains("Mac")) _llmController.numGPULayers = 0;
 
         _inputField.onSubmit.AddListener(SubmitInput);
         _submitButton.onClick.AddListener(SubmitInput);

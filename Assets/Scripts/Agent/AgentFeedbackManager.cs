@@ -6,5 +6,5 @@ public class AgentFeedbackManager : MonoBehaviour
     ChatFeedback _feedbackUI;
 
     public void ShowFeedbackUI(ChatLog chat) { _feedbackUI.ShowFeedbackUI(chat); }
-    public void OnFeedbackButtonClicked(int feedbackFlag) { _feedbackUI.OnButtonClick(feedbackFlag); }
+    public void OnFeedbackButtonClicked(bool isYes) { _feedbackUI.OnButtonClick(isYes ? 1 : 2); }
 }
