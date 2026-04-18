@@ -38,6 +38,7 @@ public class ChatLog
     }
 }
 
+[DefaultExecutionOrder(-100)]
 public class AgentChatManager : MonoBehaviour
 {
     LLM _llmController;
