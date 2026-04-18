@@ -84,6 +84,7 @@ public class AgentChatManager : MonoBehaviour
         _inputField.ActivateInputField();
         _inputField.Select();
         if (input.Length < 1 || input.Trim().Length < 1) return;
+        if (!TokenManager.Instance.TrySpendQuestionToken()) return;
 
         GameObject obj = Instantiate(_chatBoxPlayer, _chatHistory);
         obj.GetComponent<ChatBox>().SetText(input);
