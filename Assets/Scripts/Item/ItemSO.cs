@@ -15,4 +15,10 @@ public class ItemSO : ScriptableObject
     public Sprite icon;
     public bool stackable = true;
     public int maxStack = 99;
+
+    //SHOP
+    public int buyPrice;
+    public int sellPrice;
+    public bool canBuy;
+    public bool canSell;
 }
