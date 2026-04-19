@@ -23,6 +23,8 @@ public class TileInfoPanel : MonoBehaviour
     [SerializeField] private TileManager tileManager;
     [SerializeField] private InventoryManager inventoryManager;
     [SerializeField] private Sprite weedPanelSprite;
+    [SerializeField] private Transform plusInfoLayer;
+    [SerializeField] private TileInfo_Plus tileInfoPlusPrefab;
 
     private void Awake()
     {
@@ -99,6 +101,7 @@ public class TileInfoPanel : MonoBehaviour
         SetTileImage(GetTileSprite(state.tileType));
         SetSliderValue(state.cropState == TileData.CropState.IsGrowing ? 0.1f : state.cropState == TileData.CropState.IsHarvastable ? 1f : 0f);
         SetHarvestButton(state.cropState == TileData.CropState.IsHarvastable);
+        RefreshPlusInfo(state);
     }
     // 현재 패널에 선택되어 있는 타일에 지정한 cropId의 작물을 심는다.
     // 실제 심기 처리는 TileManager가 담당한다.
@@ -248,6 +251,7 @@ public class TileInfoPanel : MonoBehaviour
         SetTileImage(null);
         SetSliderValue(0f);
         SetHarvestButton(false);
+        ClearPlusInfos();
     }
 
     // 현재 선택된 타일의 작물을 수확하고 인벤토리에 지급한다.
@@ -420,5 +424,39 @@ public class TileInfoPanel : MonoBehaviour
         Vector2 anchoredPosition = rectTransform.anchoredPosition;
         anchoredPosition.y = y;
         rectTransform.anchoredPosition = anchoredPosition;
+    }
+
+    private void RefreshPlusInfo(MiddleDB.TileState state)
+    {
+        ClearPlusInfos();
+
+        if (state == null || tileManager == null || plusInfoLayer == null || tileInfoPlusPrefab == null)
+        {
+            return;
+        }
+
+        if (tileManager.HasAdjacentWater(state.coord))
+        {
+            CreatePlusInfo(TileInfo_Plus.PlusInfo.Moist);
+        }
+    }
+
+    private void CreatePlusInfo(TileInfo_Plus.PlusInfo plusInfo)
+    {
+        TileInfo_Plus plusUi = Instantiate(tileInfoPlusPrefab, plusInfoLayer);
+        plusUi.PlusInfoInit(plusInfo);
+    }
+
+    private void ClearPlusInfos()
+    {
+        if (plusInfoLayer == null)
+        {
+            return;
+        }
+
+        for (int i = plusInfoLayer.childCount - 1; i >= 0; i--)
+        {
+            Destroy(plusInfoLayer.GetChild(i).gameObject);
+        }
     }
 }

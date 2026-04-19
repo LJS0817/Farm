@@ -86,14 +86,9 @@ public class GameStateAssembler : MonoBehaviour
                 result.Add(new TileStateDto
                 {
                     id = state.id,
-                    x = state.coord.x,
-                    y = state.coord.y,
                     tileType = state.tileType.ToString(),
                     cropType = state.cropType.ToString(),
-                    cropState = state.cropState.ToString(),
-                    isFarmable = state.isFarmable,
-                    growRemaining = state.growDuration,
-                    growMax = state.maxTime
+                    cropState = state.cropState.ToString()
                 });
             }
         }
@@ -157,14 +152,9 @@ public class GameStateSnapshot
 public class TileStateDto
 {
     public int id;
-    public int x;
-    public int y;
     public string tileType;
     public string cropType;
     public string cropState;
-    public bool isFarmable;
-    public float growRemaining;
-    public float growMax;
 }
 
 [Serializable]

@@ -56,9 +56,68 @@ public class AgentCommandConverter : JsonConverter<AgentCommand>
 
         if (jo["Crop"] != null)
         {
-            cmd.Crop = jo["Crop"].ToObject<TileData.CropType>(serializer);
+            cmd.Crop = ParseCropTypeSafely(jo["Crop"]);
         }
 
         return cmd;
+    }
+
+    private static TileData.CropType ParseCropTypeSafely(JToken cropToken)
+    {
+        if (cropToken == null || cropToken.Type == JTokenType.Null)
+        {
+            return TileData.CropType.IsEmpty;
+        }
+
+        string rawValue = cropToken.Value<string>()?.Trim();
+        if (string.IsNullOrWhiteSpace(rawValue))
+        {
+            return TileData.CropType.IsEmpty;
+        }
+
+        if (TryParseCropType(rawValue, out TileData.CropType parsedCrop))
+        {
+            return parsedCrop;
+        }
+
+        Debug.LogWarning($"[AgentCommandConverter] Unknown Crop value '{rawValue}'. Fallback to IsEmpty.");
+        return TileData.CropType.IsEmpty;
+    }
+
+    private static bool TryParseCropType(string rawValue, out TileData.CropType cropType)
+    {
+        if (Enum.TryParse(rawValue, true, out cropType))
+        {
+            return true;
+        }
+
+        string normalizedValue = NormalizeCropValue(rawValue);
+        return Enum.TryParse(normalizedValue, true, out cropType);
+    }
+
+    private static string NormalizeCropValue(string rawValue)
+    {
+        string value = rawValue.Trim();
+
+        if (value.EndsWith(" seeds", StringComparison.OrdinalIgnoreCase))
+        {
+            value = value[..^6].Trim();
+        }
+        else if (value.EndsWith(" seed", StringComparison.OrdinalIgnoreCase))
+        {
+            value = value[..^5].Trim();
+        }
+        else if (value.EndsWith("씨앗", StringComparison.OrdinalIgnoreCase))
+        {
+            value = value[..^2].Trim();
+        }
+
+        return value switch
+        {
+            "당근" => nameof(TileData.CropType.Carrot),
+            "체리" => nameof(TileData.CropType.Cherry),
+            "없음" => nameof(TileData.CropType.IsEmpty),
+            _ => value
+        };
     }
 }

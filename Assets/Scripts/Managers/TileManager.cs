@@ -236,6 +236,45 @@ public class TileManager : MonoBehaviour
         return true;
     }//
 
+    // 주변 8칸 중 하나라도 물 타일이면 true를 반환한다.
+    public bool HasAdjacentWater(Vector2Int coord)
+    {
+        if (middleDB == null)
+        {
+            return false;
+        }
+
+        for (int yOffset = -1; yOffset <= 1; yOffset++)
+        {
+            for (int xOffset = -1; xOffset <= 1; xOffset++)
+            {
+                if (xOffset == 0 && yOffset == 0)
+                {
+                    continue;
+                }
+
+                Vector2Int adjacentCoord = new Vector2Int(coord.x + xOffset, coord.y + yOffset);
+
+                if (!middleDB.IsInBounds(adjacentCoord))
+                {
+                    continue;
+                }
+
+                if (!TryGetTile(adjacentCoord, out TileData adjacentTile) || adjacentTile == null)
+                {
+                    continue;
+                }
+
+                if (adjacentTile.tileType == TileData.TileType.Water)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     // 수확 가능한 작물을 수확하고 보상 아이템을 인벤토리에 넣는다.
     public bool HarvestCrop(Vector2Int coord, InventoryManager inventoryManager)
     {
@@ -271,6 +310,11 @@ public class TileManager : MonoBehaviour
         }
 
         int harvestAmount = Mathf.Max(1, cropData.harvestAmount);
+        if (HasAdjacentWater(coord))
+        {
+            harvestAmount *= 2;
+        }
+
         bool added = inventoryManager.AddItem(cropData.harvestItem, harvestAmount);
         if (!added)
         {

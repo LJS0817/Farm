@@ -3008,6 +3008,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: CerryButton
       objectReference: {fileID: 0}
+    - target: {fileID: 9050166517383155896, guid: 86fb7408545b84c47869eba4104b40d3, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4751,6 +4755,68 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 436116066}
   m_CullTransparentMesh: 1
+--- !u!1 &444515589
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 444515590}
+  - component: {fileID: 444515591}
+  m_Layer: 0
+  m_Name: PlusInfoLayer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &444515590
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 444515589}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6167684199411059332}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &444515591
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 444515589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 900
+    m_Bottom: 0
+  m_ChildAlignment: 6
+  m_Spacing: 50
+  m_ChildForceExpandWidth: 1
+  m_ChildForceExpandHeight: 1
+  m_ChildControlWidth: 0
+  m_ChildControlHeight: 0
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
+  m_ReverseArrangement: 0
 --- !u!224 &448808624 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2004043036277410004, guid: 86fb7408545b84c47869eba4104b40d3, type: 3}
@@ -10182,6 +10248,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: HarvastButton
       objectReference: {fileID: 0}
+    - target: {fileID: 9050166517383155896, guid: 86fb7408545b84c47869eba4104b40d3, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -12596,7 +12666,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8983031945290737577, guid: 0027937279f75254381ba3f10063ceb8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.00037002563
+      value: 0.00039291382
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 9065562917122220410, guid: 0027937279f75254381ba3f10063ceb8, type: 3}
@@ -13469,6 +13539,10 @@ PrefabInstance:
     - target: {fileID: 9050166517383155896, guid: 86fb7408545b84c47869eba4104b40d3, type: 3}
       propertyPath: m_Name
       value: CarrotButton
+      objectReference: {fileID: 0}
+    - target: {fileID: 9050166517383155896, guid: 86fb7408545b84c47869eba4104b40d3, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -31161,6 +31235,8 @@ MonoBehaviour:
   tileManager: {fileID: 884189656}
   inventoryManager: {fileID: 0}
   weedPanelSprite: {fileID: 21300000, guid: 958ed1b0d26dd964cb936ec19507986b, type: 3}
+  plusInfoLayer: {fileID: 444515590}
+  tileInfoPlusPrefab: {fileID: 4010995237439514884, guid: d438644fe644440ea9d87c518910acdf, type: 3}
 --- !u!114 &3083938684706327060
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -32385,6 +32461,7 @@ RectTransform:
   - {fileID: 452496467}
   - {fileID: 8219393222882598801}
   - {fileID: 2042620452}
+  - {fileID: 444515590}
   m_Father: {fileID: 1117552733961490456}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
