@@ -69,6 +69,9 @@ public class AgentCommand
 public class AgentActionController : MonoBehaviour
 {
     Transform _agent;
+    Transform _layerAim;
+    SpriteRenderer[] _agentRenderers;
+    int[] _agentRendererRelativeOrders;
 
     [SerializeField]
     InventoryManager _inventoryMng;
@@ -78,6 +81,10 @@ public class AgentActionController : MonoBehaviour
     bool _isBusy = false;
     [SerializeField]
     float _moveSpeed = 2f;
+    [SerializeField]
+    string _sortingLayerName = "Default";
+    [SerializeField]
+    int _lineSortingBaseOrder = 11;
 
     Animator _ani;
 
@@ -94,11 +101,16 @@ public class AgentActionController : MonoBehaviour
         _agent = transform.parent;
         _ani = _agent.GetComponent<Animator>();
         _agentScale = _agent.localScale;
+        _layerAim = FindLayerAim();
+        CacheAgentRenderers();
+        UpdateCharacterSorting();
     }
 
     // 테스트용
     private void Update()
     {
+        UpdateCharacterSorting();
+
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             _inventoryMng.AddItem(_inventoryMng.itemDatabase[2]);
@@ -252,5 +264,91 @@ public class AgentActionController : MonoBehaviour
             scale.x = _agentScale.x;
             _agent.localScale = scale;
         }
+    }
+
+    private void CacheAgentRenderers()
+    {
+        if (_agent == null)
+        {
+            return;
+        }
+
+        _agentRenderers = _agent.GetComponentsInChildren<SpriteRenderer>(true);
+        if (_agentRenderers == null || _agentRenderers.Length == 0)
+        {
+            _agentRendererRelativeOrders = System.Array.Empty<int>();
+            return;
+        }
+
+        int minOrder = _agentRenderers[0].sortingOrder;
+        for (int i = 1; i < _agentRenderers.Length; i++)
+        {
+            if (_agentRenderers[i].sortingOrder < minOrder)
+            {
+                minOrder = _agentRenderers[i].sortingOrder;
+            }
+        }
+
+        _agentRendererRelativeOrders = new int[_agentRenderers.Length];
+        for (int i = 0; i < _agentRenderers.Length; i++)
+        {
+            _agentRendererRelativeOrders[i] = _agentRenderers[i].sortingOrder - minOrder;
+        }
+    }
+
+    private void UpdateCharacterSorting()
+    {
+        if (_agent == null || _tileMng == null)
+        {
+            return;
+        }
+
+        if (_agentRenderers == null || _agentRenderers.Length == 0)
+        {
+            CacheAgentRenderers();
+        }
+
+        if (_agentRenderers == null || _agentRenderers.Length == 0)
+        {
+            return;
+        }
+
+        Vector3 sortingWorldPosition = _layerAim != null ? _layerAim.position : _agent.position;
+
+        if (!_tileMng.TryGetTileFromWorldPosition(sortingWorldPosition, out TileData currentTile) || currentTile == null)
+        {
+            return;
+        }
+
+        int targetBaseOrder = _lineSortingBaseOrder + currentTile.coord.y;
+        for (int i = 0; i < _agentRenderers.Length; i++)
+        {
+            _agentRenderers[i].sortingLayerName = _sortingLayerName;
+            _agentRenderers[i].sortingOrder = targetBaseOrder + _agentRendererRelativeOrders[i];
+        }
+    }
+
+    private Transform FindLayerAim()
+    {
+        if (_agent == null)
+        {
+            return null;
+        }
+
+        Transform found = _agent.Find("LayerAim");
+        if (found != null)
+        {
+            return found;
+        }
+
+        foreach (Transform child in _agent.GetComponentsInChildren<Transform>(true))
+        {
+            if (child.name == "LayerAim")
+            {
+                return child;
+            }
+        }
+
+        return null;
     }
 }

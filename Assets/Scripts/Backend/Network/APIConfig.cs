@@ -5,7 +5,7 @@ public static class APIConfig
     {
         get
         {
-            return "http://15.164.210.205:443/api/v1";
+            return "http://3.35.9.49/api/v1";
         }
     }
 
@@ -26,5 +26,15 @@ public static class APIConfig
     public static class LLM
     {
         public static string SendChatLog => $"{BaseUrl}/game/conversations";
+    }
+
+    public static class Health
+    {
+        public static string Check => $"{BaseUrl}/health";
+    }
+
+    public static class Game
+    {
+        public static string Snapshots => $"{BaseUrl}/game/snapshots";
     }
 }

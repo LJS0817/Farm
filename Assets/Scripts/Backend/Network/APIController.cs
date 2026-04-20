@@ -32,6 +32,40 @@ public static class APIController
         }
     }
 
+    public static class Health
+    {
+        public static void Check(Action<HealthCheckResponse> onSuccess, Action<string> onError = null)
+        {
+            NetworkManager.Instance.Get<HealthCheckResponse>(
+                url: APIConfig.Health.Check,
+                onSuccess,
+                onError ?? (errorMsg =>
+                {
+                    Debug.LogError($"헬스체크 실패: {errorMsg}");
+                })
+            );
+        }
+    }
+
+    public static class Game
+    {
+        public static void SendSnapshot(
+            GameStateSnapshot snapshot,
+            Action<SnapshotUploadResponse> onSuccess,
+            Action<string> onError = null)
+        {
+            NetworkManager.Instance.Post<GameStateSnapshot, SnapshotUploadResponse>(
+                url: APIConfig.Game.Snapshots,
+                requestData: snapshot,
+                onSuccess,
+                onError ?? (errorMsg =>
+                {
+                    Debug.LogError($"스냅샷 업로드 실패: {errorMsg}");
+                })
+            );
+        }
+    }
+
     //public static class Farm
     //{
     //    public static void SaveFarmState(FarmData data, Action<ServerResponse> onSuccess) { ... }

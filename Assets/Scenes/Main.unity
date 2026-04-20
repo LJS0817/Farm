@@ -257,11 +257,11 @@ MonoBehaviour:
   overflowTargetRatio: 0.5
   overflowSummarizePrompt: 
   _slot: -1
-  _systemPrompt: "You are a router that analyzes farm game user chats and outputs
-    the necessary data list.\r\nOutput ONLY the required symbols from \"M\", \"I\",
-    \"P\", \"C\". If multiple data types are needed, separate them with commas (,).
-    Do NOT include periods or any additional explanations.\r\n\r\n[Data Symbols]\r\n-
-    M : Map data (Crop status, checking for empty land/growing crops)\r\n- I : Inventory
+  _systemPrompt: "a router that analyzes farm game user chats and outputs the necessary
+    data list.\r\nOutput ONLY theYou are  required symbols from \"M\", \"I\", \"P\",
+    \"C\". If multiple data types are needed, separate them with commas (,). Do NOT
+    include periods or any additional explanations.\r\n\r\n[Data Symbols]\r\n- M
+    : Map data (Crop status, checking for empty land/growing crops)\r\n- I : Inventory
     data (Item counts, seed availability, item consumption/acquisition)\r\n- P :
     Agent Position data (Agent's current x, y coordinates)\r\n- C : No data required
     (Simple greetings, system rules, general talk)\r\n\r\n[Core Rules]\r\n1. Mandatory
@@ -10566,6 +10566,37 @@ RectTransform:
   m_AnchoredPosition: {x: 393.42, y: -42.5}
   m_SizeDelta: {x: 754.2883, y: 85}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &752290587
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 752290588}
+  m_Layer: 0
+  m_Name: LayerAim
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &752290588
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 752290587}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -2.63, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1405555906}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &752427838
 GameObject:
   m_ObjectHideFlags: 0
@@ -11761,6 +11792,8 @@ MonoBehaviour:
   tileSpacing: {x: 1, y: 1}
   topLeftOrigin: {x: -7, y: 4}
   generateOnStartIfNoSceneTiles: 1
+  tileSortingLayerName: Default
+  lineSortingBaseOrder: 10
 --- !u!1 &885310444
 GameObject:
   m_ObjectHideFlags: 0
@@ -12688,7 +12721,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8983031945290737577, guid: 0027937279f75254381ba3f10063ceb8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.00025558472
+      value: 0.0002746582
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 9065562917122220410, guid: 0027937279f75254381ba3f10063ceb8, type: 3}
@@ -17821,7 +17854,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1779283139
   m_SortingLayer: 1
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: bdf4a508e04b6e04f8d90273c7ec4c64, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -17849,6 +17882,7 @@ Transform:
   - {fileID: 1671378090}
   - {fileID: 1060149338}
   - {fileID: 5394181}
+  - {fileID: 752290588}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1427337563
@@ -20694,7 +20728,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 131325994}
         m_TargetAssemblyTypeName: GameStateAssembler, Assembly-CSharp
-        m_MethodName: DebugCreateSnapshot
+        m_MethodName: DebugSendSnapshot
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -20865,7 +20899,7 @@ MonoBehaviour:
   _SSLCert: 
   _SSLKey: 
   _numThreads: -1
-  _numGPULayers: 70
+  _numGPULayers: 0
   _parallelPrompts: 1
   _contextSize: 8192
   _batchSize: 512
@@ -20939,6 +20973,8 @@ MonoBehaviour:
   _tileMng: {fileID: 884189656}
   _isBusy: 0
   _moveSpeed: 2
+  _sortingLayerName: Default
+  _lineSortingBaseOrder: 11
 --- !u!4 &1671378090
 Transform:
   m_ObjectHideFlags: 0
