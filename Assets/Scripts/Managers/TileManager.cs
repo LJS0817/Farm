@@ -137,11 +137,11 @@ public class TileManager : MonoBehaviour
 
                 middleDB.ApplyStateToTile(tileData);
 
-                SpriteRenderer spriteRenderer = tileObject.GetComponent<SpriteRenderer>();
-                if (spriteRenderer != null)
-                {
-                    spriteRenderer.sortingOrder += y;
-                }
+                // SpriteRenderer spriteRenderer = tileObject.GetComponent<SpriteRenderer>();
+                // if (spriteRenderer != null)
+                // {
+                //     //spriteRenderer.sortingOrder += y;
+                // }
 
                 if (tileData.tileType == TileData.TileType.Water || tileData.tileType == TileData.TileType.Rock)
                     tileObject.layer = 6;
