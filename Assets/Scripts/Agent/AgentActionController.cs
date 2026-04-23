@@ -70,7 +70,7 @@ public class AgentActionController : MonoBehaviour
 {
     Transform _agent;
     AgentPathFinder _pathFinder;
-    Transform _layerAim;
+    Transform _agentOffset;
     SpriteRenderer[] _agentRenderers;
     int[] _agentRendererRelativeOrders;
 
@@ -78,6 +78,8 @@ public class AgentActionController : MonoBehaviour
     InventoryManager _inventoryMng;
     [SerializeField]
     TileManager _tileMng;
+    [SerializeField]
+    ProcessingUIController _processUI;
     [SerializeField]
     bool _isBusy = false;
     [SerializeField]
@@ -101,9 +103,9 @@ public class AgentActionController : MonoBehaviour
         _agent = transform.parent;
         _ani = _agent.GetComponent<Animator>();
         _agentScale = _agent.localScale;
-        _pathFinder = _agent.GetComponent<AgentPathFinder>();
+        _agentOffset = _agent.parent;
+        _pathFinder = _agentOffset.GetComponent<AgentPathFinder>();
         AstarPath.active.Scan();
-        _layerAim = FindLayerAim();
         CacheAgentRenderers();
         UpdateCharacterSorting();
     }
@@ -129,7 +131,7 @@ public class AgentActionController : MonoBehaviour
         {
             _inventoryMng.AddItem(_inventoryMng.itemDatabase[1]);
         }
-        if(Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(1))
         {
             _tileMng.TryGetTileFromWorldPosition(Camera.main.ScreenToWorldPoint(Input.mousePosition), out TileData tile);
             StartCoroutine(MoveToRoutine(tile.coord));
@@ -205,7 +207,7 @@ public class AgentActionController : MonoBehaviour
 
             yield return new WaitUntil(() => isMovementDone);
 
-            _agent.position = targetWorldPos;
+            _agentOffset.position = targetWorldPos;
         }
         else
         {
@@ -221,7 +223,11 @@ public class AgentActionController : MonoBehaviour
         CropsData cropsData = CropManager.instance.GetCropData((int)cType - 1);
         _inventoryMng.RemoveItem($"{cType} seeds");
 
-        yield return new WaitForSeconds(1f);
+        if (_processUI != null)
+            yield return StartCoroutine(_processUI.ProcessTaskRoutine("Planting", 2f));
+        else
+            yield return new WaitForSeconds(2f);
+
         bool success = _tileMng.PlantCrop(targetPos, cropsData);
     }
 
@@ -230,7 +236,11 @@ public class AgentActionController : MonoBehaviour
         ChangeState(AgentState.Work);
         ResetDirection();
 
-        yield return new WaitForSeconds(1f);
+        if (_processUI != null)
+            yield return StartCoroutine(_processUI.ProcessTaskRoutine("Harvesting", 2f));
+        else
+            yield return new WaitForSeconds(2f);
+
         bool success = _tileMng.HarvestCrop(targetPos, _inventoryMng);
     }
 
@@ -239,7 +249,11 @@ public class AgentActionController : MonoBehaviour
         ChangeState(AgentState.Work);
         ResetDirection();
 
-        yield return new WaitForSeconds(1f);
+        if (_processUI != null)
+            yield return StartCoroutine(_processUI.ProcessTaskRoutine("Eating", 1f));
+        else
+            yield return new WaitForSeconds(1f);
+
         _inventoryMng.RemoveItem(CropManager.instance.GetCropData((int)cType - 1).harvestItem);
     }
 
@@ -323,7 +337,7 @@ public class AgentActionController : MonoBehaviour
             return;
         }
 
-        Vector3 sortingWorldPosition = _layerAim != null ? _layerAim.position : _agent.position;
+        Vector3 sortingWorldPosition = _agentOffset.position;
 
         if (!_tileMng.TryGetTileFromWorldPosition(sortingWorldPosition, out TileData currentTile) || currentTile == null)
         {
@@ -336,29 +350,5 @@ public class AgentActionController : MonoBehaviour
             _agentRenderers[i].sortingLayerName = _sortingLayerName;
             _agentRenderers[i].sortingOrder = targetBaseOrder + _agentRendererRelativeOrders[i];
         }
-    }
-
-    private Transform FindLayerAim()
-    {
-        if (_agent == null)
-        {
-            return null;
-        }
-
-        Transform found = _agent.Find("LayerAim");
-        if (found != null)
-        {
-            return found;
-        }
-
-        foreach (Transform child in _agent.GetComponentsInChildren<Transform>(true))
-        {
-            if (child.name == "LayerAim")
-            {
-                return child;
-            }
-        }
-
-        return null;
     }
 }

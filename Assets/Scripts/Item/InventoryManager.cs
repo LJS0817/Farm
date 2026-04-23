@@ -13,6 +13,10 @@ public class InventoryManager : MonoBehaviour
 
     [SerializeField]
     InventoryUI _inventoryUI; // UI를 제어
+    [SerializeField]
+    ItemFeedbackUIController _itemFeedback;
+    [SerializeField]
+    Transform _feedbackOffset;
 
     private void Awake()
     {
@@ -80,6 +84,7 @@ public class InventoryManager : MonoBehaviour
                 if (remainingAmount <= 0)
                 {
                     Debug.Log($"[InventoryManager] Added {amount} x {item.itemName}.", this);
+                    _itemFeedback.ShowItemFeedback(_feedbackOffset.position, item.icon, amount);
                     RefreshUI(); // 아이템 획득 완료 후 UI 갱신
                     return true;
                 }
@@ -100,6 +105,7 @@ public class InventoryManager : MonoBehaviour
             if (remainingAmount <= 0)
             {
                 Debug.Log($"[InventoryManager] Added {amount} x {item.itemName}.", this);
+                _itemFeedback.ShowItemFeedback(_feedbackOffset.position, item.icon, amount);
                 RefreshUI(); // 아이템 획득 완료 후 UI 갱신
                 return true;
             }
@@ -109,6 +115,7 @@ public class InventoryManager : MonoBehaviour
         Debug.LogWarning(
             $"[InventoryManager] Inventory is full. Added {addedAmount}/{amount} x {item.itemName}.",
             this);
+        _itemFeedback.ShowItemFeedback(_feedbackOffset.position, item.icon, addedAmount);
         RefreshUI(); // 일부만 들어갔을 경우를 대비해 갱신
         return false;
     }
@@ -141,11 +148,14 @@ public class InventoryManager : MonoBehaviour
             {
                 if (slots[i].count > remainingToRemove)
                 {
+                    _itemFeedback.ShowItemFeedback(_feedbackOffset.position, item.icon, -remainingToRemove);
                     slots[i].count -= remainingToRemove;
                     remainingToRemove = 0;
+
                 }
                 else
                 {
+                    _itemFeedback.ShowItemFeedback(_feedbackOffset.position, item.icon, -slots[i].count);
                     remainingToRemove -= slots[i].count;
                     slots[i].item = null;
                     slots[i].count = 0;

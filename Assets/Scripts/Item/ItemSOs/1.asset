@@ -15,6 +15,10 @@ MonoBehaviour:
   itemId: 1
   itemName: Cherry
   itemType: 1
-  icon: {fileID: -5859083586626064994, guid: 46493c3ed7e3a409895bb5071a22fb53, type: 3}
+  icon: {fileID: -5859083586626064994, guid: 6975cc3e51460f54dbd990d464c0ed51, type: 3}
   stackable: 1
   maxStack: 99
+  buyPrice: 0
+  sellPrice: 0
+  canBuy: 0
+  canSell: 0

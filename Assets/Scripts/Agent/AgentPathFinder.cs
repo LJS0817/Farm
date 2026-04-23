@@ -5,7 +5,7 @@ using Pathfinding;
 
 public class AgentPathFinder : MonoBehaviour
 {
-    private Seeker seeker;
+    Seeker seeker;
     public bool IsMoving { get; private set; } = false;
 
     void Start()
