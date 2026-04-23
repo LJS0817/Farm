@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using LLMUnity;
 using Newtonsoft.Json;
 using UnityEngine;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 public class AgentIntentClassifier : MonoBehaviour
 {
@@ -16,6 +17,7 @@ public class AgentIntentClassifier : MonoBehaviour
 
     private bool _isShuttingDown;
     private readonly SemaphoreSlim _promptLock = new SemaphoreSlim(1, 1);
+    private const int TimingPreviewLength = 32;
 
     private const string DefaultInteractionPrompt =
         "You classify a Unity farm-game user's latest Korean chat into either Command, Conversation, or Unknown.\n" +
@@ -29,17 +31,17 @@ public class AgentIntentClassifier : MonoBehaviour
         "- Conversation: greetings, small talk, emotional talk, roleplay, identity/personality questions, or casual chat that does not require engine state.\n" +
         "- Unknown: impossible to tell from the sentence alone.\n\n" +
         "Rules:\n" +
-        "- Treat gameplay questions like location, inventory, map, crops, tiles, and coordinates as Command.\n" +
+        "- Treat gameplay questions like location, tokens, inventory, map, crops, tiles, and coordinates as Command.\n" +
         "- Treat movement, planting, harvesting, and eating requests as Command.\n" +
         "- Treat greetings like 안녕, 반가워, 고마워, 너는 누구야 as Conversation.\n" +
         "- Never output anything except the JSON object.";
 
     private const string DefaultIntentPrompt =
-        "You classify a Unity farm-game user's latest Korean chat into exactly one intent.\n" +
+        "You classify a Unity farm-game user's latest Korean chat into exactly one supported gameplay intent.\n" +
         "Respond ONLY with valid JSON.\n" +
         "Format:\n" +
         "{\n" +
-        "  \"Intent\": \"Move|Plant|Harvest|Eat|QueryPosition|QueryInventory|QueryMap|QueryTile|GeneralChat|Unknown\"\n" +
+        "  \"Intent\": \"Move|Plant|Harvest|Eat|QueryPosition|QueryToken|QueryInventory|QueryMap|QueryTile|Unknown\"\n" +
         "}\n\n" +
         "Rules:\n" +
         "- Choose Move for movement requests.\n" +
@@ -47,11 +49,14 @@ public class AgentIntentClassifier : MonoBehaviour
         "- Choose Harvest for harvesting requests.\n" +
         "- Choose Eat for eating/consuming crop requests.\n" +
         "- Choose QueryPosition for questions about current location.\n" +
+        "- Choose QueryToken for questions about remaining tokens, token count, or token cost.\n" +
         "- Choose QueryInventory for questions about items, inventory, bag, seeds count.\n" +
         "- Choose QueryMap for overall farm/map/crop status questions.\n" +
         "- Choose QueryTile for questions about a specific tile/coordinate.\n" +
-        "- Choose GeneralChat for greetings or casual non-gameplay talk.\n" +
-        "- Choose Unknown when the request is ambiguous or mixes multiple gameplay actions.\n" +
+        "- Choose Unknown for greetings, capability questions, identity questions, casual non-gameplay talk, simple math, arithmetic, common knowledge, and non-gameplay factual questions.\n" +
+        "- Questions about what the agent can do, supported actions, or available commands are Unknown, not gameplay actions.\n" +
+        "- Choose Unknown when the request is ambiguous, mixes multiple gameplay actions, or does not clearly map to one supported gameplay intent.\n" +
+        "- Do NOT guess a nearby gameplay intent when the input is not clearly a supported gameplay request.\n" +
         "- Never output anything except the JSON object.";
 
     private const string DefaultClarificationPrompt =
@@ -83,6 +88,14 @@ public class AgentIntentClassifier : MonoBehaviour
         "- The engine validation JSON is the source of truth for what is possible.\n" +
         "- Do not invent items, coordinates, or world state not present in the provided JSON.\n" +
         "- If interaction type is Conversation, speak naturally like a living in-world AI character and do not sound robotic.\n" +
+        "- If the user asks a clear question, answer that question directly first.\n" +
+        "- For simple factual, conversational, light reasoning, arithmetic, or common knowledge questions, give a short direct answer.\n" +
+        "- For simple arithmetic questions, compute the result and answer with the result directly.\n" +
+        "- Even if intent is Unknown, if the user asked a concrete question, try to answer that question naturally instead of avoiding it.\n" +
+        "- When the user's message contains a specific question, include actual answer content instead of only social filler.\n" +
+        "- Do not default to generic continuation replies like '응, 듣고 있어' or '계속 이야기해줘' when the user asked a concrete question.\n" +
+        "- Generic listening replies are allowed only when the user did not ask any concrete question.\n" +
+        "- If you can answer the user's question from general knowledge or simple reasoning, answer it instead of asking them to continue.\n" +
         "- If interaction type is Unknown, ask a warm clarifying question in Korean instead of saying you did not understand intent.\n" +
         "- If validation status is Executable, reply like an AI agent about to do the action.\n" +
         "- If validation status is Informational, answer naturally using the validated facts.\n" +
@@ -173,6 +186,11 @@ public class AgentIntentClassifier : MonoBehaviour
             return AgentIntentType.Unknown;
         }
 
+        if (TryInferUnsupportedIntent(userInput, out AgentIntentType directIntent))
+        {
+            return directIntent;
+        }
+
         if (_isShuttingDown || classifierLLM == null)
         {
             return InferIntentFallback(userInput);
@@ -189,9 +207,16 @@ public class AgentIntentClassifier : MonoBehaviour
                 return InferIntentFallback(userInput);
             }
 
-            return Enum.TryParse(dto.Intent, true, out AgentIntentType intent)
+            AgentIntentType parsedIntent = Enum.TryParse(dto.Intent, true, out AgentIntentType intent)
                 ? intent
                 : InferIntentFallback(userInput);
+
+            if (TryInferUnsupportedIntent(userInput, out AgentIntentType overriddenIntent))
+            {
+                return overriddenIntent;
+            }
+
+            return parsedIntent;
         }
         catch (Exception ex)
         {
@@ -263,6 +288,7 @@ public class AgentIntentClassifier : MonoBehaviour
 
     private async Task<string> RunPromptAsync(string systemPrompt, string userPrompt)
     {
+        Stopwatch stopwatch = Stopwatch.StartNew();
         await _promptLock.WaitAsync();
         try
         {
@@ -282,8 +308,33 @@ public class AgentIntentClassifier : MonoBehaviour
         }
         finally
         {
+            stopwatch.Stop();
+            LogStageTiming("Classifier.RunPrompt", stopwatch.ElapsedMilliseconds, userPrompt, systemPrompt);
             _promptLock.Release();
         }
+    }
+
+    private static void LogStageTiming(string stageName, long elapsedMs, string userPrompt, string systemPrompt)
+    {
+        string inputPreview = BuildPreview(userPrompt);
+        string promptPreview = BuildPreview(systemPrompt);
+        UnityEngine.Debug.Log($"[AI Timing] {stageName}: {elapsedMs}ms | user=\"{inputPreview}\" | system=\"{promptPreview}\"");
+    }
+
+    private static string BuildPreview(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return string.Empty;
+        }
+
+        string trimmed = text.Replace('\n', ' ').Trim();
+        if (trimmed.Length <= TimingPreviewLength)
+        {
+            return trimmed;
+        }
+
+        return trimmed[..TimingPreviewLength] + "...";
     }
 
     private static AgentInteractionType InferInteractionFallback(string userInput)
@@ -325,6 +376,7 @@ public class AgentIntentClassifier : MonoBehaviour
             || normalized.Contains("아래")
             || normalized.Contains("어디")
             || normalized.Contains("위치")
+            || normalized.Contains("토큰")
             || normalized.Contains("인벤토리")
             || normalized.Contains("가방")
             || normalized.Contains("아이템")
@@ -378,6 +430,11 @@ public class AgentIntentClassifier : MonoBehaviour
             return AgentIntentType.QueryPosition;
         }
 
+        if (normalized.Contains("토큰"))
+        {
+            return AgentIntentType.QueryToken;
+        }
+
         if (normalized.Contains(",") || normalized.Contains("좌표") || normalized.Contains("여기") || normalized.Contains("저기") || normalized.Contains("타일"))
         {
             return AgentIntentType.QueryTile;
@@ -396,12 +453,89 @@ public class AgentIntentClassifier : MonoBehaviour
             return AgentIntentType.QueryMap;
         }
 
-        if (normalized.Contains("안녕") || normalized.Contains("고마워") || normalized.Contains("누구"))
+        return AgentIntentType.Unknown;
+    }
+
+    private static bool TryInferUnsupportedIntent(string userInput, out AgentIntentType intent)
+    {
+        intent = AgentIntentType.Unknown;
+
+        if (string.IsNullOrWhiteSpace(userInput))
         {
-            return AgentIntentType.GeneralChat;
+            return false;
         }
 
-        return AgentIntentType.Unknown;
+        string normalized = userInput.Trim();
+
+        bool hasDigit = normalized.IndexOfAny(new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' }) >= 0;
+        bool hasArithmeticKeyword =
+            normalized.Contains("더하기")
+            || normalized.Contains("빼기")
+            || normalized.Contains("곱하기")
+            || normalized.Contains("나누기")
+            || normalized.Contains("계산")
+            || normalized.Contains("+")
+            || normalized.Contains("-")
+            || normalized.Contains("*")
+            || normalized.Contains("/");
+
+        if (hasDigit && hasArithmeticKeyword)
+        {
+            intent = AgentIntentType.Unknown;
+            return true;
+        }
+
+        bool hasGameplayKeyword =
+            normalized.Contains("이동")
+            || normalized.Contains("가자")
+            || normalized.Contains("가줘")
+            || normalized.Contains("심어")
+            || normalized.Contains("심기")
+            || normalized.Contains("뿌려")
+            || normalized.Contains("수확")
+            || normalized.Contains("먹어")
+            || normalized.Contains("먹자")
+            || normalized.Contains("위치")
+            || normalized.Contains("좌표")
+            || normalized.Contains("인벤토리")
+            || normalized.Contains("가방")
+            || normalized.Contains("토큰")
+            || normalized.Contains("맵")
+            || normalized.Contains("타일");
+
+        bool hasGeneralKnowledgeTone =
+            normalized.Contains("뭔지 알아")
+            || normalized.Contains("뭐야")
+            || normalized.Contains("뭐지")
+            || normalized.Contains("얼마야")
+            || normalized.Contains("몇이야");
+
+        if (!hasGameplayKeyword && hasGeneralKnowledgeTone)
+        {
+            intent = AgentIntentType.Unknown;
+            return true;
+        }
+
+        if ((normalized.Contains("할 수 있") || normalized.Contains("가능한") || normalized.Contains("지원하는"))
+            && (normalized.Contains("동작") || normalized.Contains("행동") || normalized.Contains("명령") || normalized.Contains("기능")))
+        {
+            intent = AgentIntentType.Unknown;
+            return true;
+        }
+
+        if (normalized.Contains("안녕")
+            || normalized.Contains("반가워")
+            || normalized.Contains("고마워")
+            || normalized.Contains("누구")
+            || normalized.Contains("이름")
+            || normalized.Contains("기분")
+            || normalized.Contains("뭐해"))
+        {
+            intent = AgentIntentType.Unknown;
+            return true;
+        }
+
+        return false;
     }
 
     private void OnDestroy()

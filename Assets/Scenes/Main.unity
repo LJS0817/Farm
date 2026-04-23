@@ -236,7 +236,7 @@ MonoBehaviour:
   _port: 13333
   numRetries: 5
   _grammar: 
-  numPredict: 32
+  numPredict: 16
   cachePrompt: 1
   seed: 0
   temperature: 0.2
@@ -12758,7 +12758,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8983031945290737577, guid: 0027937279f75254381ba3f10063ceb8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.00031661987
+      value: 0.00035095215
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 9065562917122220410, guid: 0027937279f75254381ba3f10063ceb8, type: 3}
@@ -13930,52 +13930,7 @@ MonoBehaviour:
   overflowTargetRatio: 0.5
   overflowSummarizePrompt: 
   _slot: -1
-  _systemPrompt: "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n[INTENT
-    INTERPRETATION]\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\nInterpret
-    user intent based on the requested gameplay action, not on sentence ending or
-    politeness.\n\nIf the user clearly wants a gameplay action, treat it as an actionable
-    command.\n\nKorean sentence endings such as:\n\n- \"~\uD574\"\n- \"~\uD574\uC918\"\n-
-    \"~\uD558\uC790\"\n- \"~\uC790\"\n- \"~\uD574\uBCF4\uC790\"\n- \"~\uD560\uB798\"\n-
-    \"~\uD558\uBA74 \uC88B\uACA0\uB2E4\"\n\ndo NOT change the underlying gameplay
-    intent.\n\nIf the gameplay action is clear, do NOT classify it as conversation
-    or ambiguity only because the sentence is phrased as:\n\n- a suggestion\n- a
-    proposal\n- a soft request\n- a casual tone\n\nCoordinate-based movement requests
-    are actionable commands.\n\nIf the user provides:\n- a valid coordinate\n- and
-    a movement expression such as \"\uAC00\", \"\uC774\uB3D9\", \"\uAC00\uC790\",
-    \"\uAC00\uC918\", \"\uC774\uB3D9\uD574\"\n\nthen interpret it as Move intent.\n\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n[KOREAN
-    ACTION NORMALIZATION]\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\nNormalize
-    Korean surface expressions into the same underlying action intent.\n\nTreat different
-    Korean phrasings as the same intent when the action meaning is the same.\n\nExamples
-    of equivalent intent classes:\n\n- planting expressions -> Plant\n- harvesting
-    expressions -> Harvest\n- eating expressions -> Eat\n- movement expressions ->
-    Move\n\nThis normalization must apply even when the wording is:\n\n- direct\n-
-    polite\n- suggestive\n- conversational\n- shortened\n\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n[ACTION
-    DETECTION RULE]\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\nDetect
-    action intent from:\n\n1. gameplay verb\n2. target object\n3. target position\n4.
-    map/inventory context when needed\n\nUse the sentence ending only as tone information.\nDo
-    NOT use sentence ending as the main criterion for deciding whether a command
-    exists.\n\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n[COMMAND
-    DECISION RULE]\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\nIf
-    all of the following are true, treat the input as a command:\n\n1. The user refers
-    to a supported gameplay action\n2. The requested action target is understandable
-    from the sentence or current game context\n3. The action can be mapped to one
-    of the supported engine actions\n\nOnly return commands: [] when:\n\n- there
-    is no gameplay action intent\n- the action target is truly ambiguous\n- the action
-    is impossible after validation\n\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n[SUPPORTED
-    ACTION MAPPING]\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\nMap
-    Korean gameplay expressions to engine actions by meaning.\n\n- movement intent
-    -> MoveTo\n- planting intent -> Plant\n- harvesting intent -> Harvest\n- eating
-    intent -> Eat\n\nDo not require exact wording match.\nUse semantic intent, not
-    exact phrase match.\n\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n[AMBIGUITY
-    RULE]\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\nDo
-    NOT treat an input as ambiguous if:\n\n- the gameplay action is clear\n- the
-    requested crop/item is clear\n- the target position can be determined from coordinates,
-    relative direction, corner rule, or current position rule\n\nTreat as ambiguous
-    only when the actual gameplay target cannot be determined even after applying
-    all rules.\n\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n[FAILSAFE]\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\nIf
-    ambiguous:\n\u2192 commands []\n\u2192 explain in Korean\n\nDo NOT treat \"~\uC790\",
-    \"~\uD558\uC790\", \"~\uD574\uBCF4\uC790\", \"~\uD560\uB798\", \"~\uD558\uBA74
-    \uC88B\uACA0\uB2E4\" as ambiguity if the gameplay action is clear."
+  _systemPrompt: Runtime override. Managed by AgentInstructionManager.
 --- !u!4 &1060149338
 Transform:
   m_ObjectHideFlags: 0
@@ -21254,7 +21209,7 @@ MonoBehaviour:
   _numThreads: -1
   _numGPULayers: 30
   _parallelPrompts: 1
-  _contextSize: 8192
+  _contextSize: 16000
   _batchSize: 512
   _model: microsoft_Phi-4-mini-instruct-Q4_K_M.gguf
   _flashAttention: 0
@@ -21362,6 +21317,7 @@ MonoBehaviour:
   _tileMng: {fileID: 884189656}
   _inventoryMng: {fileID: 792282492}
   _contextBuilder: {fileID: 1671378092}
+  _tokenManager: {fileID: 609170320}
 --- !u!114 &1671378092
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21376,6 +21332,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _tileMng: {fileID: 884189656}
   _inventoryMng: {fileID: 792282492}
+  _tokenManager: {fileID: 609170320}
 --- !u!1 &1677103276
 GameObject:
   m_ObjectHideFlags: 0

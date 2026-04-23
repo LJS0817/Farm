@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using LLMUnity;
 using Newtonsoft.Json;
 using UnityEngine;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 public class AgentInstructionManager : MonoBehaviour
 {
@@ -15,6 +16,7 @@ public class AgentInstructionManager : MonoBehaviour
     [SerializeField] private AgentActionContextBuilder _contextBuilder;
     [SerializeField] private AgentActionValidator _validator;
     [SerializeField, TextArea(8, 18)] private string _actionPlanningSystemPrompt = "";
+    [SerializeField, TextArea(8, 18)] private string _conversationSystemPrompt = "";
 
     private AgentFeedbackManager _feedback;
     private AgentActionController _actionController;
@@ -22,6 +24,7 @@ public class AgentInstructionManager : MonoBehaviour
     private readonly SemaphoreSlim _planningLock = new SemaphoreSlim(1, 1);
 
     private const string _errorMsg = "죄송합니다. 잘 이해하지 못했어요.";
+    private const int TimingPreviewLength = 32;
 
     private const string DefaultActionPlanningPrompt =
         "You map a farm-game user's request to function arguments for a pre-defined engine function.\n" +
@@ -41,8 +44,30 @@ public class AgentInstructionManager : MonoBehaviour
         "- If no crop is needed, set Crop to \"IsEmpty\".\n" +
         "- For Plant and Eat, choose the exact requested crop.\n" +
         "- For QueryTile, fill only TargetGridPos and set Crop to \"IsEmpty\".\n" +
+        "- If the user explicitly provides a coordinate, you MUST use that exact coordinate as TargetGridPos.\n" +
+        "- Priority order for target position:\n" +
+        "  1. referencedCoordinate from user input\n" +
+        "  2. relative position resolved from currentPosition\n" +
+        "  3. currentPosition only when the user explicitly refers to the current location\n" +
+        "- NEVER replace an explicit coordinate with currentPosition.\n" +
+        "- NEVER ignore referencedCoordinate if it exists.\n" +
+        "- For Move intent, if referencedCoordinate exists, TargetGridPos MUST equal referencedCoordinate.\n" +
+        "- For Move intent, do NOT use currentPosition if an explicit coordinate is already given.\n" +
+        "- Resolve position in this order: explicit coordinate, explicit corner, relative direction, current position.\n" +
+        "- If explicit coordinate is found, do NOT use any later fallback position rule.\n" +
         "- Never invent unsupported crops.\n" +
         "- Never output markdown or explanations.";
+
+    private const string DefaultConversationPrompt =
+        "You are a warm, lively AI character in a Unity farm game.\n" +
+        "Reply in natural Korean.\n\n" +
+        "Rules:\n" +
+        "- If the user asks a clear question, answer it directly first.\n" +
+        "- For simple arithmetic, compute the result and answer naturally.\n" +
+        "- For simple factual, common knowledge, or casual questions, give a short direct answer.\n" +
+        "- Do not reply with generic filler like '응, 듣고 있어' or '계속 이야기해줘' when the user asked a concrete question.\n" +
+        "- Stay concise, warm, and in character.\n" +
+        "- Output plain Korean text only.";
 
     private void Awake()
     {
@@ -88,6 +113,11 @@ public class AgentInstructionManager : MonoBehaviour
         {
             _actionPlanningSystemPrompt = DefaultActionPlanningPrompt;
         }
+
+        if (string.IsNullOrWhiteSpace(_conversationSystemPrompt))
+        {
+            _conversationSystemPrompt = DefaultConversationPrompt;
+        }
     }
 
     public void HandleUserInput(string input, GameObject agentChatBox)
@@ -111,6 +141,7 @@ public class AgentInstructionManager : MonoBehaviour
 
         chatBox.SetText("생각중...");
 
+        Stopwatch stopwatch = Stopwatch.StartNew();
         AgentResponse response = await BuildResponseAsync(input);
         if (_isShuttingDown || chatBox == null)
         {
@@ -119,6 +150,8 @@ public class AgentInstructionManager : MonoBehaviour
 
         string answer = HandleResponse(input, response);
         chatBox.SetText(answer);
+        stopwatch.Stop();
+        LogStageTiming("HandleUserInput.Total", stopwatch.ElapsedMilliseconds, input);
     }
 
     private async Task<AgentResponse> BuildResponseAsync(string input)
@@ -128,17 +161,17 @@ public class AgentInstructionManager : MonoBehaviour
             return new AgentResponse(_errorMsg, new List<AgentCommand>(0));
         }
 
-        // 1차 분기: 이 입력이 일반 대화인지, 게임 명령인지 먼저 나눕니다.
-        AgentInteractionType interactionType = await _intentClassifier.ClassifyInteractionAsync(input);
+        Stopwatch stageTimer = Stopwatch.StartNew();
+        AgentIntentType intent = await _intentClassifier.ClassifyIntentAsync(input);
+        stageTimer.Stop();
+        LogStageTiming("BuildResponse.IntentClassification", stageTimer.ElapsedMilliseconds, input);
 
-        if (interactionType == AgentInteractionType.Conversation)
+        if (!IsSupportedIntent(intent))
         {
-            string conversationReply = await _intentClassifier.GenerateReplyAsync(
-                input,
-                interactionType,
-                AgentIntentType.GeneralChat,
-                string.Empty,
-                BuildInteractionValidationJson(AgentValidationStatus.Informational, "Conversation", string.Empty));
+            stageTimer.Restart();
+            string conversationReply = await GenerateConversationReplyAsync(input);
+            stageTimer.Stop();
+            LogStageTiming("BuildResponse.ConversationReply", stageTimer.ElapsedMilliseconds, input);
 
             if (string.IsNullOrWhiteSpace(conversationReply))
             {
@@ -148,38 +181,36 @@ public class AgentInstructionManager : MonoBehaviour
             return new AgentResponse(conversationReply, new List<AgentCommand>(0));
         }
 
-        AgentIntentType intent = await _intentClassifier.ClassifyIntentAsync(input);
-
-        // 상위 분류와 세부 intent를 모두 신뢰하기 어려우면, 기계적으로 실패하지 않고 맥락에 맞게 되묻습니다.
-        if (interactionType == AgentInteractionType.Unknown && intent == AgentIntentType.Unknown)
-        {
-            string clarificationReply = await _intentClassifier.GenerateClarificationReplyAsync(input);
-
-            if (string.IsNullOrWhiteSpace(clarificationReply))
-            {
-                clarificationReply = "내가 무엇을 해주면 되는지 조금만 더 자세히 말해줄래?";
-            }
-
-            return new AgentResponse(clarificationReply, new List<AgentCommand>(0));
-        }
-
         string planningContextJson = string.Empty;
         AgentFunctionArgumentsDto plannedArgs = AgentFunctionArgumentsDto.Default();
 
         if (IntentRequiresPlanning(intent))
         {
             // 월드 상태를 참조하는 명령은, 엔진이 만든 구조화된 JSON을 먼저 붙인 뒤 인자를 계획합니다.
+            stageTimer.Restart();
             planningContextJson = _contextBuilder != null
                 ? _contextBuilder.BuildPlanningContextJson(intent, input)
                 : "{}";
+            stageTimer.Stop();
+            LogStageTiming("BuildResponse.ContextBuild", stageTimer.ElapsedMilliseconds, input);
+
+            stageTimer.Restart();
             plannedArgs = await PlanArgumentsAsync(intent, input, planningContextJson);
+            stageTimer.Stop();
+            LogStageTiming("BuildResponse.ActionPlanning", stageTimer.ElapsedMilliseconds, input);
         }
 
         // 실행 가능 여부의 최종 책임은 엔진이 집니다. LLM은 제안만 할 수 있고 검증은 우회할 수 없습니다.
+        stageTimer.Restart();
         AgentValidationResult validation = _validator.Validate(intent, plannedArgs);
         string validationJson = _validator.BuildValidationJson(validation);
+        stageTimer.Stop();
+        LogStageTiming("BuildResponse.Validation", stageTimer.ElapsedMilliseconds, input);
 
+        stageTimer.Restart();
         string reply = await _intentClassifier.GenerateReplyAsync(input, AgentInteractionType.Command, intent, planningContextJson, validationJson);
+        stageTimer.Stop();
+        LogStageTiming("BuildResponse.FinalReply", stageTimer.ElapsedMilliseconds, input);
         if (string.IsNullOrWhiteSpace(reply))
         {
             reply = BuildFallbackReply(validation);
@@ -205,6 +236,7 @@ public class AgentInstructionManager : MonoBehaviour
 
         try
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
             await _planningLock.WaitAsync();
             try
             {
@@ -216,7 +248,45 @@ public class AgentInstructionManager : MonoBehaviour
 
                 await _agent.ClearHistory();
                 AgentFunctionArgumentsDto dto = AgentLLMModelUtils.DeserializeJsonObject<AgentFunctionArgumentsDto>(result);
-                return dto ?? AgentFunctionArgumentsDto.Default();
+                AgentFunctionArgumentsDto normalizedDto = dto ?? AgentFunctionArgumentsDto.Default();
+                EnforceEngineResolvedTargetFromUserInput(input, normalizedDto);
+                return normalizedDto;
+            }
+            finally
+            {
+                stopwatch.Stop();
+                LogStageTiming("PlanArguments.Total", stopwatch.ElapsedMilliseconds, input);
+                _planningLock.Release();
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[AgentInstructionManager] Action planning failed: {ex.Message}", this);
+            AgentFunctionArgumentsDto fallbackDto = AgentFunctionArgumentsDto.Default();
+            EnforceEngineResolvedTargetFromUserInput(input, fallbackDto);
+            return fallbackDto;
+        }
+    }
+
+    private async Task<string> GenerateConversationReplyAsync(string input)
+    {
+        if (_isShuttingDown || _agent == null)
+        {
+            return string.Empty;
+        }
+
+        try
+        {
+            await _planningLock.WaitAsync();
+            try
+            {
+                _agent.systemPrompt = _conversationSystemPrompt;
+                await _agent.ClearHistory();
+
+                string reply = await _agent.Chat(input);
+
+                await _agent.ClearHistory();
+                return AgentLLMModelUtils.StripCodeFence(reply);
             }
             finally
             {
@@ -225,8 +295,53 @@ public class AgentInstructionManager : MonoBehaviour
         }
         catch (Exception ex)
         {
-            Debug.LogWarning($"[AgentInstructionManager] Action planning failed: {ex.Message}", this);
-            return AgentFunctionArgumentsDto.Default();
+            Debug.LogWarning($"[AgentInstructionManager] Conversation reply failed: {ex.Message}", this);
+            return string.Empty;
+        }
+    }
+
+    private void EnforceEngineResolvedTargetFromUserInput(string input, AgentFunctionArgumentsDto dto)
+    {
+        if (dto == null || _contextBuilder == null)
+        {
+            return;
+        }
+
+        Vector2Int resolvedTarget;
+        string resolutionSource;
+
+        if (_contextBuilder.TryExtractReferencedCoordinate(input, out Vector2Int referencedCoord))
+        {
+            resolvedTarget = referencedCoord;
+            resolutionSource = "explicit-coordinate";
+        }
+        else if (_contextBuilder.TryResolveCornerTarget(input, out Vector2Int cornerTarget))
+        {
+            resolvedTarget = cornerTarget;
+            resolutionSource = "corner-target";
+        }
+        else if (_contextBuilder.TryResolveRelativeMoveTarget(input, out Vector2Int relativeTarget))
+        {
+            resolvedTarget = relativeTarget;
+            resolutionSource = "relative-move";
+        }
+        else
+        {
+            return;
+        }
+
+        if (dto.TargetGridPos == null)
+        {
+            dto.TargetGridPos = new GridPositionDto();
+        }
+
+        Vector2Int previousTarget = dto.TargetGridPos.ToVector2Int();
+        dto.TargetGridPos.x = resolvedTarget.x;
+        dto.TargetGridPos.y = resolvedTarget.y;
+
+        if (previousTarget != resolvedTarget)
+        {
+            Debug.Log($"[AI Planning] Engine target override applied ({resolutionSource}): input=\"{input}\" | planner=({previousTarget.x}, {previousTarget.y}) | final=({resolvedTarget.x}, {resolvedTarget.y})");
         }
     }
 
@@ -272,6 +387,19 @@ public class AgentInstructionManager : MonoBehaviour
             || intent == AgentIntentType.Plant
             || intent == AgentIntentType.Harvest
             || intent == AgentIntentType.Eat
+            || intent == AgentIntentType.QueryTile;
+    }
+
+    private static bool IsSupportedIntent(AgentIntentType intent)
+    {
+        return intent == AgentIntentType.Move
+            || intent == AgentIntentType.Plant
+            || intent == AgentIntentType.Harvest
+            || intent == AgentIntentType.Eat
+            || intent == AgentIntentType.QueryPosition
+            || intent == AgentIntentType.QueryToken
+            || intent == AgentIntentType.QueryInventory
+            || intent == AgentIntentType.QueryMap
             || intent == AgentIntentType.QueryTile;
     }
 
@@ -351,6 +479,28 @@ public class AgentInstructionManager : MonoBehaviour
         }
 
         return "응, 듣고 있어. 계속 이야기해줘.";
+    }
+
+    private static void LogStageTiming(string stageName, long elapsedMs, string input)
+    {
+        string preview = BuildInputPreview(input);
+        UnityEngine.Debug.Log($"[AI Timing] {stageName}: {elapsedMs}ms | input=\"{preview}\"");
+    }
+
+    private static string BuildInputPreview(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return string.Empty;
+        }
+
+        string trimmed = input.Replace('\n', ' ').Trim();
+        if (trimmed.Length <= TimingPreviewLength)
+        {
+            return trimmed;
+        }
+
+        return trimmed[..TimingPreviewLength] + "...";
     }
 
     private void OnDestroy()

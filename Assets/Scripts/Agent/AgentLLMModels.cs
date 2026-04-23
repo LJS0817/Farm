@@ -15,6 +15,7 @@ public enum AgentIntentType
     Harvest,
     Eat,
     QueryPosition,
+    QueryToken,
     QueryInventory,
     QueryMap,
     QueryTile,
@@ -120,11 +121,20 @@ public class AgentMapContextDto
 }
 
 [Serializable]
+public class AgentTokenContextDto
+{
+    public int current;
+    public int max;
+    public int questionCost;
+}
+
+[Serializable]
 public class AgentPlanningContextDto
 {
     public string intent;
     public string userInput;
     public GridPositionDto currentPosition;
+    public AgentTokenContextDto token;
     public AgentMapContextDto map;
     public AgentTileSnapshotDto currentTile;
     public GridPositionDto referencedCoordinate;
@@ -142,6 +152,7 @@ public class AgentValidationResultDto
     public string status;
     public string reasonCode;
     public GridPositionDto currentPosition;
+    public AgentTokenContextDto token;
     public GridPositionDto targetGridPos;
     public string requestedCrop;
     public string requiredItemName;
@@ -174,6 +185,7 @@ public class AgentValidationResult
             status = status.ToString(),
             reasonCode = reasonCode,
             currentPosition = currentPosition.x >= 0 && currentPosition.y >= 0 ? GridPositionDto.FromVector2Int(currentPosition) : null,
+            token = null,
             targetGridPos = targetGridPos.x >= 0 && targetGridPos.y >= 0 ? GridPositionDto.FromVector2Int(targetGridPos) : null,
             requestedCrop = requestedCrop.ToString(),
             requiredItemName = requiredItemName,

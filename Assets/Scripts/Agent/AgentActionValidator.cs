@@ -8,6 +8,7 @@ public class AgentActionValidator : MonoBehaviour
     [SerializeField] private TileManager _tileMng;
     [SerializeField] private InventoryManager _inventoryMng;
     [SerializeField] private AgentActionContextBuilder _contextBuilder;
+    [SerializeField] private TokenManager _tokenManager;
 
     private void Awake()
     {
@@ -24,6 +25,13 @@ public class AgentActionValidator : MonoBehaviour
         if (_contextBuilder == null)
         {
             _contextBuilder = GetComponent<AgentActionContextBuilder>();
+        }
+
+        if (_tokenManager == null)
+        {
+            _tokenManager = TokenManager.Instance != null
+                ? TokenManager.Instance
+                : FindFirstObjectByType<TokenManager>();
         }
     }
 
@@ -58,6 +66,10 @@ public class AgentActionValidator : MonoBehaviour
                 result.status = AgentValidationStatus.Informational;
                 result.reasonCode = "PositionInfo";
                 result.infoMessage = $"현재 위치는 ({result.currentPosition.x}, {result.currentPosition.y})입니다.";
+                break;
+
+            case AgentIntentType.QueryToken:
+                ValidateTokenQuery(result);
                 break;
 
             case AgentIntentType.QueryInventory:
@@ -109,11 +121,17 @@ public class AgentActionValidator : MonoBehaviour
             ? _contextBuilder.BuildInventoryEntries()
             : AgentLLMModelUtils.BuildInventoryEntries(_inventoryMng);
 
+        AgentTokenContextDto token = _contextBuilder != null
+            ? _contextBuilder.BuildTokenContext()
+            : BuildTokenContext();
+
         List<AgentTileSnapshotDto> visibleCrops = _contextBuilder != null
             ? _contextBuilder.BuildVisibleCropTiles()
             : new List<AgentTileSnapshotDto>();
 
-        return JsonConvert.SerializeObject(result.ToDto(inventory, visibleCrops), Formatting.Indented);
+        AgentValidationResultDto dto = result.ToDto(inventory, visibleCrops);
+        dto.token = token;
+        return JsonConvert.SerializeObject(dto, Formatting.Indented);
     }
 
     private void ValidateTileQuery(AgentValidationResult result)
@@ -130,6 +148,36 @@ public class AgentActionValidator : MonoBehaviour
         result.status = AgentValidationStatus.Informational;
         result.reasonCode = "TileInfo";
         result.infoMessage = "타일 정보를 확인했습니다.";
+    }
+
+    private void ValidateTokenQuery(AgentValidationResult result)
+    {
+        if (_tokenManager == null)
+        {
+            result.status = AgentValidationStatus.Rejected;
+            result.reasonCode = "TokenManagerMissing";
+            result.infoMessage = "지금은 토큰 정보를 확인할 수 없습니다.";
+            return;
+        }
+
+        result.status = AgentValidationStatus.Informational;
+        result.reasonCode = "TokenInfo";
+        result.infoMessage = $"현재 남은 토큰은 {_tokenManager.CurrentToken}개입니다. 최대 {_tokenManager.MaxTokenCount}개까지 보유할 수 있어요.";
+    }
+
+    private AgentTokenContextDto BuildTokenContext()
+    {
+        if (_tokenManager == null)
+        {
+            return null;
+        }
+
+        return new AgentTokenContextDto
+        {
+            current = _tokenManager.CurrentToken,
+            max = _tokenManager.MaxTokenCount,
+            questionCost = _tokenManager.QuestionTokenCost,
+        };
     }
 
     private void ValidateMove(AgentValidationResult result)

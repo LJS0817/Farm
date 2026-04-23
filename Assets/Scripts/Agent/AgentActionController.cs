@@ -3,6 +3,7 @@ using Newtonsoft.Json.Converters;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 [JsonConverter(typeof(StringEnumConverter))]
 public enum ACTION_TYPE
@@ -144,6 +145,7 @@ public class AgentActionController : MonoBehaviour
     {
         if (!_isBusy)
         {
+            UnityEngine.Debug.Log($"[AI Timing] Action.ReceiveCommands: {commands.Count} command(s)");
             _actionCoroutine = StartCoroutine(ProcessCommandsCoroutine(commands, callback));
         }
     }
@@ -159,10 +161,12 @@ public class AgentActionController : MonoBehaviour
 
     private IEnumerator ProcessCommandsCoroutine(List<AgentCommand> commands, System.Action<List<AgentCommand>> callback)
     {
+        Stopwatch totalStopwatch = Stopwatch.StartNew();
         _isBusy = true;
         for(int i = 0; i < commands.Count; i++)
         { 
             AgentCommand currentCommand = GetValidCommand(commands[i]);
+            Stopwatch commandStopwatch = Stopwatch.StartNew();
 
             switch (currentCommand.Action)
             {
@@ -179,6 +183,9 @@ public class AgentActionController : MonoBehaviour
                     yield return StartCoroutine(EatRoutine(currentCommand.Crop));
                     break;
             }
+
+            commandStopwatch.Stop();
+            UnityEngine.Debug.Log($"[AI Timing] Action.{currentCommand.Action}: {commandStopwatch.ElapsedMilliseconds}ms | command=\"{currentCommand}\"");
         }
 
         _isBusy = false;
@@ -186,6 +193,8 @@ public class AgentActionController : MonoBehaviour
 
         ChangeState(AgentState.Idle);
         ResetDirection();
+        totalStopwatch.Stop();
+        UnityEngine.Debug.Log($"[AI Timing] Action.Total: {totalStopwatch.ElapsedMilliseconds}ms | commandCount={commands.Count}");
         callback?.Invoke(commands);
     }
 

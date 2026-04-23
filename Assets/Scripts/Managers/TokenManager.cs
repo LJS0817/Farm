@@ -18,6 +18,10 @@ public class TokenManager : MonoBehaviour
     public int token = MaxToken;
     Coroutine _flashCoroutine;
 
+    public int CurrentToken => token;
+    public int MaxTokenCount => MaxToken;
+    public int QuestionTokenCost => QuestionCost;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
