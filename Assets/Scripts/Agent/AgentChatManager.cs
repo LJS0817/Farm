@@ -1,6 +1,6 @@
-using LLMUnity;
 using System;
 using System.Collections.Generic;
+using LLMUnity;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -40,33 +40,23 @@ public class ChatLog
 [DefaultExecutionOrder(-100)]
 public class AgentChatManager : MonoBehaviour
 {
-    LLM _llmController;
-    AgentInstructionManager _instructionMng;
+    // 채팅 UI 진입점입니다. 입력 수집과 말풍선 생성까지만 맡고, AI 파이프라인은 하위 매니저에 위임합니다.
+    private LLM _llmController;
+    private AgentInstructionManager _instructionMng;
 
-    [SerializeField]
-    AgentIntentClassifier _classifier;
+    [SerializeField] private TMP_InputField _inputField;
+    [SerializeField] private Button _submitButton;
+    [SerializeField] private Transform _chatHistory;
+    [SerializeField] private GameObject _chatBoxAgent;
+    [SerializeField] private GameObject _chatBoxPlayer;
 
-    [SerializeField]
-    TMP_InputField _inputField;
-    [SerializeField]
-    Button _submitButton;
-
-    [SerializeField]
-    Transform _chatHistory;
-
-    [SerializeField]
-    GameObject _chatBoxAgent;
-
-    [SerializeField]
-    GameObject _chatBoxPlayer;
-
-    void Awake()
+    private void Awake()
     {
         _instructionMng = GetComponent<AgentInstructionManager>();
         _llmController = GetComponent<LLM>();
 
-        Debug.Log(SystemInfo.operatingSystem);
-        if (SystemInfo.operatingSystem.Contains("Mac")) _llmController.numGPULayers = 0;
+       // Debug.Log(SystemInfo.operatingSystem);
+     
 
         _inputField.onSubmit.AddListener(SubmitInput);
         _submitButton.onClick.AddListener(SubmitInput);
@@ -82,17 +72,29 @@ public class AgentChatManager : MonoBehaviour
         _inputField.text = "";
         _inputField.ActivateInputField();
         _inputField.Select();
-        if (input.Length < 1 || input.Trim().Length < 1) return;
-        if (!TokenManager.Instance.TrySpendQuestionToken()) return;
 
-        GameObject obj = Instantiate(_chatBoxPlayer, _chatHistory);
-        obj.GetComponent<ChatBox>().SetText(input);
-        _classifier.GetFinalPrompt(input, (rst) =>
+        if (string.IsNullOrWhiteSpace(input))
         {
-            Debug.Log($"[라우팅 결과] AI 판별: {rst.Item2}");
+            return;
+        }
 
-            // 분류기가 완성해준 finalPrompt를 메인 AI에게 그대로 전달
-            _instructionMng.Chat(rst.Item1, rst.Item2, Instantiate(_chatBoxAgent, _chatHistory));
-        });
+        if (!TokenManager.Instance.TrySpendQuestionToken())
+        {
+            return;
+        }
+
+        GameObject playerChatBox = Instantiate(_chatBoxPlayer, _chatHistory);
+        playerChatBox.GetComponent<ChatBox>().SetText(input);
+
+        // 에이전트 말풍선은 먼저 만들어 두고, 파이프라인 진행에 따라 "생각중..." -> 최종 답변으로 갱신합니다.
+        GameObject agentChatBox = Instantiate(_chatBoxAgent, _chatHistory);
+        if (_instructionMng != null)
+        {
+            _instructionMng.HandleUserInput(input, agentChatBox);
+        }
+        else if (agentChatBox.TryGetComponent(out ChatBox chatBox))
+        {
+            chatBox.SetText("에이전트 초기화에 실패했습니다.");
+        }
     }
 }

@@ -220,8 +220,22 @@ public class AgentActionController : MonoBehaviour
         ChangeState(AgentState.Work);
         ResetDirection();
 
-        CropsData cropsData = CropManager.instance.GetCropData((int)cType - 1);
-        _inventoryMng.RemoveItem($"{cType} seeds");
+        if (CropManager.instance == null)
+        {
+            yield break;
+        }
+
+        CropsData cropsData = CropManager.instance.GetCropData(cType);
+        if (cropsData == null)
+        {
+            yield break;
+        }
+
+        string seedName = $"{cType} seeds";
+        if (!_inventoryMng.RemoveItem(seedName))
+        {
+            yield break;
+        }
 
         if (_processUI != null)
             yield return StartCoroutine(_processUI.ProcessTaskRoutine("Planting", 2f));
@@ -229,6 +243,10 @@ public class AgentActionController : MonoBehaviour
             yield return new WaitForSeconds(2f);
 
         bool success = _tileMng.PlantCrop(targetPos, cropsData);
+        if (!success)
+        {
+            _inventoryMng.AddItem(_inventoryMng.GetItemSoWithName(seedName));
+        }
     }
 
     private IEnumerator HarvestRoutine(Vector2Int targetPos)
@@ -249,12 +267,23 @@ public class AgentActionController : MonoBehaviour
         ChangeState(AgentState.Work);
         ResetDirection();
 
+        if (CropManager.instance == null)
+        {
+            yield break;
+        }
+
+        CropsData cropData = CropManager.instance.GetCropData(cType);
+        if (cropData == null || cropData.harvestItem == null)
+        {
+            yield break;
+        }
+
         if (_processUI != null)
             yield return StartCoroutine(_processUI.ProcessTaskRoutine("Eating", 1f));
         else
             yield return new WaitForSeconds(1f);
 
-        _inventoryMng.RemoveItem(CropManager.instance.GetCropData((int)cType - 1).harvestItem);
+        _inventoryMng.RemoveItem(cropData.harvestItem);
     }
 
 

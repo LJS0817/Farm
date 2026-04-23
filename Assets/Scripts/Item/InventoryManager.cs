@@ -53,6 +53,31 @@ public class InventoryManager : MonoBehaviour
 
     public ItemSO GetItemSoWithName(string iName) { return _items.GetValueOrDefault(iName); }
 
+    public int GetItemCount(string itemName)
+    {
+        ItemSO item = GetItemSoWithName(itemName);
+        return GetItemCount(item);
+    }
+
+    public int GetItemCount(ItemSO item)
+    {
+        if (item == null)
+        {
+            return 0;
+        }
+
+        int totalCount = 0;
+        foreach (InventorySlot slot in slots)
+        {
+            if (!slot.IsEmpty && slot.item == item)
+            {
+                totalCount += slot.count;
+            }
+        }
+
+        return totalCount;
+    }
+
     // 아이템을 기존 스택 또는 빈 슬롯에 추가한다.
     public bool AddItem(ItemSO item, int amount = 1)
     {
@@ -122,16 +147,12 @@ public class InventoryManager : MonoBehaviour
 
     public bool HasItem(ItemSO item, int amount = 1)
     {
-        int totalCount = 0;
-        foreach (InventorySlot slot in slots)
-        {
-            if (!slot.IsEmpty && slot.item == item)
-            {
-                totalCount += slot.count;
-                if (totalCount >= amount) return true;
-            }
-        }
-        return false;
+        return GetItemCount(item) >= amount;
+    }
+
+    public bool HasItem(string itemName, int amount = 1)
+    {
+        return HasItem(GetItemSoWithName(itemName), amount);
     }
 
     public bool RemoveItem(string itemName) { return RemoveItem(GetItemSoWithName(itemName)); }

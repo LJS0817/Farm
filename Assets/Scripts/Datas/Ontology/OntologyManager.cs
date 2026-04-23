@@ -72,6 +72,11 @@ public class OntologyManager : MonoBehaviour
         return _ontologyData != null;
     }
 
+    public OntologyData GetOntologyData()
+    {
+        return _ontologyData;
+    }
+
     public string BuildEnhancedPrompt(string userQuestion)
     {
         if (string.IsNullOrWhiteSpace(userQuestion))
