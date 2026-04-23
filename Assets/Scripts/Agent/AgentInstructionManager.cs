@@ -12,13 +12,11 @@ public class AgentInstructionManager : MonoBehaviour
     AgentActionController _actionController;
 
     [SerializeField]
-    LLMCharacter _agent;
-    ChatBox _curChatBoxAgent;
-
-    string _instruction;
-    string _answer;
+    LLMAgent _agent;
 
     const string _errorMsg = "죄송합니다. 알아듣지 못했습니다.";
+
+    bool _isShuttingDown;
 
     private void Start()
     {
@@ -26,22 +24,6 @@ public class AgentInstructionManager : MonoBehaviour
         _feedback = GetComponent<AgentFeedbackManager>();
         _actionController = GetComponent<AgentActionController>();
         
-        _instruction = "";
-        _answer = "";
-    }
-
-    void HandleReply(string replySoFar)
-    {
-        _answer = replySoFar;
-        //_curChatBoxAgent.SetText(_answer);
-    }
-
-    void ReplyCompleted()
-    {
-        string answer = _actor.ParseLLMResponse(_answer);
-        _curChatBoxAgent.SetText(answer);
-        _curChatBoxAgent = null;
-        _answer = "";
     }
 
     //public void Chat(string input, string finalInput, GameObject agentChatBox)
@@ -49,10 +31,20 @@ public class AgentInstructionManager : MonoBehaviour
     //    Chat(input, finalInput, agentChatBox, true);
     //}
 
-    public void Chat(string input, string finalInput, GameObject agentChatBox, bool useOntology=true)
+    public async void Chat(string input, string finalInput, GameObject agentChatBox, bool useOntology=true)
     {
-        _instruction = input;
+        if (_isShuttingDown || _agent == null || agentChatBox == null)
+        {
+            return;
+        }
+
         string prompt = finalInput;
+        ChatBox chatBox = agentChatBox.GetComponent<ChatBox>();
+        if (chatBox == null)
+        {
+            Debug.LogWarning("[AgentInstructionManager] Agent chat box is missing ChatBox component.", this);
+            return;
+        }
 
         if (useOntology && OntologyManager.Instance != null)
         {
@@ -60,14 +52,37 @@ public class AgentInstructionManager : MonoBehaviour
             Debug.Log("온톨로지 접근");
         }
 
-        _agent.Chat(prompt, HandleReply, ReplyCompleted);
+        chatBox.SetText("생각중...");
 
-        _curChatBoxAgent = agentChatBox.GetComponent<ChatBox>();
-        _curChatBoxAgent.SetText("생각중...");
+        string answerJson = "";
+        try
+        {
+            answerJson = await _agent.Chat(prompt, replySoFar =>
+            {
+                answerJson = replySoFar;
+            });
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[AgentInstructionManager] LLM request failed: {ex.Message}", this);
+        }
+
+        if (_isShuttingDown || chatBox == null)
+        {
+            return;
+        }
+
+        string answer = _actor.ParseLLMResponse(input, answerJson);
+        chatBox.SetText(answer);
     }
 
-    public string ParseLLMResponse(string jsonString)
+    public string ParseLLMResponse(string instruction, string jsonString)
     {
+        if (string.IsNullOrWhiteSpace(jsonString))
+        {
+            return _errorMsg;
+        }
+
         jsonString = jsonString.Replace("```json", "").Replace("```", "").Trim();
 
         try
@@ -75,18 +90,18 @@ public class AgentInstructionManager : MonoBehaviour
             AgentResponse response = JsonConvert.DeserializeObject<AgentResponse>(jsonString);
             if (response != null)
             {
-                if (response.answer.Equals("")) return _errorMsg;
+                if (string.IsNullOrEmpty(response.answer)) return _errorMsg;
                 if (response.commands != null && response.commands.Count > 0)
                 {
                     _actionController.ReceiveCommands(response.commands, (List<AgentCommand> cmd) =>
                     {
-                        _feedback.ShowFeedbackUI(new ChatLog(_instruction, new AgentResponse(response.answer, cmd)));
+                        _feedback.ShowFeedbackUI(new ChatLog(instruction, new AgentResponse(response.answer, cmd)));
                     });
                 }
                 else
                 {
                     // 대화 시 대화 내용 서버 전송
-                    APIController.Chat.SendLog(new ChatLog(_instruction, new AgentResponse(response.answer, new List<AgentCommand>(0))),
+                    APIController.Chat.SendLog(new ChatLog(instruction, new AgentResponse(response.answer, new List<AgentCommand>(0))),
                         onSuccess: (response) =>
                         {
                             Debug.Log($"저장 성공: {response.message}");
@@ -107,5 +122,22 @@ public class AgentInstructionManager : MonoBehaviour
             Debug.Log(ex);
             return _errorMsg;
         }
+    }
+
+    private void OnDestroy()
+    {
+        Shutdown();
+    }
+
+    void Shutdown()
+    {
+        if (_isShuttingDown) return;
+        _isShuttingDown = true;
+        _agent?.CancelRequests();
+    }
+
+    private void OnApplicationQuit()
+    {
+        Shutdown();
     }
 }

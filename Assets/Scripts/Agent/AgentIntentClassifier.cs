@@ -7,32 +7,64 @@ using UnityEngine;
 public class AgentIntentClassifier : MonoBehaviour
 {
     [SerializeField]
-    LLMCharacter classifierLLM;
+    LLMAgent classifierLLM;
     [SerializeField]
     TileManager _tileMng;
     [SerializeField]
     InventoryManager _inventoryMng;
 
+    bool _isShuttingDown;
+
     /// <summary>
     /// 유저 입력을 분석하고 필요한 데이터를 붙여 완성된 프롬프트 문자열을 반환합니다.
     /// </summary>
-    public void GetFinalPrompt(string userInput, Action<(string input, string finalInput)> onPromptReady)
+    public async void GetFinalPrompt(string userInput, Action<(string input, string finalInput)> onPromptReady)
     {
-        classifierLLM.ClearHistory();
+        if (_isShuttingDown || classifierLLM == null)
+        {
+            onPromptReady?.Invoke((userInput, userInput));
+            return;
+        }
 
-        string currentReply = "";
-        classifierLLM.Chat(
-            userInput,
-            (reply) => { currentReply = reply; },
-            () =>
+        try
+        {
+            await classifierLLM.ClearHistory();
+
+            string currentReply = await classifierLLM.Chat(userInput);
+            if (_isShuttingDown) return;
+
+            string finalPrompt = BuildPrompt(userInput, currentReply);
+
+            await classifierLLM.ClearHistory();
+            if (_isShuttingDown) return;
+
+            onPromptReady?.Invoke((userInput, finalPrompt));
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[AgentIntentClassifier] LLM request failed: {ex.Message}", this);
+            if (!_isShuttingDown)
             {
-                // 판별이 끝나면 문자열 조립 후 콜백으로 바로 전달
-                string finalPrompt = BuildPrompt(userInput, currentReply);
-
-                classifierLLM.ClearHistory();
-                onPromptReady?.Invoke((userInput, finalPrompt));
+                onPromptReady?.Invoke((userInput, userInput));
             }
-        );
+        }
+    }
+
+    private void OnDestroy()
+    {
+        Shutdown();
+    }
+
+    void Shutdown()
+    {
+        if (_isShuttingDown) return;
+        _isShuttingDown = true;
+        classifierLLM?.CancelRequests();
+    }
+
+    private void OnApplicationQuit()
+    {
+        Shutdown();
     }
 
     private string BuildPrompt(string userInput, string rawResult)
