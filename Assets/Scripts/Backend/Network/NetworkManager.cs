@@ -22,6 +22,8 @@ public class ServerResponse
 
 public class NetworkManager : MonoBehaviour
 {
+    private const string AccessTokenPlayerPrefsKey = "backend.accessToken";
+
     // 1. 어디서든 접근 가능한 싱글톤 인스턴스
     private static NetworkManager _instance;
     public static NetworkManager Instance
@@ -40,6 +42,7 @@ public class NetworkManager : MonoBehaviour
     }
 
     PlayerId _playerId;
+    private string _accessToken = string.Empty;
 
     private void Awake()
     {
@@ -51,10 +54,28 @@ public class NetworkManager : MonoBehaviour
         }
         _instance = this;
         _playerId = new PlayerId();
+        _accessToken = PlayerPrefs.GetString(AccessTokenPlayerPrefsKey, string.Empty);
         DontDestroyOnLoad(this.gameObject);
     }
 
     public PlayerId GetPlayerId() { return _playerId; }
+    public string GetAccessToken() { return _accessToken; }
+
+    public void SetAccessToken(string accessToken)
+    {
+        _accessToken = accessToken ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(_accessToken))
+        {
+            PlayerPrefs.DeleteKey(AccessTokenPlayerPrefsKey);
+        }
+        else
+        {
+            PlayerPrefs.SetString(AccessTokenPlayerPrefsKey, _accessToken);
+        }
+
+        PlayerPrefs.Save();
+    }
 
     // -------------------------------------------------------------
     // GET 요청 (T: 서버로부터 받을 응답 클래스 타입)

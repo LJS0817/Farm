@@ -5,13 +5,14 @@ public static class APIConfig
     {
         get
         {
-            return "http://3.35.9.49/api/v1";
+            return "http://3.39.195.237/api/v1";
         }
     }
 
     public static class User
     {
         public static string Login => $"{BaseUrl}/game/auth/test-login";
+        public static string SteamLogin => $"{BaseUrl}/game/auth/steam";
 
         //public static string Profile(int userId) => $"{BaseUrl}/user/profile/{userId}";
     }

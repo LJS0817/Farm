@@ -653,6 +653,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dontDestroyOnLoad: 1
+  requestWebApiTicketOnInitialize: 1
+  loginToBackendOnTicketReceived: 1
+  webApiIdentity: farmverse
 --- !u!4 &65268005
 Transform:
   m_ObjectHideFlags: 0
@@ -12758,7 +12761,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8983031945290737577, guid: 0027937279f75254381ba3f10063ceb8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.00035095215
+      value: 0.00039672852
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 9065562917122220410, guid: 0027937279f75254381ba3f10063ceb8, type: 3}
@@ -21251,6 +21254,7 @@ MonoBehaviour:
   _contextBuilder: {fileID: 1671378092}
   _validator: {fileID: 1671378091}
   _actionPlanningSystemPrompt: 
+  _conversationSystemPrompt: 
 --- !u!114 &1671378088
 MonoBehaviour:
   m_ObjectHideFlags: 0
