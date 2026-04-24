@@ -103,7 +103,7 @@ public class ChatFeedback : MonoBehaviour
         // 초기화 및 UI 끄기
         _slider.value = 1f;
         UpdateTimerText((int)_limitSlierTime);
-        if(_chat != null)
+        if(_chat != null && flag != 0)
         {
             APIController.Chat.SendLog(_chat, (response) =>
                 {

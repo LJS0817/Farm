@@ -13,9 +13,11 @@ public class SteamService : MonoBehaviour
     public static SteamService Instance { get; private set; }
 
     [SerializeField] private bool dontDestroyOnLoad = true;
+#pragma warning disable 0414
     [SerializeField] private bool requestWebApiTicketOnInitialize = true;
     [SerializeField] private bool loginToBackendOnTicketReceived = true;
     [SerializeField] private string webApiIdentity = DefaultWebApiIdentity;
+#pragma warning restore 0414
 
     public bool IsInitialized { get; private set; }
     public string SteamId { get; private set; } = string.Empty;
@@ -291,6 +293,7 @@ public class SteamService : MonoBehaviour
                 }
 
                 NetworkManager.Instance.SetAccessToken(response.accessToken);
+                NetworkManager.Instance.SetSessionId(response.sessionId);
                 Debug.Log(
                     $"Steam backend login success. appUserId={response.appUserId}, steamId={response.steamId}, displayName={response.displayName}");
             },

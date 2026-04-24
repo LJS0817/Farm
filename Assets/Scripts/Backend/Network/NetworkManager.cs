@@ -23,6 +23,7 @@ public class ServerResponse
 public class NetworkManager : MonoBehaviour
 {
     private const string AccessTokenPlayerPrefsKey = "backend.accessToken";
+    private const string SessionIdPlayerPrefsKey = "backend.sessionId";
 
     // 1. 어디서든 접근 가능한 싱글톤 인스턴스
     private static NetworkManager _instance;
@@ -55,6 +56,7 @@ public class NetworkManager : MonoBehaviour
         _instance = this;
         _playerId = new PlayerId();
         _accessToken = PlayerPrefs.GetString(AccessTokenPlayerPrefsKey, string.Empty);
+        _playerId.sessionId = PlayerPrefs.GetString(SessionIdPlayerPrefsKey, _playerId.sessionId);
         DontDestroyOnLoad(this.gameObject);
     }
 
@@ -77,18 +79,35 @@ public class NetworkManager : MonoBehaviour
         PlayerPrefs.Save();
     }
 
+    public void SetSessionId(string sessionId)
+    {
+        _playerId.sessionId = string.IsNullOrWhiteSpace(sessionId) ? string.Empty : sessionId.Trim();
+
+        if (string.IsNullOrWhiteSpace(_playerId.sessionId))
+        {
+            PlayerPrefs.DeleteKey(SessionIdPlayerPrefsKey);
+        }
+        else
+        {
+            PlayerPrefs.SetString(SessionIdPlayerPrefsKey, _playerId.sessionId);
+        }
+
+        PlayerPrefs.Save();
+    }
+
     // -------------------------------------------------------------
     // GET 요청 (T: 서버로부터 받을 응답 클래스 타입)
     // -------------------------------------------------------------
-    public void Get<T>(string url, Action<T> onSuccess, Action<string> onError = null)
+    public void Get<T>(string url, Action<T> onSuccess, Action<string> onError = null, bool includeAuthHeader = false)
     {
-        StartCoroutine(GetRoutine(url, onSuccess, onError));
+        StartCoroutine(GetRoutine(url, onSuccess, onError, includeAuthHeader));
     }
 
-    private IEnumerator GetRoutine<T>(string url, Action<T> onSuccess, Action<string> onError)
+    private IEnumerator GetRoutine<T>(string url, Action<T> onSuccess, Action<string> onError, bool includeAuthHeader)
     {
         using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
+            AddAuthorizationHeaderIfNeeded(request, includeAuthHeader);
             yield return request.SendWebRequest();
 
             if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
@@ -114,12 +133,12 @@ public class NetworkManager : MonoBehaviour
     // -------------------------------------------------------------
     // POST 요청 (TReq: 보낼 데이터 타입, TRes: 받을 데이터 타입)
     // -------------------------------------------------------------
-    public void Post<TReq, TRes>(string url, TReq requestData, Action<TRes> onSuccess, Action<string> onError = null)
+    public void Post<TReq, TRes>(string url, TReq requestData, Action<TRes> onSuccess, Action<string> onError = null, bool includeAuthHeader = false)
     {
-        StartCoroutine(PostRoutine(url, requestData, onSuccess, onError));
+        StartCoroutine(PostRoutine(url, requestData, onSuccess, onError, includeAuthHeader));
     }
 
-    private IEnumerator PostRoutine<TReq, TRes>(string url, TReq requestData, Action<TRes> onSuccess, Action<string> onError)
+    private IEnumerator PostRoutine<TReq, TRes>(string url, TReq requestData, Action<TRes> onSuccess, Action<string> onError, bool includeAuthHeader)
     {
         // C# 객체를 JSON 문자열로 자동 직렬화
         string jsonData = JsonConvert.SerializeObject(requestData);
@@ -130,6 +149,7 @@ public class NetworkManager : MonoBehaviour
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
+            AddAuthorizationHeaderIfNeeded(request, includeAuthHeader);
 
             yield return request.SendWebRequest();
 
@@ -151,5 +171,15 @@ public class NetworkManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    private void AddAuthorizationHeaderIfNeeded(UnityWebRequest request, bool includeAuthHeader)
+    {
+        if (!includeAuthHeader || string.IsNullOrWhiteSpace(_accessToken))
+        {
+            return;
+        }
+
+        request.SetRequestHeader("Authorization", $"Bearer {_accessToken}");
     }
 }

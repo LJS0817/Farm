@@ -25,29 +25,37 @@ public static class APIController
 
     public static class Chat
     {
-        public static void SendLog(ChatLog log, Action<ServerResponse> onSuccess)
+        public static void SendLog(ChatLog log, Action<ServerResponse> onSuccess, Action<string> onError = null)
         {
             PlayerId pId = NetworkManager.Instance.GetPlayerId();
-            object requestData = new
+            ConversationLogRequest requestData = new ConversationLogRequest
             {
-                userId = pId.userId,
                 sessionId = pId.sessionId,
                 userCommand = log.userCommand,
                 aiReply = log.aiReply,
-                commands = log.commands
+                commands = log.commands,
+                flag = log.flag
             };
 
-            Debug.Log(JsonConvert.SerializeObject(requestData));
-
-            //NetworkManager.Instance.Post<object, ServerResponse>(
-            //    url: APIConfig.LLM.SendChatLog,
-            //    requestData: requestData,
-            //    onSuccess,
-            //    onError: (errorMsg) =>
-            //    {
-            //        Debug.LogError($"통신 실패: {errorMsg}");
-            //    }
-            //);
+#if UNITY_EDITOR
+            Debug.Log($"[Editor Only] Skip POST {APIConfig.LLM.SendChatLog}\n{JsonConvert.SerializeObject(requestData, Formatting.Indented)}");
+            onSuccess?.Invoke(new ServerResponse
+            {
+                id = "editor-preview",
+                message = "Editor mode: conversation log request skipped."
+            });
+#else
+            NetworkManager.Instance.Post<ConversationLogRequest, ServerResponse>(
+                url: APIConfig.LLM.SendChatLog,
+                requestData: requestData,
+                onSuccess,
+                onError ?? (errorMsg =>
+                {
+                    Debug.LogError($"대화 로그 전송 실패: {errorMsg}");
+                }),
+                includeAuthHeader: true
+            );
+#endif
         }
     }
 
@@ -73,6 +81,16 @@ public static class APIController
             Action<SnapshotUploadResponse> onSuccess,
             Action<string> onError = null)
         {
+#if UNITY_EDITOR
+            Debug.Log($"[Editor Only] Skip POST {APIConfig.Game.Snapshots}\n{JsonConvert.SerializeObject(snapshot, Formatting.Indented)}");
+            onSuccess?.Invoke(new SnapshotUploadResponse
+            {
+                id = "editor-preview",
+                userId = snapshot.userId,
+                createdAt = DateTime.UtcNow.ToString("o"),
+                tileCount = snapshot.tiles != null ? snapshot.tiles.Length : 0
+            });
+#else
             NetworkManager.Instance.Post<GameStateSnapshot, SnapshotUploadResponse>(
                 url: APIConfig.Game.Snapshots,
                 requestData: snapshot,
@@ -80,8 +98,10 @@ public static class APIController
                 onError ?? (errorMsg =>
                 {
                     Debug.LogError($"스냅샷 업로드 실패: {errorMsg}");
-                })
+                }),
+                includeAuthHeader: true
             );
+#endif
         }
     }
 
@@ -113,4 +133,14 @@ public class SteamAuthResponse
     public string steamId;
     public string displayName;
     public string sessionId;
+}
+
+[Serializable]
+public class ConversationLogRequest
+{
+    public string sessionId;
+    public string userCommand;
+    public string aiReply;
+    public System.Collections.Generic.List<AgentCommand> commands;
+    public int flag;
 }
