@@ -13,7 +13,7 @@ public static class APIController
         {
             // Steam 티켓을 백엔드에 보내 JWT accessToken을 발급받는다.
             NetworkManager.Instance.Post<SteamAuthRequest, SteamAuthResponse>(
-                url: APIConfig.User.SteamLogin,
+                urlFactory: () => APIConfig.User.SteamLogin,
                 requestData: request,
                 onSuccess,
                 onError ?? (errorMsg =>
@@ -47,7 +47,7 @@ public static class APIController
             });
 #else
             NetworkManager.Instance.Post<ConversationLogRequest, ServerResponse>(
-                url: APIConfig.LLM.SendChatLog,
+                urlFactory: () => APIConfig.LLM.SendChatLog,
                 requestData: requestData,
                 onSuccess,
                 onError ?? (errorMsg =>
@@ -65,7 +65,7 @@ public static class APIController
         public static void Check(Action<HealthCheckResponse> onSuccess, Action<string> onError = null)
         {
             NetworkManager.Instance.Get<HealthCheckResponse>(
-                url: APIConfig.Health.Check,
+                urlFactory: () => APIConfig.Health.Check,
                 onSuccess,
                 onError ?? (errorMsg =>
                 {
@@ -84,7 +84,7 @@ public static class APIController
         {
             // 저장 요청은 accessToken 인증과 함께 현재 게임 상태를 업로드한다.
             NetworkManager.Instance.Post<GameSnapshotSaveRequest, SnapshotUploadResponse>(
-                url: APIConfig.Game.Snapshots,
+                urlFactory: () => APIConfig.Game.Snapshots,
                 requestData: snapshot,
                 onSuccess,
                 onError ?? (errorMsg =>
@@ -102,7 +102,7 @@ public static class APIController
         {
             // 최신 저장본 1개를 가져와 현재 씬 상태를 복원하는 데 사용한다.
             NetworkManager.Instance.Get<LatestSnapshotResponse>(
-                url: APIConfig.Game.LatestSnapshot,
+                urlFactory: () => APIConfig.Game.LatestSnapshot,
                 onSuccess,
                 onError ?? (errorMsg =>
                 {

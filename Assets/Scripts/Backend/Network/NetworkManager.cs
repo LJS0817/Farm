@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
@@ -22,6 +23,12 @@ public class ServerResponse
 
 public class NetworkManager : MonoBehaviour
 {
+    [Serializable]
+    private class RemoteConfigPayload
+    {
+        public string apiBaseUrl;
+    }
+
     public GameObject connectLoadingUI;
     [SerializeField] private int requestTimeoutSeconds = 15;
     private const string AccessTokenPlayerPrefsKey = "backend.accessToken";
@@ -48,6 +55,8 @@ public class NetworkManager : MonoBehaviour
     PlayerId _playerId;
     private string _accessToken = string.Empty;
     private int _pendingRequestCount;
+    private bool _isApiConfigLoaded;
+    private bool _isApiConfigLoading;
 
     private void Awake()
     {
@@ -59,6 +68,7 @@ public class NetworkManager : MonoBehaviour
         }
         _instance = this;
         _playerId = new PlayerId();
+        APIConfig.InitializeFromCache();
         _accessToken = PlayerPrefs.GetString(AccessTokenPlayerPrefsKey, string.Empty);
         _playerId.userId = PlayerPrefs.GetString(UserIdPlayerPrefsKey, ResolveDefaultUserId());
         _playerId.sessionId = PlayerPrefs.GetString(SessionIdPlayerPrefsKey, _playerId.sessionId);
@@ -135,11 +145,19 @@ public class NetworkManager : MonoBehaviour
     public void Get<T>(string url, Action<T> onSuccess, Action<string> onError = null, bool includeAuthHeader = false, bool showLoadingUI = false)
     {
         // 요청별로 인증 헤더 사용 여부와 로딩 UI 노출 여부를 선택할 수 있다.
-        StartCoroutine(GetRoutine(url, onSuccess, onError, includeAuthHeader, showLoadingUI));
+        StartCoroutine(GetRoutine(() => url, onSuccess, onError, includeAuthHeader, showLoadingUI));
     }
 
-    private IEnumerator GetRoutine<T>(string url, Action<T> onSuccess, Action<string> onError, bool includeAuthHeader, bool showLoadingUI)
+    public void Get<T>(Func<string> urlFactory, Action<T> onSuccess, Action<string> onError = null, bool includeAuthHeader = false, bool showLoadingUI = false)
     {
+        StartCoroutine(GetRoutine(urlFactory, onSuccess, onError, includeAuthHeader, showLoadingUI));
+    }
+
+    private IEnumerator GetRoutine<T>(Func<string> urlFactory, Action<T> onSuccess, Action<string> onError, bool includeAuthHeader, bool showLoadingUI)
+    {
+        yield return EnsureApiConfigLoaded();
+        string url = urlFactory != null ? urlFactory.Invoke() : string.Empty;
+
         // SaveData/GetData처럼 명시적으로 요청한 경우에만 전체 로딩 UI를 켠다.
         if (showLoadingUI)
         {
@@ -187,11 +205,19 @@ public class NetworkManager : MonoBehaviour
     public void Post<TReq, TRes>(string url, TReq requestData, Action<TRes> onSuccess, Action<string> onError = null, bool includeAuthHeader = false, bool showLoadingUI = false)
     {
         // POST도 GET과 같은 규칙으로 인증/로딩 UI를 제어한다.
-        StartCoroutine(PostRoutine(url, requestData, onSuccess, onError, includeAuthHeader, showLoadingUI));
+        StartCoroutine(PostRoutine(() => url, requestData, onSuccess, onError, includeAuthHeader, showLoadingUI));
     }
 
-    private IEnumerator PostRoutine<TReq, TRes>(string url, TReq requestData, Action<TRes> onSuccess, Action<string> onError, bool includeAuthHeader, bool showLoadingUI)
+    public void Post<TReq, TRes>(Func<string> urlFactory, TReq requestData, Action<TRes> onSuccess, Action<string> onError = null, bool includeAuthHeader = false, bool showLoadingUI = false)
     {
+        StartCoroutine(PostRoutine(urlFactory, requestData, onSuccess, onError, includeAuthHeader, showLoadingUI));
+    }
+
+    private IEnumerator PostRoutine<TReq, TRes>(Func<string> urlFactory, TReq requestData, Action<TRes> onSuccess, Action<string> onError, bool includeAuthHeader, bool showLoadingUI)
+    {
+        yield return EnsureApiConfigLoaded();
+        string url = urlFactory != null ? urlFactory.Invoke() : string.Empty;
+
         // C# 객체를 JSON 문자열로 자동 직렬화
         string jsonData = JsonConvert.SerializeObject(requestData);
         if (showLoadingUI)
@@ -302,5 +328,89 @@ public class NetworkManager : MonoBehaviour
             Debug.LogError($"[NetworkManager] Success callback threw an exception: {exception}");
             TryInvokeErrorCallback(onError, $"Success callback exception: {exception.Message}");
         }
+    }
+
+    private IEnumerator EnsureApiConfigLoaded()
+    {
+        if (_isApiConfigLoaded)
+        {
+            yield break;
+        }
+
+        while (_isApiConfigLoading)
+        {
+            yield return null;
+        }
+
+        if (_isApiConfigLoaded)
+        {
+            yield break;
+        }
+
+        _isApiConfigLoading = true;
+
+        try
+        {
+            using (UnityWebRequest request = UnityWebRequest.Get(APIConfig.RemoteConfigUrl))
+            {
+                request.timeout = Mathf.Max(1, requestTimeoutSeconds);
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    string resolvedBaseUrl = TryResolveRemoteBaseUrl(request.downloadHandler.text);
+
+                    if (!string.IsNullOrWhiteSpace(resolvedBaseUrl))
+                    {
+                        APIConfig.SetRuntimeBaseUrl(resolvedBaseUrl, persistToCache: true);
+                        Debug.Log($"[NetworkManager] Loaded API base URL from remote config: {APIConfig.CurrentBaseUrl}");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[NetworkManager] Remote config did not contain a valid apiBaseUrl. Using cached/default base URL.");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning($"[NetworkManager] Failed to load remote API config: {request.error}. Using cached/default base URL: {APIConfig.CurrentBaseUrl}");
+                }
+            }
+        }
+        finally
+        {
+            _isApiConfigLoaded = true;
+            _isApiConfigLoading = false;
+        }
+    }
+
+    private string TryResolveRemoteBaseUrl(string rawConfigText)
+    {
+        if (string.IsNullOrWhiteSpace(rawConfigText))
+        {
+            return null;
+        }
+
+        string trimmed = rawConfigText.Trim();
+
+        try
+        {
+            RemoteConfigPayload payload = JsonConvert.DeserializeObject<RemoteConfigPayload>(trimmed);
+            if (!string.IsNullOrWhiteSpace(payload?.apiBaseUrl))
+            {
+                return payload.apiBaseUrl;
+            }
+        }
+        catch (Exception exception)
+        {
+            Debug.LogWarning($"[NetworkManager] Failed to parse remote config JSON directly: {exception.Message}");
+        }
+
+        Match match = Regex.Match(trimmed, "\"apiBaseUrl\"\\s*:\\s*\"?(?<value>[^\"\\s,}\\]]+)\"?");
+        if (match.Success)
+        {
+            return match.Groups["value"].Value;
+        }
+
+        return null;
     }
 }
