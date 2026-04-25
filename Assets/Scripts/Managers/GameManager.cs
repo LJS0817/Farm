@@ -5,6 +5,7 @@ public class GameManager : MonoBehaviour
     public RectTransform menu;
     public GameObject title_Tile;
     public GameObject title_Menu;
+    public FarmLevelManager userInfo;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -18,6 +19,7 @@ public class GameManager : MonoBehaviour
     }
     public void GameStart()
     {
+        userInfo.OpenUI();
         menu.anchoredPosition = new Vector2(0, 60);
         title_Tile.SetActive(false);
         title_Menu.SetActive(false);

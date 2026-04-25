@@ -83,6 +83,13 @@ public class MiddleDB : MonoBehaviour
         isInitialized = true;
     }
 
+    public void ResetToDefaultState()
+    {
+        isInitialized = false;
+        tileStates = new TileState[0];
+        EnsureInitialized();
+    }
+
     // 좌표가 현재 맵 범위 안에 있는지 검사한다.
     public bool IsInBounds(Vector2Int coord)
     {
@@ -123,6 +130,38 @@ public class MiddleDB : MonoBehaviour
 
         state = tileStates[tileId];
         return state != null;
+    }
+
+    public void LoadTileStates(TileStateDto[] snapshotTiles)
+    {
+        EnsureInitialized();
+
+        if (snapshotTiles == null)
+        {
+            return;
+        }
+
+        foreach (TileStateDto tileDto in snapshotTiles)
+        {
+            if (tileDto == null || !TryGetTileStateById(tileDto.id, out TileState state) || state == null)
+            {
+                continue;
+            }
+
+            state.id = tileDto.id;
+            state.coord = new Vector2Int(tileDto.id % width, tileDto.id / width);
+           // state.tileType = ParseEnum(tileDto.tileType, TileData.TileType.Soil);
+            state.cropType = ParseEnum(tileDto.cropType, TileData.CropType.IsEmpty);
+            state.cropState = ParseEnum(tileDto.cropState, TileData.CropState.IsEmpty);
+            state.variantIndex = tileDto.variantIndex;
+            state.isFarmable = ComputeIsFarmable(state.tileType, state.cropType, state.cropState);
+
+            if (state.cropState != TileData.CropState.IsGrowing)
+            {
+                state.growDuration = 0f;
+                state.maxTime = 0f;
+            }
+        }
     }
 
     // public void CacheTile(TileData tileData)

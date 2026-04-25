@@ -294,6 +294,20 @@ public class SteamService : MonoBehaviour
 
                 NetworkManager.Instance.SetAccessToken(response.accessToken);
                 NetworkManager.Instance.SetSessionId(response.sessionId);
+                string resolvedUserId = !string.IsNullOrWhiteSpace(response.appUserId)
+                    ? response.appUserId
+                    : response.steamId;
+                NetworkManager.Instance.SetUserId(resolvedUserId);
+
+                if (!string.IsNullOrWhiteSpace(NetworkManager.Instance.GetAccessToken()))
+                {
+                    GameStateAssembler gameStateAssembler = FindFirstObjectByType<GameStateAssembler>();
+                    if (gameStateAssembler != null)
+                    {
+                        gameStateAssembler.GetData();
+                    }
+                }
+
                 Debug.Log(
                     $"Steam backend login success. appUserId={response.appUserId}, steamId={response.steamId}, displayName={response.displayName}");
             },

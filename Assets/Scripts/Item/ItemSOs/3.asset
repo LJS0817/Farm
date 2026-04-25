@@ -14,7 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 3
   itemName: Cherry seeds
-  itemType: 1
+  itemType: 0
   icon: {fileID: 8920278682971026065, guid: e8e88390daf595d4bbc1f609e315824e, type: 3}
   stackable: 1
   maxStack: 99
+  buyPrice: 150
+  sellPrice: 0
+  canBuy: 1
+  canSell: 0

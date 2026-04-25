@@ -53,6 +53,19 @@ public class InventoryManager : MonoBehaviour
 
     public ItemSO GetItemSoWithName(string iName) { return _items.GetValueOrDefault(iName); }
 
+    public ItemSO GetItemSoWithId(int itemId)
+    {
+        foreach (ItemSO item in itemDatabase)
+        {
+            if (item != null && item.itemId == itemId)
+            {
+                return item;
+            }
+        }
+
+        return null;
+    }
+
     public int GetItemCount(string itemName)
     {
         ItemSO item = GetItemSoWithName(itemName);
@@ -222,5 +235,37 @@ public class InventoryManager : MonoBehaviour
         }
 
         return string.Join("\n", lines);
+    }
+
+    public void LoadInventory(InventoryItemDto[] items)
+    {
+        InitializeSlots();
+
+        foreach (InventorySlot slot in slots)
+        {
+            slot?.Clear();
+        }
+
+        if (items != null)
+        {
+            foreach (InventoryItemDto dto in items)
+            {
+                if (dto == null || dto.count <= 0)
+                {
+                    continue;
+                }
+
+                ItemSO item = GetItemSoWithId(dto.itemId);
+                if (item == null)
+                {
+                    Debug.LogWarning($"[InventoryManager] LoadInventory skipped unknown itemId: {dto.itemId}.", this);
+                    continue;
+                }
+
+                AddItem(item, dto.count);
+            }
+        }
+
+        RefreshUI();
     }
 }

@@ -19,6 +19,6 @@ MonoBehaviour:
   stackable: 1
   maxStack: 99
   buyPrice: 0
-  sellPrice: 0
+  sellPrice: 500
   canBuy: 0
-  canSell: 0
+  canSell: 1

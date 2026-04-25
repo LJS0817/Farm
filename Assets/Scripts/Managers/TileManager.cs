@@ -7,6 +7,7 @@ using UnityEngine;
 public class TileManager : MonoBehaviour
 {
     [SerializeField] private MiddleDB middleDB;
+    [SerializeField] private FarmLevelManager farmLevelManager;
     [SerializeField] private GameObject tilePrefab;
     [SerializeField] private Transform tileRoot;
     [SerializeField] private Sprite soilSprite;
@@ -36,6 +37,11 @@ public class TileManager : MonoBehaviour
         {
             Debug.LogError("MiddleDB reference is missing.", this);
             return;
+        }
+
+        if (farmLevelManager == null)
+        {
+            farmLevelManager = FindFirstObjectByType<FarmLevelManager>();
         }
 
         middleDB.EnsureInitialized();
@@ -361,6 +367,12 @@ public class TileManager : MonoBehaviour
         if (tileView != null)
         {
             tileView.Refresh();
+        }
+
+        if (farmLevelManager != null)
+        {
+            int gainedExp = Mathf.Max(0, cropData.harvestItem.sellPrice * harvestAmount / 10);
+            farmLevelManager.GainFarmExp(gainedExp);
         }
 
         return true;

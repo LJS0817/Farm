@@ -8,11 +8,12 @@ using Newtonsoft.Json;
 // 서버 전송용 스냅샷 하나로 조립하는 역할을 담당한다.
 public class GameStateAssembler : MonoBehaviour
 {
-    private const string DefaultTestUserId = "test-user";
-
     [SerializeField] private MiddleDB middleDB;
     [SerializeField] private InventoryManager inventoryManager;
     [SerializeField] private TokenManager tokenManager;
+    [SerializeField] private FarmLevelManager farmLevelManager;
+    [SerializeField] private GoldManager goldManager;
+    [SerializeField] private TileManager tileManager;
 
     // 버튼 테스트용 메서드.
     // 현재 스냅샷을 JSON 파일로 저장하고 요약 정보를 콘솔에 출력한다.
@@ -47,7 +48,7 @@ public class GameStateAssembler : MonoBehaviour
     }
 
     // 버튼 테스트용 메서드.
-    // 현재 게임 상태 스냅샷을 백엔드에 업로드한다.
+    // 현재 게임 상태 스냅샷을 바탕화면에 json으로 저장한 뒤 백엔드로 전송한다.
     public void DebugSendSnapshot()
     {
         GameStateSnapshot snapshot = CreateSnapshot(GetDefaultUserId());
@@ -58,19 +59,21 @@ public class GameStateAssembler : MonoBehaviour
             return;
         }
 
+        string savedPath = SaveSnapshotJsonToDesktop(snapshot);
+
         Debug.Log(
             $"Sending snapshot | userId: {snapshot.userId}, " +
             $"tiles: {snapshot.tiles.Length}, " +
             $"inventory: {snapshot.inventory.Length}, " +
-            $"currentToken: {snapshot.currentToken}",
+            $"currentToken: {snapshot.currentToken} | savedPath: {savedPath}",
             this);
 
         APIController.Game.SendSnapshot(
-            snapshot,
+            BuildSaveRequest(snapshot),
             onSuccess: response =>
             {
                 Debug.Log(
-                    $"Snapshot upload success | id: {response.id}, userId: {response.userId}, createdAt: {response.createdAt}, tileCount: {response.tileCount}",
+                    $"Snapshot upload success | id: {response.id}, userId: {response.userId}, savedAt: {response.savedAt}, tileCount: {response.tileCount}",
                     this);
             },
             onError: error =>
@@ -98,6 +101,93 @@ public class GameStateAssembler : MonoBehaviour
                 ? TokenManager.Instance
                 : FindFirstObjectByType<TokenManager>();
         }
+
+        if (farmLevelManager == null)
+        {
+            farmLevelManager = FindFirstObjectByType<FarmLevelManager>();
+        }
+
+        if (goldManager == null)
+        {
+            goldManager = FindFirstObjectByType<GoldManager>();
+        }
+
+        if (tileManager == null)
+        {
+            tileManager = FindFirstObjectByType<TileManager>();
+        }
+    }
+
+    public void SaveData()
+    {
+        if (Application.isEditor)
+        {
+            Debug.LogWarning("[GameStateAssembler] SaveData is blocked in Unity Editor.", this);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(NetworkManager.Instance.GetAccessToken()))
+        {
+            Debug.LogWarning("[GameStateAssembler] SaveData is blocked because accessToken is missing.", this);
+            return;
+        }
+
+        string userId = GetDefaultUserId();
+        GameStateSnapshot snapshot = CreateSnapshot(userId);
+
+        if (!TryValidateSnapshot(snapshot, out string validationError))
+        {
+            Debug.LogError($"[GameStateAssembler] SaveData validation failed: {validationError}", this);
+            return;
+        }
+
+        APIController.Game.SendSnapshot(
+            BuildSaveRequest(snapshot),
+            onSuccess: response =>
+            {
+                if (response == null)
+                {
+                    Debug.LogError("[GameStateAssembler] SaveData failed: response is null.", this);
+                    return;
+                }
+
+                Debug.Log(
+                    $"SaveData success | id: {response.id}, userId: {response.userId}, savedAt: {response.savedAt}",
+                    this);
+            },
+            onError: error =>
+            {
+                Debug.LogError($"[GameStateAssembler] SaveData failed: {error}", this);
+            });
+    }
+
+    public void GetData()
+    {
+        APIController.Game.GetLatestSnapshot(
+            onSuccess: response =>
+            {
+                if (response == null)
+                {
+                    Debug.LogError("[GameStateAssembler] GetData failed: response is null.", this);
+                    return;
+                }
+
+                if (!response.hasSnapshot)
+                {
+                    ApplyDefaultState();
+                    Debug.Log($"GetData result | hasSnapshot: false | message: {response.message}", this);
+                    return;
+                }
+
+                ApplyLoadedSnapshot(response);
+                Debug.Log(
+                    $"GetData success | id: {response.id}, userId: {response.userId}, savedAt: {response.savedAt}",
+                    this);
+            },
+            onError: error =>
+            {
+                Debug.LogError($"[GameStateAssembler] GetData failed: {error}", this);
+            });
     }
 
     // 현재 게임 상태를 서버에 보내기 쉬운 형태의 스냅샷으로 묶는다.
@@ -108,7 +198,10 @@ public class GameStateAssembler : MonoBehaviour
             userId = userId,
             tiles = BuildTileDtos(),
             inventory = BuildInventoryDtos(),
-            currentToken = BuildCurrentToken()
+            currentToken = BuildCurrentToken(),
+            farmLevel = BuildFarmLevel(),
+            farmNowExp = BuildFarmNowExp(),
+            gold = BuildGold()
         };
     }
 
@@ -191,6 +284,39 @@ public class GameStateAssembler : MonoBehaviour
         return tokenManager.token;
     }
 
+    private int BuildFarmLevel()
+    {
+        if (farmLevelManager == null)
+        {
+            Debug.LogWarning("[GameStateAssembler] FarmLevelManager reference is missing.", this);
+            return 1;
+        }
+
+        return Mathf.Max(1, farmLevelManager.farmLevel);
+    }
+
+    private int BuildFarmNowExp()
+    {
+        if (farmLevelManager == null)
+        {
+            Debug.LogWarning("[GameStateAssembler] FarmLevelManager reference is missing.", this);
+            return 0;
+        }
+
+        return Mathf.Max(0, farmLevelManager.nowfarmExp);
+    }
+
+    private int BuildGold()
+    {
+        if (goldManager == null)
+        {
+            Debug.LogWarning("[GameStateAssembler] GoldManager reference is missing.", this);
+            return 0;
+        }
+
+        return Mathf.Max(0, goldManager.GetGold());
+    }
+
     private string GetDefaultUserId()
     {
         PlayerId playerId = NetworkManager.Instance.GetPlayerId();
@@ -199,7 +325,7 @@ public class GameStateAssembler : MonoBehaviour
             return playerId.userId;
         }
 
-        return DefaultTestUserId;
+        return "Unity";
     }
 
     private bool TryValidateSnapshot(GameStateSnapshot snapshot, out string error)
@@ -221,6 +347,24 @@ public class GameStateAssembler : MonoBehaviour
         if (snapshot.currentToken < 0)
         {
             error = "currentToken must be 0 or greater.";
+            return false;
+        }
+
+        if (snapshot.farmLevel <= 0)
+        {
+            error = "farmLevel must be 1 or greater.";
+            return false;
+        }
+
+        if (snapshot.farmNowExp < 0)
+        {
+            error = "farmNowExp must be 0 or greater.";
+            return false;
+        }
+
+        if (snapshot.gold < 0)
+        {
+            error = "gold must be 0 or greater.";
             return false;
         }
 
@@ -314,6 +458,90 @@ public class GameStateAssembler : MonoBehaviour
         File.WriteAllText(filePath, json);
         return filePath;
     }
+
+    private GameSnapshotSaveRequest BuildSaveRequest(GameStateSnapshot snapshot)
+    {
+        return new GameSnapshotSaveRequest
+        {
+            currentToken = snapshot.currentToken,
+            gold = snapshot.gold,
+            farmLevel = snapshot.farmLevel,
+            farmNowExp = snapshot.farmNowExp,
+            tiles = snapshot.tiles,
+            inventory = snapshot.inventory
+        };
+    }
+
+    private void ApplyLoadedSnapshot(LatestSnapshotResponse response)
+    {
+        if (middleDB != null)
+        {
+            middleDB.LoadTileStates(response.tiles);
+        }
+
+        if (tileManager != null)
+        {
+            tileManager.RefreshAllTiles();
+        }
+
+        if (inventoryManager != null)
+        {
+            inventoryManager.LoadInventory(response.inventory);
+        }
+
+        if (tokenManager != null)
+        {
+            int loadedToken = response.currentToken > 0 ? response.currentToken : response.token;
+            tokenManager.SetToken(loadedToken);
+        }
+
+        if (goldManager != null)
+        {
+            goldManager.SetGold(response.gold);
+        }
+
+        if (farmLevelManager != null)
+        {
+            farmLevelManager.InitializeFromBackend(new FarmLevelStateDto
+            {
+                farmLevel = response.farmLevel > 0 ? response.farmLevel : 1,
+                farmNowExp = Mathf.Max(0, response.farmNowExp)
+            });
+        }
+    }
+
+    private void ApplyDefaultState()
+    {
+        if (middleDB != null)
+        {
+            middleDB.ResetToDefaultState();
+        }
+
+        if (tileManager != null)
+        {
+            tileManager.RefreshAllTiles();
+        }
+
+        if (inventoryManager != null)
+        {
+            inventoryManager.LoadInventory(null);
+        }
+
+        if (tokenManager != null)
+        {
+            tokenManager.SetToken(tokenManager.MaxTokenCount);
+        }
+
+        if (goldManager != null)
+        {
+            goldManager.InitializeFromBackend(null);
+        }
+
+        if (farmLevelManager != null)
+        {
+            farmLevelManager.InitializeFromBackend(null);
+        }
+    }
 }
 
 [Serializable]
@@ -324,6 +552,9 @@ public class GameStateSnapshot
     public TileStateDto[] tiles;
     public InventoryItemDto[] inventory;
     public int currentToken;
+    public int farmLevel;
+    public int farmNowExp;
+    public int gold;
 }
 
 [Serializable]
@@ -359,7 +590,10 @@ public class SnapshotUploadResponse
     public string id;
     public string userId;
     public int currentToken;
+    public int farmLevel;
+    public int farmNowExp;
+    public int gold;
     public int tileCount;
     public int inventoryCount;
-    public string createdAt;
+    public string savedAt;
 }

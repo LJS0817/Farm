@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 [Serializable]
 public class PlayerId
 {
-    public string userId = "USR-7bf68c13";
+    public string userId = "Unity";
     public string sessionId = "SESSION-732d990b";
     public string issuedKey = "UNITY-TEST-001";
 }
@@ -22,8 +22,11 @@ public class ServerResponse
 
 public class NetworkManager : MonoBehaviour
 {
+    public GameObject connectLoadingUI;
+    [SerializeField] private int requestTimeoutSeconds = 15;
     private const string AccessTokenPlayerPrefsKey = "backend.accessToken";
     private const string SessionIdPlayerPrefsKey = "backend.sessionId";
+    private const string UserIdPlayerPrefsKey = "backend.userId";
 
     // 1. 어디서든 접근 가능한 싱글톤 인스턴스
     private static NetworkManager _instance;
@@ -44,6 +47,7 @@ public class NetworkManager : MonoBehaviour
 
     PlayerId _playerId;
     private string _accessToken = string.Empty;
+    private int _pendingRequestCount;
 
     private void Awake()
     {
@@ -56,7 +60,9 @@ public class NetworkManager : MonoBehaviour
         _instance = this;
         _playerId = new PlayerId();
         _accessToken = PlayerPrefs.GetString(AccessTokenPlayerPrefsKey, string.Empty);
+        _playerId.userId = PlayerPrefs.GetString(UserIdPlayerPrefsKey, ResolveDefaultUserId());
         _playerId.sessionId = PlayerPrefs.GetString(SessionIdPlayerPrefsKey, _playerId.sessionId);
+        SetConnectLoadingVisible(false);
         DontDestroyOnLoad(this.gameObject);
     }
 
@@ -95,37 +101,77 @@ public class NetworkManager : MonoBehaviour
         PlayerPrefs.Save();
     }
 
+    public void SetUserId(string userId)
+    {
+        _playerId.userId = string.IsNullOrWhiteSpace(userId) ? ResolveDefaultUserId() : userId.Trim();
+
+        if (string.IsNullOrWhiteSpace(_playerId.userId))
+        {
+            PlayerPrefs.DeleteKey(UserIdPlayerPrefsKey);
+        }
+        else
+        {
+            PlayerPrefs.SetString(UserIdPlayerPrefsKey, _playerId.userId);
+        }
+
+        PlayerPrefs.Save();
+    }
+
+    private string ResolveDefaultUserId()
+    {
+#if UNITY_EDITOR
+        return "Unity";
+#else
+        return "Unity";
+#endif
+    }
+
     // -------------------------------------------------------------
     // GET 요청 (T: 서버로부터 받을 응답 클래스 타입)
     // -------------------------------------------------------------
-    public void Get<T>(string url, Action<T> onSuccess, Action<string> onError = null, bool includeAuthHeader = false)
+    public void Get<T>(string url, Action<T> onSuccess, Action<string> onError = null, bool includeAuthHeader = false, bool showLoadingUI = false)
     {
-        StartCoroutine(GetRoutine(url, onSuccess, onError, includeAuthHeader));
+        StartCoroutine(GetRoutine(url, onSuccess, onError, includeAuthHeader, showLoadingUI));
     }
 
-    private IEnumerator GetRoutine<T>(string url, Action<T> onSuccess, Action<string> onError, bool includeAuthHeader)
+    private IEnumerator GetRoutine<T>(string url, Action<T> onSuccess, Action<string> onError, bool includeAuthHeader, bool showLoadingUI)
     {
-        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        if (showLoadingUI)
         {
-            AddAuthorizationHeaderIfNeeded(request, includeAuthHeader);
-            yield return request.SendWebRequest();
+            BeginNetworkRequest();
+        }
 
-            if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+        try
+        {
+            using (UnityWebRequest request = UnityWebRequest.Get(url))
             {
-                onError?.Invoke(request.error);
+                request.timeout = Mathf.Max(1, requestTimeoutSeconds);
+                AddAuthorizationHeaderIfNeeded(request, includeAuthHeader);
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+                {
+                    TryInvokeErrorCallback(onError, request.error);
+                }
+                else
+                {
+                    try
+                    {
+                        T resultData = JsonConvert.DeserializeObject<T>(request.downloadHandler.text);
+                        TryInvokeSuccessCallback(onSuccess, resultData, onError);
+                    }
+                    catch (Exception e)
+                    {
+                        TryInvokeErrorCallback(onError, $"JSON 파싱 에러: {e.Message}\n원본 데이터: {request.downloadHandler.text}");
+                    }
+                }
             }
-            else
+        }
+        finally
+        {
+            if (showLoadingUI)
             {
-                try
-                {
-                    // 응답받은 JSON 텍스트를 바로 C# 객체로 변환하여 콜백 반환
-                    T resultData = JsonConvert.DeserializeObject<T>(request.downloadHandler.text);
-                    onSuccess?.Invoke(resultData);
-                }
-                catch (Exception e)
-                {
-                    onError?.Invoke($"JSON 파싱 에러: {e.Message}\n원본 데이터: {request.downloadHandler.text}");
-                }
+                EndNetworkRequest();
             }
         }
     }
@@ -133,42 +179,56 @@ public class NetworkManager : MonoBehaviour
     // -------------------------------------------------------------
     // POST 요청 (TReq: 보낼 데이터 타입, TRes: 받을 데이터 타입)
     // -------------------------------------------------------------
-    public void Post<TReq, TRes>(string url, TReq requestData, Action<TRes> onSuccess, Action<string> onError = null, bool includeAuthHeader = false)
+    public void Post<TReq, TRes>(string url, TReq requestData, Action<TRes> onSuccess, Action<string> onError = null, bool includeAuthHeader = false, bool showLoadingUI = false)
     {
-        StartCoroutine(PostRoutine(url, requestData, onSuccess, onError, includeAuthHeader));
+        StartCoroutine(PostRoutine(url, requestData, onSuccess, onError, includeAuthHeader, showLoadingUI));
     }
 
-    private IEnumerator PostRoutine<TReq, TRes>(string url, TReq requestData, Action<TRes> onSuccess, Action<string> onError, bool includeAuthHeader)
+    private IEnumerator PostRoutine<TReq, TRes>(string url, TReq requestData, Action<TRes> onSuccess, Action<string> onError, bool includeAuthHeader, bool showLoadingUI)
     {
         // C# 객체를 JSON 문자열로 자동 직렬화
         string jsonData = JsonConvert.SerializeObject(requestData);
-
-        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+        if (showLoadingUI)
         {
-            byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
-            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            request.downloadHandler = new DownloadHandlerBuffer();
-            request.SetRequestHeader("Content-Type", "application/json");
-            AddAuthorizationHeaderIfNeeded(request, includeAuthHeader);
+            BeginNetworkRequest();
+        }
 
-            yield return request.SendWebRequest();
-
-            if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+        try
+        {
+            using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
             {
-                onError?.Invoke(request.error);
+                byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
+                request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+                request.downloadHandler = new DownloadHandlerBuffer();
+                request.timeout = Mathf.Max(1, requestTimeoutSeconds);
+                request.SetRequestHeader("Content-Type", "application/json");
+                AddAuthorizationHeaderIfNeeded(request, includeAuthHeader);
+
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+                {
+                    TryInvokeErrorCallback(onError, request.error);
+                }
+                else
+                {
+                    try
+                    {
+                        TRes resultData = JsonConvert.DeserializeObject<TRes>(request.downloadHandler.text);
+                        TryInvokeSuccessCallback(onSuccess, resultData, onError);
+                    }
+                    catch (Exception e)
+                    {
+                        TryInvokeErrorCallback(onError, $"JSON 파싱 에러: {e.Message}\n원본 데이터: {request.downloadHandler.text}");
+                    }
+                }
             }
-            else
+        }
+        finally
+        {
+            if (showLoadingUI)
             {
-                try
-                {
-                    // 응답 데이터를 다시 C# 객체로 역직렬화
-                    TRes resultData = JsonConvert.DeserializeObject<TRes>(request.downloadHandler.text);
-                    onSuccess?.Invoke(resultData);
-                }
-                catch (Exception e)
-                {
-                    onError?.Invoke($"JSON 파싱 에러: {e.Message}\n원본 데이터: {request.downloadHandler.text}");
-                }
+                EndNetworkRequest();
             }
         }
     }
@@ -181,5 +241,56 @@ public class NetworkManager : MonoBehaviour
         }
 
         request.SetRequestHeader("Authorization", $"Bearer {_accessToken}");
+    }
+
+    private void BeginNetworkRequest()
+    {
+        _pendingRequestCount++;
+        SetConnectLoadingVisible(true);
+    }
+
+    private void EndNetworkRequest()
+    {
+        _pendingRequestCount = Mathf.Max(0, _pendingRequestCount - 1);
+
+        if (_pendingRequestCount == 0)
+        {
+            SetConnectLoadingVisible(false);
+        }
+    }
+
+    private void SetConnectLoadingVisible(bool isVisible)
+    {
+        if (connectLoadingUI == null)
+        {
+            return;
+        }
+
+        connectLoadingUI.SetActive(isVisible);
+    }
+
+    private void TryInvokeErrorCallback(Action<string> onError, string errorMessage)
+    {
+        try
+        {
+            onError?.Invoke(errorMessage);
+        }
+        catch (Exception exception)
+        {
+            Debug.LogError($"[NetworkManager] Error callback threw an exception: {exception}");
+        }
+    }
+
+    private void TryInvokeSuccessCallback<T>(Action<T> onSuccess, T resultData, Action<string> onError)
+    {
+        try
+        {
+            onSuccess?.Invoke(resultData);
+        }
+        catch (Exception exception)
+        {
+            Debug.LogError($"[NetworkManager] Success callback threw an exception: {exception}");
+            TryInvokeErrorCallback(onError, $"Success callback exception: {exception.Message}");
+        }
     }
 }

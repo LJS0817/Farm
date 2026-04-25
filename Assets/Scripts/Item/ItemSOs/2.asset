@@ -14,7 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 2
   itemName: Carrot seeds
-  itemType: 1
+  itemType: 0
   icon: {fileID: -5392625257635239999, guid: 7d4a6044f8fd3fa40854f8f8f98abd4f, type: 3}
   stackable: 1
   maxStack: 99
+  buyPrice: 100
+  sellPrice: 0
+  canBuy: 1
+  canSell: 0

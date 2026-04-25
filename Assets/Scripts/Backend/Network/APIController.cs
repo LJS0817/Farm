@@ -77,21 +77,11 @@ public static class APIController
     public static class Game
     {
         public static void SendSnapshot(
-            GameStateSnapshot snapshot,
+            GameSnapshotSaveRequest snapshot,
             Action<SnapshotUploadResponse> onSuccess,
             Action<string> onError = null)
         {
-#if UNITY_EDITOR
-            Debug.Log($"[Editor Only] Skip POST {APIConfig.Game.Snapshots}\n{JsonConvert.SerializeObject(snapshot, Formatting.Indented)}");
-            onSuccess?.Invoke(new SnapshotUploadResponse
-            {
-                id = "editor-preview",
-                userId = snapshot.userId,
-                createdAt = DateTime.UtcNow.ToString("o"),
-                tileCount = snapshot.tiles != null ? snapshot.tiles.Length : 0
-            });
-#else
-            NetworkManager.Instance.Post<GameStateSnapshot, SnapshotUploadResponse>(
+            NetworkManager.Instance.Post<GameSnapshotSaveRequest, SnapshotUploadResponse>(
                 url: APIConfig.Game.Snapshots,
                 requestData: snapshot,
                 onSuccess,
@@ -99,9 +89,25 @@ public static class APIController
                 {
                     Debug.LogError($"스냅샷 업로드 실패: {errorMsg}");
                 }),
-                includeAuthHeader: true
+                includeAuthHeader: true,
+                showLoadingUI: true
             );
-#endif
+        }
+
+        public static void GetLatestSnapshot(
+            Action<LatestSnapshotResponse> onSuccess,
+            Action<string> onError = null)
+        {
+            NetworkManager.Instance.Get<LatestSnapshotResponse>(
+                url: APIConfig.Game.LatestSnapshot,
+                onSuccess,
+                onError ?? (errorMsg =>
+                {
+                    Debug.LogError($"최신 스냅샷 불러오기 실패: {errorMsg}");
+                }),
+                includeAuthHeader: true,
+                showLoadingUI: true
+            );
         }
     }
 
@@ -143,4 +149,34 @@ public class ConversationLogRequest
     public string aiReply;
     public System.Collections.Generic.List<AgentCommand> commands;
     public int flag;
+}
+
+[Serializable]
+public class GameSnapshotSaveRequest
+{
+    public int currentToken;
+    public int gold;
+    public int farmLevel;
+    public int farmNowExp;
+    public TileStateDto[] tiles;
+    public InventoryItemDto[] inventory;
+}
+
+[Serializable]
+public class LatestSnapshotResponse
+{
+    public bool hasSnapshot;
+    public string id;
+    public string userId;
+    public string sessionId;
+    public int currentToken;
+    public int token;
+    public int gold;
+    public int farmLevel;
+    public int farmNowExp;
+    public int slotId;
+    public string savedAt;
+    public string message;
+    public TileStateDto[] tiles;
+    public InventoryItemDto[] inventory;
 }

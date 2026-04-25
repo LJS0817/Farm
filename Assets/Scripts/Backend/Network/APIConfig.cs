@@ -37,5 +37,6 @@ public static class APIConfig
     public static class Game
     {
         public static string Snapshots => $"{BaseUrl}/game/snapshots";
+        public static string LatestSnapshot => $"{BaseUrl}/game/snapshots/latest";
     }
 }
