@@ -120,6 +120,7 @@ public class GameStateAssembler : MonoBehaviour
 
     public void SaveData()
     {
+        // 에디터에서는 실서버 저장을 막고, 실제 로그인된 빌드에서만 저장한다.
         if (Application.isEditor)
         {
             Debug.LogWarning("[GameStateAssembler] SaveData is blocked in Unity Editor.", this);
@@ -163,6 +164,7 @@ public class GameStateAssembler : MonoBehaviour
 
     public void GetData()
     {
+        // 최신 저장본을 가져와 있으면 적용하고, 없으면 기본 상태로 초기화한다.
         APIController.Game.GetLatestSnapshot(
             onSuccess: response =>
             {
@@ -193,6 +195,7 @@ public class GameStateAssembler : MonoBehaviour
     // 현재 게임 상태를 서버에 보내기 쉬운 형태의 스냅샷으로 묶는다.
     public GameStateSnapshot CreateSnapshot(string userId)
     {
+        // 씬에 흩어진 런타임 상태를 저장 가능한 하나의 스냅샷으로 모은다.
         return new GameStateSnapshot
         {
             userId = userId,
@@ -247,6 +250,7 @@ public class GameStateAssembler : MonoBehaviour
     // 인벤토리 슬롯 중 실제 아이템이 들어 있는 슬롯만 추려서 DTO로 변환한다.
     private InventoryItemDto[] BuildInventoryDtos()
     {
+        // 빈 슬롯은 제외하고 실제 보유 아이템만 저장한다.
         if (inventoryManager == null)
         {
             Debug.LogWarning("[GameStateAssembler] InventoryManager reference is missing.", this);
@@ -461,6 +465,7 @@ public class GameStateAssembler : MonoBehaviour
 
     private GameSnapshotSaveRequest BuildSaveRequest(GameStateSnapshot snapshot)
     {
+        // 백엔드 문서에 맞는 저장 요청 형태로 다시 변환한다.
         return new GameSnapshotSaveRequest
         {
             currentToken = snapshot.currentToken,
@@ -474,6 +479,7 @@ public class GameStateAssembler : MonoBehaviour
 
     private void ApplyLoadedSnapshot(LatestSnapshotResponse response)
     {
+        // 로드된 값을 타일, 인벤토리, 재화, 농장 레벨 순서로 현재 씬에 반영한다.
         if (middleDB != null)
         {
             middleDB.LoadTileStates(response.tiles);
@@ -512,6 +518,7 @@ public class GameStateAssembler : MonoBehaviour
 
     private void ApplyDefaultState()
     {
+        // 저장본이 없을 때 새 게임 시작 전의 기본 상태를 맞춰 둔다.
         if (middleDB != null)
         {
             middleDB.ResetToDefaultState();
@@ -548,6 +555,7 @@ public class GameStateAssembler : MonoBehaviour
 // 서버로 전송할 게임 상태의 최상위 묶음.
 public class GameStateSnapshot
 {
+    // 내부 조립용 전체 스냅샷. 저장 요청 직전 DTO로 다시 변환된다.
     public string userId;
     public TileStateDto[] tiles;
     public InventoryItemDto[] inventory;

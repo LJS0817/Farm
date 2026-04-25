@@ -71,6 +71,7 @@ public class NetworkManager : MonoBehaviour
 
     public void SetAccessToken(string accessToken)
     {
+        // 인증 토큰은 이후 Save/Load 요청의 Authorization 헤더에 재사용된다.
         _accessToken = accessToken ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(_accessToken))
@@ -87,6 +88,7 @@ public class NetworkManager : MonoBehaviour
 
     public void SetSessionId(string sessionId)
     {
+        // 세션 식별값은 대화 로그 등 세션성 요청에 함께 실어 보낸다.
         _playerId.sessionId = string.IsNullOrWhiteSpace(sessionId) ? string.Empty : sessionId.Trim();
 
         if (string.IsNullOrWhiteSpace(_playerId.sessionId))
@@ -103,6 +105,7 @@ public class NetworkManager : MonoBehaviour
 
     public void SetUserId(string userId)
     {
+        // 백엔드가 내려준 사용자 식별값을 로컬에 보관한다.
         _playerId.userId = string.IsNullOrWhiteSpace(userId) ? ResolveDefaultUserId() : userId.Trim();
 
         if (string.IsNullOrWhiteSpace(_playerId.userId))
@@ -131,11 +134,13 @@ public class NetworkManager : MonoBehaviour
     // -------------------------------------------------------------
     public void Get<T>(string url, Action<T> onSuccess, Action<string> onError = null, bool includeAuthHeader = false, bool showLoadingUI = false)
     {
+        // 요청별로 인증 헤더 사용 여부와 로딩 UI 노출 여부를 선택할 수 있다.
         StartCoroutine(GetRoutine(url, onSuccess, onError, includeAuthHeader, showLoadingUI));
     }
 
     private IEnumerator GetRoutine<T>(string url, Action<T> onSuccess, Action<string> onError, bool includeAuthHeader, bool showLoadingUI)
     {
+        // SaveData/GetData처럼 명시적으로 요청한 경우에만 전체 로딩 UI를 켠다.
         if (showLoadingUI)
         {
             BeginNetworkRequest();
@@ -181,6 +186,7 @@ public class NetworkManager : MonoBehaviour
     // -------------------------------------------------------------
     public void Post<TReq, TRes>(string url, TReq requestData, Action<TRes> onSuccess, Action<string> onError = null, bool includeAuthHeader = false, bool showLoadingUI = false)
     {
+        // POST도 GET과 같은 규칙으로 인증/로딩 UI를 제어한다.
         StartCoroutine(PostRoutine(url, requestData, onSuccess, onError, includeAuthHeader, showLoadingUI));
     }
 
@@ -235,6 +241,7 @@ public class NetworkManager : MonoBehaviour
 
     private void AddAuthorizationHeaderIfNeeded(UnityWebRequest request, bool includeAuthHeader)
     {
+        // 스냅샷 저장/불러오기는 accessToken 기반 인증이 필수다.
         if (!includeAuthHeader || string.IsNullOrWhiteSpace(_accessToken))
         {
             return;
@@ -245,6 +252,7 @@ public class NetworkManager : MonoBehaviour
 
     private void BeginNetworkRequest()
     {
+        // 동시 요청이 겹칠 수 있으므로 카운트 기반으로 로딩 UI를 관리한다.
         _pendingRequestCount++;
         SetConnectLoadingVisible(true);
     }
@@ -253,6 +261,7 @@ public class NetworkManager : MonoBehaviour
     {
         _pendingRequestCount = Mathf.Max(0, _pendingRequestCount - 1);
 
+        // 마지막 요청이 끝났을 때만 로딩 UI를 닫는다.
         if (_pendingRequestCount == 0)
         {
             SetConnectLoadingVisible(false);
@@ -283,6 +292,7 @@ public class NetworkManager : MonoBehaviour
 
     private void TryInvokeSuccessCallback<T>(Action<T> onSuccess, T resultData, Action<string> onError)
     {
+        // 콜백 내부 예외가 나더라도 로딩 UI 정리가 끊기지 않게 감싼다.
         try
         {
             onSuccess?.Invoke(resultData);

@@ -294,11 +294,13 @@ public class SteamService : MonoBehaviour
 
                 NetworkManager.Instance.SetAccessToken(response.accessToken);
                 NetworkManager.Instance.SetSessionId(response.sessionId);
+                // appUserId가 없을 수 있으므로 steamId를 보조 식별값으로 사용한다.
                 string resolvedUserId = !string.IsNullOrWhiteSpace(response.appUserId)
                     ? response.appUserId
                     : response.steamId;
                 NetworkManager.Instance.SetUserId(resolvedUserId);
 
+                // 토큰 저장이 끝난 뒤에만 최신 저장본 로드를 시도한다.
                 if (!string.IsNullOrWhiteSpace(NetworkManager.Instance.GetAccessToken()))
                 {
                     GameStateAssembler gameStateAssembler = FindFirstObjectByType<GameStateAssembler>();

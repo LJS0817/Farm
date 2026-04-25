@@ -11,6 +11,7 @@ public static class APIController
             Action<SteamAuthResponse> onSuccess,
             Action<string> onError = null)
         {
+            // Steam 티켓을 백엔드에 보내 JWT accessToken을 발급받는다.
             NetworkManager.Instance.Post<SteamAuthRequest, SteamAuthResponse>(
                 url: APIConfig.User.SteamLogin,
                 requestData: request,
@@ -81,6 +82,7 @@ public static class APIController
             Action<SnapshotUploadResponse> onSuccess,
             Action<string> onError = null)
         {
+            // 저장 요청은 accessToken 인증과 함께 현재 게임 상태를 업로드한다.
             NetworkManager.Instance.Post<GameSnapshotSaveRequest, SnapshotUploadResponse>(
                 url: APIConfig.Game.Snapshots,
                 requestData: snapshot,
@@ -98,6 +100,7 @@ public static class APIController
             Action<LatestSnapshotResponse> onSuccess,
             Action<string> onError = null)
         {
+            // 최신 저장본 1개를 가져와 현재 씬 상태를 복원하는 데 사용한다.
             NetworkManager.Instance.Get<LatestSnapshotResponse>(
                 url: APIConfig.Game.LatestSnapshot,
                 onSuccess,
@@ -154,6 +157,7 @@ public class ConversationLogRequest
 [Serializable]
 public class GameSnapshotSaveRequest
 {
+    // 문서 기준 저장 요청 바디만 분리해 둔 DTO다.
     public int currentToken;
     public int gold;
     public int farmLevel;
@@ -165,6 +169,7 @@ public class GameSnapshotSaveRequest
 [Serializable]
 public class LatestSnapshotResponse
 {
+    // 최신 저장본 조회 응답을 그대로 받기 위한 DTO다.
     public bool hasSnapshot;
     public string id;
     public string userId;
