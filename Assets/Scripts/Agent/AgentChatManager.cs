@@ -97,4 +97,30 @@ public class AgentChatManager : MonoBehaviour
             chatBox.SetText("에이전트 초기화에 실패했습니다.");
         }
     }
+
+    public void ClearChatHistory()
+    {
+        if (_chatHistory != null)
+        {
+            for (int i = _chatHistory.childCount - 1; i >= 0; i--)
+            {
+                GameObject child = _chatHistory.GetChild(i).gameObject;
+                if (Application.isPlaying)
+                {
+                    Destroy(child);
+                }
+                else
+                {
+                    DestroyImmediate(child);
+                }
+            }
+        }
+
+        if (_inputField != null)
+        {
+            _inputField.text = string.Empty;
+            _inputField.ActivateInputField();
+            _inputField.Select();
+        }
+    }
 }

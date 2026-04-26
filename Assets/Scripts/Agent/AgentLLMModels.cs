@@ -317,6 +317,7 @@ public static class AgentLLMModelUtils
     {
         return tile != null
             && tile.tileType != TileData.TileType.Water
+            && tile.tileType != TileData.TileType.Tree
             && tile.tileType != TileData.TileType.Rock;
     }
 

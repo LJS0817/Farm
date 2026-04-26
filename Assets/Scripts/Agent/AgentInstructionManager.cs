@@ -281,11 +281,9 @@ public class AgentInstructionManager : MonoBehaviour
             try
             {
                 _agent.systemPrompt = _conversationSystemPrompt;
-                await _agent.ClearHistory();
 
                 string reply = await _agent.Chat(input);
 
-                await _agent.ClearHistory();
                 return AgentLLMModelUtils.StripCodeFence(reply);
             }
             finally

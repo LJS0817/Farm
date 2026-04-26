@@ -32,6 +32,12 @@ public class AgentPathFinder : MonoBehaviour
         });
     }
 
+    public void StopMovement()
+    {
+        StopAllCoroutines();
+        IsMoving = false;
+    }
+
     private IEnumerator FollowPath(Path p, float speed, Action onComplete)
     {
         for (int i = 0; i < p.vectorPath.Count; i++)

@@ -44,7 +44,7 @@ public class MiddleDB : MonoBehaviour
     [SerializeField] private string mockJsonFileName = "MiddleDBMock.json";
     [SerializeField] private bool generateRandomMapOnStart = true;
     [SerializeField] private int worldSeed = 12345;
-    [SerializeField] private Vector2Int guaranteedWeedStartCoord = Vector2Int.zero;
+    [SerializeField] private Vector2Int guaranteedWeedStartCoord = new Vector2Int(7, 4);
     [SerializeField] [Min(0f)] private float weedWeight = 0.7f;
     [SerializeField] [Min(0f)] private float waterWeight = 0.1f;
     [SerializeField] [Min(0f)] private float treeWeight = 0.1f;
@@ -88,6 +88,16 @@ public class MiddleDB : MonoBehaviour
         isInitialized = false;
         tileStates = new TileState[0];
         EnsureInitialized();
+    }
+
+    public void SetWorldSeed(int newWorldSeed)
+    {
+        worldSeed = newWorldSeed;
+    }
+
+    public void SetGuaranteedStartCoord(Vector2Int startCoord)
+    {
+        guaranteedWeedStartCoord = startCoord;
     }
 
     // 좌표가 현재 맵 범위 안에 있는지 검사한다.

@@ -162,7 +162,7 @@ public class GameStateAssembler : MonoBehaviour
             });
     }
 
-    public void GetData()
+    public void GetData(Action onLoaded = null, Action onNewStart = null, Action<string> onFailed = null)
     {
         // 최신 저장본을 가져와 있으면 적용하고, 없으면 기본 상태로 초기화한다.
         APIController.Game.GetLatestSnapshot(
@@ -170,7 +170,9 @@ public class GameStateAssembler : MonoBehaviour
             {
                 if (response == null)
                 {
-                    Debug.LogError("[GameStateAssembler] GetData failed: response is null.", this);
+                    const string errorMessage = "[GameStateAssembler] GetData failed: response is null.";
+                    Debug.LogError(errorMessage, this);
+                    onFailed?.Invoke(errorMessage);
                     return;
                 }
 
@@ -178,6 +180,7 @@ public class GameStateAssembler : MonoBehaviour
                 {
                     ApplyDefaultState();
                     Debug.Log($"GetData result | hasSnapshot: false | message: {response.message}", this);
+                    onNewStart?.Invoke();
                     return;
                 }
 
@@ -185,11 +188,24 @@ public class GameStateAssembler : MonoBehaviour
                 Debug.Log(
                     $"GetData success | id: {response.id}, userId: {response.userId}, savedAt: {response.savedAt}",
                     this);
+                onLoaded?.Invoke();
             },
             onError: error =>
             {
                 Debug.LogError($"[GameStateAssembler] GetData failed: {error}", this);
+                onFailed?.Invoke(error);
             });
+    }
+
+    public void StartNewGame(int worldSeed)
+    {
+        if (middleDB != null)
+        {
+            middleDB.SetWorldSeed(worldSeed);
+            middleDB.SetGuaranteedStartCoord(new Vector2Int(7, 4));
+        }
+
+        ApplyDefaultState();
     }
 
     // 현재 게임 상태를 서버에 보내기 쉬운 형태의 스냅샷으로 묶는다.
@@ -488,6 +504,7 @@ public class GameStateAssembler : MonoBehaviour
         if (tileManager != null)
         {
             tileManager.RefreshAllTiles();
+            tileManager.RefreshNavigationGraph();
         }
 
         if (inventoryManager != null)
@@ -527,6 +544,7 @@ public class GameStateAssembler : MonoBehaviour
         if (tileManager != null)
         {
             tileManager.RefreshAllTiles();
+            tileManager.RefreshNavigationGraph();
         }
 
         if (inventoryManager != null)

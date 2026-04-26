@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using Pathfinding;
 
 // 타일 그리드의 생성, 상태 반영, 성장 진행, 심기/수확을 총괄하는 매니저.
 // MiddleDB를 기준 데이터로 사용하고, TileData/TileView를 그 상태에 맞춰 동기화한다.
@@ -149,8 +150,7 @@ public class TileManager : MonoBehaviour
                 //     //spriteRenderer.sortingOrder += y;
                 // }
 
-                if (tileData.tileType == TileData.TileType.Water || tileData.tileType == TileData.TileType.Rock)
-                    tileObject.layer = 6;
+                ApplyTileLayer(tileObject, tileData.tileType);
 
                 tiles[x, y] = tileData;
                 tileViews[x, y] = tileObject.GetComponent<TileView>();
@@ -217,7 +217,7 @@ public class TileManager : MonoBehaviour
         }
 
         return tile.tileType != TileData.TileType.Water
-            //&& tile.tileType != TileData.TileType.Tree
+            && tile.tileType != TileData.TileType.Tree
             && tile.tileType != TileData.TileType.Rock;
     }
 
@@ -235,6 +235,7 @@ public class TileManager : MonoBehaviour
         }
 
         middleDB.ApplyStateToTile(tile);
+        ApplyTileLayer(tile.gameObject, tile.tileType);
 
         TileView tileView = tileViews[coord.x, coord.y];
         if (tileView != null)
@@ -398,6 +399,7 @@ public class TileManager : MonoBehaviour
                 }
 
                 middleDB.ApplyStateToTile(tile);
+                ApplyTileLayer(tile.gameObject, tile.tileType);
 
                 TileView tileView = tileViews[x, y];
                 if (tileView != null)
@@ -406,6 +408,16 @@ public class TileManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void RefreshNavigationGraph()
+    {
+        if (AstarPath.active == null)
+        {
+            return;
+        }
+
+        AstarPath.active.Scan();
     }
 
     // 성장 완료 시 타일 상태를 수확 가능 상태로 전환하고 화면을 갱신한다.
@@ -596,6 +608,20 @@ public class TileManager : MonoBehaviour
             renderer.sortingLayerName = tileSortingLayerName;
             renderer.sortingOrder = targetBaseOrder + relativeOrder;
         }
+    }
+
+    private void ApplyTileLayer(GameObject tileObject, TileData.TileType tileType)
+    {
+        if (tileObject == null)
+        {
+            return;
+        }
+
+        bool isBlockedTile = tileType == TileData.TileType.Water
+            || tileType == TileData.TileType.Tree
+            || tileType == TileData.TileType.Rock;
+
+        tileObject.layer = isBlockedTile ? 6 : 0;
     }
 
     // ======== 추가

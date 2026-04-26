@@ -143,6 +143,31 @@ public class AgentActionController : MonoBehaviour
 
     public bool IsBusy() { return _isBusy; }
 
+    public void ResetToWorldPosition(Vector3 worldPosition)
+    {
+        if (_actionCoroutine != null)
+        {
+            StopCoroutine(_actionCoroutine);
+            _actionCoroutine = null;
+        }
+
+        _isBusy = false;
+
+        if (_pathFinder != null)
+        {
+            _pathFinder.StopMovement();
+        }
+
+        if (_agentOffset != null)
+        {
+            _agentOffset.position = worldPosition;
+        }
+
+        ChangeState(AgentState.Idle);
+        ResetDirection();
+        UpdateCharacterSorting();
+    }
+
     public void ReceiveCommands(List<AgentCommand> commands, System.Action<List<AgentCommand>> callback)
     {
         if (!_isBusy)
@@ -219,6 +244,7 @@ public class AgentActionController : MonoBehaviour
             yield return new WaitUntil(() => isMovementDone);
 
             _agentOffset.position = targetWorldPos;
+            ChangeState(AgentState.Idle);
         }
         else
         {

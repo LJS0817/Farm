@@ -55,6 +55,7 @@ public class NetworkManager : MonoBehaviour
     PlayerId _playerId;
     private string _accessToken = string.Empty;
     private int _pendingRequestCount;
+    private int _manualLoadingRequestCount;
     private bool _isApiConfigLoaded;
     private bool _isApiConfigLoading;
 
@@ -280,18 +281,30 @@ public class NetworkManager : MonoBehaviour
     {
         // 동시 요청이 겹칠 수 있으므로 카운트 기반으로 로딩 UI를 관리한다.
         _pendingRequestCount++;
-        SetConnectLoadingVisible(true);
+        RefreshConnectLoadingVisibility();
     }
 
     private void EndNetworkRequest()
     {
         _pendingRequestCount = Mathf.Max(0, _pendingRequestCount - 1);
+        RefreshConnectLoadingVisibility();
+    }
 
-        // 마지막 요청이 끝났을 때만 로딩 UI를 닫는다.
-        if (_pendingRequestCount == 0)
-        {
-            SetConnectLoadingVisible(false);
-        }
+    public void PushConnectLoading()
+    {
+        _manualLoadingRequestCount++;
+        RefreshConnectLoadingVisibility();
+    }
+
+    public void PopConnectLoading()
+    {
+        _manualLoadingRequestCount = Mathf.Max(0, _manualLoadingRequestCount - 1);
+        RefreshConnectLoadingVisibility();
+    }
+
+    private void RefreshConnectLoadingVisibility()
+    {
+        SetConnectLoadingVisible(_pendingRequestCount > 0 || _manualLoadingRequestCount > 0);
     }
 
     private void SetConnectLoadingVisible(bool isVisible)

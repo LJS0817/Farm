@@ -48,6 +48,14 @@ public class TokenManager : MonoBehaviour
         RefreshTokenText();
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha0))
+        {
+            SetToken(10);
+        }
+    }
+
     public void SetTokenText(TMP_Text tokenText)
     {
         _tokenText = tokenText;
