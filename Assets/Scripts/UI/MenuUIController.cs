@@ -93,11 +93,6 @@ public class MenuUIManager : MonoBehaviour
         closeUI(ui); 
     }
 
-    public void OnClickLoadData()
-    {
-
-    }
-
     public void OnClickOpenSettingWindow(bool isLogo)
     {
         if (isLogo && _settingWindowBg.color.a != _settingBgColorEnable.a) _settingWindowBg.color = _settingBgColorEnable;
@@ -108,5 +103,10 @@ public class MenuUIManager : MonoBehaviour
     public void OnClickCloseSettingWindow()
     {
         closeUI(_settingWindow);
+    }
+    
+    public void OnClickReturnMenu()
+    {
+        SceneManager.LoadScene(1);
     }
 }

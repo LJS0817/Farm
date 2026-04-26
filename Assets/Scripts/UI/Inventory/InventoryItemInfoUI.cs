@@ -8,6 +8,7 @@ public class InventoryItemInfoUI : MonoBehaviour
     [SerializeField] TMP_Text _itemDesc;
 
     [SerializeField] RectTransform _infoUI;
+    RectTransform _resizeBox;
     [SerializeField] GameObject _downArrow;
     [SerializeField] GameObject _upArrow;
 
@@ -18,6 +19,7 @@ public class InventoryItemInfoUI : MonoBehaviour
     public void Start()
     {
         _infoUI.gameObject.SetActive(false);
+        _resizeBox = _infoUI.GetChild(0).GetComponent<RectTransform>();
     }
 
     public void SetColumnCount(int n) { _columnCount = n; }
@@ -55,5 +57,7 @@ public class InventoryItemInfoUI : MonoBehaviour
             _itemName.SetText(item.item.itemName);
             _itemDesc.SetText(item.item.itemDesc);
         }
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(_resizeBox);
     }
 }
