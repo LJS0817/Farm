@@ -90,7 +90,7 @@ public class TileInfoPanel : MonoBehaviour
 
         string tileName = GetTileDisplayName(state);
         string location = $" 위치 : ({state.coord.x}, {state.coord.y})";
-        string tileState = $"경작 가능:{(state.isFarmable ? "예" : "아니오")} | 작물:{GetCropDisplayName(state.cropType)} | 상태:{GetCropStateDisplayName(state.cropState)}";
+        string tileState = GetTileStateText(state.cropType, state.isFarmable, state.cropState);
         string timeText = state.cropState == TileData.CropState.IsGrowing
             ? $"성장 남은 시간 : {state.growDuration:0.0}"
             : state.cropState == TileData.CropState.IsHarvastable
@@ -98,7 +98,7 @@ public class TileInfoPanel : MonoBehaviour
                 : "성장 중인 작물이 없습니다.";
 
         SetTexts(tileName, location, tileState, timeText);
-        SetTileImage(GetTileSprite(state.tileType));
+        SetTileImage(GetTileSprite(state));
         SetSliderValue(state.cropState == TileData.CropState.IsGrowing ? 0.1f : state.cropState == TileData.CropState.IsHarvastable ? 1f : 0f);
         SetHarvestButton(state.cropState == TileData.CropState.IsHarvastable);
         RefreshPlusInfo(state);
@@ -196,12 +196,13 @@ public class TileInfoPanel : MonoBehaviour
 
         if (tile.cropState == TileData.CropState.IsHarvastable)
         {
+            SetTileImage(GetTileSprite(tile));
             SetSliderValue(1f);
             SetHarvestButton(true);
 
             if (Text_TileState != null)
             {
-                Text_TileState.text = $"경작 가능:{(tile.isFarmable ? "예" : "아니오")} | 작물:{GetCropDisplayName(tile.cropType)} | 상태:{GetCropStateDisplayName(tile.cropState)}";
+                Text_TileState.text = GetTileStateText(tile.cropType, tile.isFarmable, tile.cropState);
             }
 
             if (Text_Time != null)
@@ -214,6 +215,7 @@ public class TileInfoPanel : MonoBehaviour
 
         if (tile.cropState != TileData.CropState.IsGrowing || tile.cropType == TileData.CropType.IsEmpty)
         {
+            SetTileImage(GetTileSprite(tile));
             SetSliderValue(0f);
             SetHarvestButton(false);
 
@@ -226,12 +228,13 @@ public class TileInfoPanel : MonoBehaviour
         }
 
         float progress = 1f - (tile.GrowDuration / tile.maxTime);
+        SetTileImage(GetTileSprite(tile));
         SetSliderValue(progress);
         SetHarvestButton(false);
 
         if (Text_TileState != null)
         {
-            Text_TileState.text = $"경작 가능:{(tile.isFarmable ? "예" : "아니오")} | 작물:{GetCropDisplayName(tile.cropType)} | 상태:{GetCropStateDisplayName(tile.cropState)}";
+            Text_TileState.text = GetTileStateText(tile.cropType, tile.isFarmable, tile.cropState);
         }
 
         if (Text_Time != null)
@@ -343,6 +346,11 @@ public class TileInfoPanel : MonoBehaviour
         };
     }
 
+    private string GetTileStateText(TileData.CropType cropType, bool isFarmable, TileData.CropState cropState)
+    {
+        return $"<b>작물 :</b> {GetCropDisplayName(cropType)}\n<b>경작 가능 :</b> {(isFarmable ? "예" : "아니오")}\n<b>상태 :</b> {GetCropStateDisplayName(cropState)}";
+    }
+
     private void SetTexts(string tileName, string location, string tileState, string timeText)
     {
         if (Text_TileName != null)
@@ -365,19 +373,52 @@ public class TileInfoPanel : MonoBehaviour
             Text_Time.text = timeText;
         }
     }
-        private Sprite GetTileSprite(TileData.TileType tileType)
+    private Sprite GetTileSprite(MiddleDB.TileState state)
     {
-        if (tileType == TileData.TileType.Weed)
-        {
-            return weedPanelSprite;
-        }
-
         if (tileManager == null)
         {
             tileManager = FindFirstObjectByType<TileManager>();
         }
 
-        return tileManager != null ? tileManager.GetTileSprite(tileType) : null;
+        if (tileManager == null)
+        {
+            return state.tileType == TileData.TileType.Weed ? weedPanelSprite : null;
+        }
+
+        if (state.cropType != TileData.CropType.IsEmpty)
+        {
+            return tileManager.GetCropSpirte(state.cropType);
+        }
+
+        if (tileManager.TryGetTile(state.coord, out TileData tile) && tile != null)
+        {
+            return GetTileSprite(tile);
+        }
+
+        return state.tileType switch
+        {
+            TileData.TileType.Weed => tileManager.GetWeedSprite(state.variantIndex),
+            TileData.TileType.Tree => tileManager.GetTreeSprite(state.variantIndex),
+            TileData.TileType.Rock => tileManager.GetRockSprite(state.variantIndex),
+            _ => tileManager.GetTileSprite(state.tileType)
+        };
+    }
+
+    private Sprite GetTileSprite(TileData tile)
+    {
+        if (tileManager == null)
+        {
+            tileManager = FindFirstObjectByType<TileManager>();
+        }
+
+        if (tileManager == null || tile == null)
+        {
+            return null;
+        }
+
+        return tile.cropType != TileData.CropType.IsEmpty
+            ? tileManager.GetCropSpirte(tile.cropType)
+            : tileManager.GetTileSprite(tile);
     }
 
     private void SetTileImage(Sprite sprite)
@@ -410,7 +451,8 @@ public class TileInfoPanel : MonoBehaviour
             return;
         }
 
-        harvestButton.gameObject.SetActive(canHarvest);
+       // harvestButton.gameObject.SetActive(canHarvest); 
+         harvestButton.gameObject.SetActive(false);//테스트 버튼 비활성화로 고정
         harvestButton.interactable = canHarvest;
     }
 
