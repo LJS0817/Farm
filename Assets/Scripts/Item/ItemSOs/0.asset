@@ -14,6 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 0
   itemName: Carrot
+  itemDesc: "\uC544\uC0AD\uC544\uC0AD\uD558\uACE0 \uC2E0\uC120\uD55C \uC8FC\uD669\uC0C9
+    \uB2F9\uADFC\uC785\uB2C8\uB2E4. \uC12D\uCDE8\uD558\uBA74 \uD1A0\uD070 \uC77C\uC815\uB7C9
+    \uD68C\uBCF5\uD569\uB2C8\uB2E4"
   itemType: 1
   icon: {fileID: -5859083586626064994, guid: 46493c3ed7e3a409895bb5071a22fb53, type: 3}
   stackable: 1

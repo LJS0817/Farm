@@ -1,0 +1,832 @@
+fileFormatVersion: 2
+guid: 548a959d3750ce844b461bc56dacd0b4
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 526074909064005738
+    second: slogan_2_0
+  - first:
+      213: 5340916718380420021
+    second: slogan_2_1
+  - first:
+      213: -8369355860541535735
+    second: slogan_2_2
+  - first:
+      213: -4033140780687275934
+    second: slogan_2_3
+  - first:
+      213: -189673054437182829
+    second: slogan_2_4
+  - first:
+      213: 5727680280172733598
+    second: slogan_2_5
+  - first:
+      213: -3443968275016057625
+    second: slogan_2_6
+  - first:
+      213: 3898259233168110821
+    second: slogan_2_7
+  - first:
+      213: 6915866981207746989
+    second: slogan_2_8
+  - first:
+      213: -367864460219166270
+    second: slogan_2_9
+  - first:
+      213: 959866103645499879
+    second: slogan_2_10
+  - first:
+      213: 1555138834080571966
+    second: slogan_2_11
+  - first:
+      213: -13214665440835618
+    second: slogan_2_12
+  - first:
+      213: -972112377484693671
+    second: slogan_2_13
+  - first:
+      213: 5030066224973465818
+    second: slogan_2_14
+  - first:
+      213: 4420126056184419794
+    second: slogan_2_15
+  - first:
+      213: -5348895286466442654
+    second: slogan_2_16
+  - first:
+      213: 1401759545190937164
+    second: slogan_2_17
+  - first:
+      213: -5414789689061201124
+    second: slogan_2_18
+  - first:
+      213: 4446091034322802340
+    second: slogan_2_19
+  - first:
+      213: 187035280815005667
+    second: slogan_2_20
+  - first:
+      213: -8752239303468250268
+    second: slogan_2_21
+  - first:
+      213: -377246181556746948
+    second: slogan_2_22
+  - first:
+      213: -5863195446539084134
+    second: slogan_2_23
+  - first:
+      213: -9062805886905461438
+    second: slogan_2_24
+  - first:
+      213: -4136651173223870499
+    second: slogan_2_25
+  - first:
+      213: 5896587526990504888
+    second: slogan_2_26
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: slogan_2_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 90
+        height: 80
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a688100b75efc4700800000000000000
+      internalID: 526074909064005738
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_1
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 34
+        width: 28
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5bb820e357fbe1a40800000000000000
+      internalID: 5340916718380420021
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_2
+      rect:
+        serializedVersion: 2
+        x: 115
+        y: 38
+        width: 27
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 90a869500331adb80800000000000000
+      internalID: -8369355860541535735
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_3
+      rect:
+        serializedVersion: 2
+        x: 141
+        y: 29
+        width: 19
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2684ef514d76708c0800000000000000
+      internalID: -4033140780687275934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_4
+      rect:
+        serializedVersion: 2
+        x: 158
+        y: 45
+        width: 29
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 392fec6ac552e5df0800000000000000
+      internalID: -189673054437182829
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_5
+      rect:
+        serializedVersion: 2
+        x: 178
+        y: 41
+        width: 19
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e94a4b64edecc7f40800000000000000
+      internalID: 5727680280172733598
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_6
+      rect:
+        serializedVersion: 2
+        x: 200
+        y: 29
+        width: 39
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7ecf3fdc9119430d0800000000000000
+      internalID: -3443968275016057625
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_7
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 48
+        width: 31
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5e43f536e16691630800000000000000
+      internalID: 3898259233168110821
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_8
+      rect:
+        serializedVersion: 2
+        x: 248
+        y: 29
+        width: 32
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: da9adb8a0681aff50800000000000000
+      internalID: 6915866981207746989
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_9
+      rect:
+        serializedVersion: 2
+        x: 267
+        y: 46
+        width: 19
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2c15523f83515eaf0800000000000000
+      internalID: -367864460219166270
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_10
+      rect:
+        serializedVersion: 2
+        x: 281
+        y: 33
+        width: 42
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e17abbb221225d00800000000000000
+      internalID: 959866103645499879
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_11
+      rect:
+        serializedVersion: 2
+        x: 286
+        y: 44
+        width: 35
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e32a9c5b786f49510800000000000000
+      internalID: 1555138834080571966
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_12
+      rect:
+        serializedVersion: 2
+        x: 166
+        y: 31
+        width: 32
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ed7c290f45d01dff0800000000000000
+      internalID: -13214665440835618
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_13
+      rect:
+        serializedVersion: 2
+        x: 118
+        y: 4
+        width: 20
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 95fa34271fc5282f0800000000000000
+      internalID: -972112377484693671
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_14
+      rect:
+        serializedVersion: 2
+        x: 137
+        y: 4
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad8cb38c4926ec540800000000000000
+      internalID: 5030066224973465818
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_15
+      rect:
+        serializedVersion: 2
+        x: 150
+        y: 4
+        width: 14
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2d51251ba31775d30800000000000000
+      internalID: 4420126056184419794
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_16
+      rect:
+        serializedVersion: 2
+        x: 163
+        y: 5
+        width: 14
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 26a086d9318e4c5b0800000000000000
+      internalID: -5348895286466442654
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_17
+      rect:
+        serializedVersion: 2
+        x: 176
+        y: 4
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c427e9721ec047310800000000000000
+      internalID: 1401759545190937164
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_18
+      rect:
+        serializedVersion: 2
+        x: 191
+        y: 5
+        width: 14
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c1b2f02777dcad4b0800000000000000
+      internalID: -5414789689061201124
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_19
+      rect:
+        serializedVersion: 2
+        x: 211
+        y: 4
+        width: 19
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4a61cd34d30b3bd30800000000000000
+      internalID: 4446091034322802340
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_20
+      rect:
+        serializedVersion: 2
+        x: 229
+        y: 5
+        width: 14
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3ef9171d89b789200800000000000000
+      internalID: 187035280815005667
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_21
+      rect:
+        serializedVersion: 2
+        x: 243
+        y: 19
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 46b009f89bcc98680800000000000000
+      internalID: -8752239303468250268
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_22
+      rect:
+        serializedVersion: 2
+        x: 243
+        y: 4
+        width: 32
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c35007bb890c3caf0800000000000000
+      internalID: -377246181556746948
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_23
+      rect:
+        serializedVersion: 2
+        x: 274
+        y: 4
+        width: 20
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a9e99505eceb1aea0800000000000000
+      internalID: -5863195446539084134
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_24
+      rect:
+        serializedVersion: 2
+        x: 293
+        y: 19
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2455eaa00127a3280800000000000000
+      internalID: -9062805886905461438
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_25
+      rect:
+        serializedVersion: 2
+        x: 293
+        y: 5
+        width: 7
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ddfc944cca9a796c0800000000000000
+      internalID: -4136651173223870499
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slogan_2_26
+      rect:
+        serializedVersion: 2
+        x: 299
+        y: 0
+        width: 24
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b3a4454d13e4d150800000000000000
+      internalID: 5896587526990504888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      slogan_2_0: 526074909064005738
+      slogan_2_1: 5340916718380420021
+      slogan_2_10: 959866103645499879
+      slogan_2_11: 1555138834080571966
+      slogan_2_12: -13214665440835618
+      slogan_2_13: -972112377484693671
+      slogan_2_14: 5030066224973465818
+      slogan_2_15: 4420126056184419794
+      slogan_2_16: -5348895286466442654
+      slogan_2_17: 1401759545190937164
+      slogan_2_18: -5414789689061201124
+      slogan_2_19: 4446091034322802340
+      slogan_2_2: -8369355860541535735
+      slogan_2_20: 187035280815005667
+      slogan_2_21: -8752239303468250268
+      slogan_2_22: -377246181556746948
+      slogan_2_23: -5863195446539084134
+      slogan_2_24: -9062805886905461438
+      slogan_2_25: -4136651173223870499
+      slogan_2_26: 5896587526990504888
+      slogan_2_3: -4033140780687275934
+      slogan_2_4: -189673054437182829
+      slogan_2_5: 5727680280172733598
+      slogan_2_6: -3443968275016057625
+      slogan_2_7: 3898259233168110821
+      slogan_2_8: 6915866981207746989
+      slogan_2_9: -367864460219166270
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

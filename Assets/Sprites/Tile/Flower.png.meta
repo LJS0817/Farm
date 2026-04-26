@@ -1,10 +1,16 @@
 fileFormatVersion: 2
-guid: 912d77e0b2f93a143a75dd2b2fd3cfe0
+guid: dd48fcdebb32ba247a3772170b8cecfc
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 8784488680823602326
-    second: Rectangle 47_0
+      213: -7527590741136420862
+    second: Cell0_0
+  - first:
+      213: 6319361130271657488
+    second: Cell0_1
+  - first:
+      213: 5650005551537240831
+    second: Cell0_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,14 +52,14 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
-  spriteMeshType: 0
-  alignment: 0
-  spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spriteMeshType: 1
+  alignment: 9
+  spritePivot: {x: 0.5, y: 0.33}
+  spritePixelsToUnits: 300
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
-  spriteGenerateFallbackPhysicsShape: 1
+  spriteGenerateFallbackPhysicsShape: 0
   alphaUsage: 1
   alphaIsTransparency: 1
   spriteTessellationDetail: -1
@@ -72,7 +78,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 512
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -113,23 +119,67 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Rectangle 47_0
+      name: Cell0_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 14
-        height: 26
+        x: 133
+        y: 177
+        width: 85
+        height: 61
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 6, y: 9, z: 6, w: 9}
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 69c3ee9b9e5c8e970800000000000000
-      internalID: 8784488680823602326
+      spriteID: 2005b049a10a88790800000000000000
+      internalID: -7527590741136420862
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cell0_1
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 98
+        width: 85
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 01ec0417771e2b750800000000000000
+      internalID: 6319361130271657488
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cell0_2
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 23
+        width: 85
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ffabc563d1ad86e40800000000000000
+      internalID: 5650005551537240831
       vertices: []
       indices: 
       edges: []
@@ -138,7 +188,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 47208e0bc70d9b746b70f0cb1c8b13aa
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +198,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Rectangle 47_0: 8784488680823602326
+      Cell0_0: -7527590741136420862
+      Cell0_1: 6319361130271657488
+      Cell0_2: 5650005551537240831
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

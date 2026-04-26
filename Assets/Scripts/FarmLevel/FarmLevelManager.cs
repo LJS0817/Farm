@@ -189,7 +189,7 @@ public class FarmLevelManager : MonoBehaviour
         root.SetActive(true);
     }
 
-    public void ColseUI()
+    public void CloseUI()
     {
         if (root == null)
         {

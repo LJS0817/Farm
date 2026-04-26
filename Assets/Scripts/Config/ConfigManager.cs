@@ -17,6 +17,39 @@ public class ConfigManager : MonoBehaviour
 
     private const string CONFIG_FILE_NAME = "playerConfig.json";
 
+    private void Start()
+    {
+        // 게임 시작 시 자동으로 설정 불러오기
+        LoadConfig();
+    }
+
+    public void LoadConfig()
+    {
+        string loadPath = Path.Combine(Application.persistentDataPath, CONFIG_FILE_NAME);
+
+        if (!File.Exists(loadPath))
+        {
+            Debug.Log("저장된 설정 파일이 없습니다. 기본 설정을 유지합니다.");
+            return;
+        }
+
+        try
+        {
+            string json = File.ReadAllText(loadPath);
+
+            PlayerConfigData loadedData = JsonUtility.FromJson<PlayerConfigData>(json);
+
+            if (loadedData.soundData != null) soundController.ApplyLoadedData(loadedData.soundData);
+            if (loadedData.screenData != null) screenController.ApplyLoadedData(loadedData.screenData);
+
+            Debug.Log("[PC Load] 설정을 성공적으로 불러와 적용했습니다.");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[PC Load] 설정 로드 중 오류 발생: {e.Message}");
+        }
+    }
+
     public void OnApplyButtonClicked()
     {
         // 1. 소리나 화면 중 하나라도 변경된 사항이 있는지 체크
@@ -35,13 +68,13 @@ public class ConfigManager : MonoBehaviour
         string mergedJson = JsonUtility.ToJson(mergedConfig, true);
 
         // 4. PC 로컬 저장소에 파일 기록
-        //string savePath = Path.Combine(Application.persistentDataPath, CONFIG_FILE_NAME);
-        //File.WriteAllText(savePath, mergedJson);
+        string savePath = Path.Combine(Application.persistentDataPath, CONFIG_FILE_NAME);
+        File.WriteAllText(savePath, mergedJson);
 
         soundController.CommitChanges();
         screenController.CommitChanges();
 
-        Debug.Log($"[PC Save] 모든 설정이 하나의 파일로 저장되었습니다.\n경로: {mergedJson}");
+        Debug.Log($"[PC Save] 파일로 저장되었습니다.\n경로: {mergedJson}");
     }
 
     public void OnRevertButtonClicked()

@@ -11,6 +11,7 @@ public class ItemSO : ScriptableObject
 {
     public int itemId;
     public string itemName;
+    public string itemDesc;
     public ItemType itemType;
     public Sprite icon;
     public bool stackable = true;

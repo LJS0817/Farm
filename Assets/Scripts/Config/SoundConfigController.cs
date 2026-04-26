@@ -49,8 +49,7 @@ public class SoundConfigController : MonoBehaviour
             _currentData.masterVolume = volume;
             _isChanged = true;
 
-            // 볼륨 변경 시 실제 사운드 시스템에 즉시 반영
-            ApplySoundSettingsToUnity();
+            //ApplySoundSettingsToUnity();
         }
     }
 
@@ -60,7 +59,7 @@ public class SoundConfigController : MonoBehaviour
         {
             _currentData.bgmVolume = volume;
             _isChanged = true;
-            ApplySoundSettingsToUnity();
+            //ApplySoundSettingsToUnity();
         }
     }
 
@@ -70,7 +69,7 @@ public class SoundConfigController : MonoBehaviour
         {
             _currentData.sfxVolume = volume;
             _isChanged = true;
-            ApplySoundSettingsToUnity();
+            //ApplySoundSettingsToUnity();
         }
     }
 
@@ -84,6 +83,21 @@ public class SoundConfigController : MonoBehaviour
         // Debug.Log($"[Sound] 사운드 즉시 적용: Master({_currentData.masterVolume})");
     }
 
+    // --- Load Data ---
+    public void ApplyLoadedData(SoundData loadedData)
+    {
+        // 1. 불러온 데이터를 현재 데이터로 깊은 복사(Clone)
+        _currentData = loadedData.Clone();
+
+        // 2. 불러온 데이터에 맞춰 슬라이더 UI 갱신 (이벤트 중복 실행 방지를 위해 SetValueWithoutNotify 사용)
+        if (masterSlider != null) masterSlider.SetValueWithoutNotify(_currentData.masterVolume);
+        if (bgmSlider != null) bgmSlider.SetValueWithoutNotify(_currentData.bgmVolume);
+        if (sfxSlider != null) sfxSlider.SetValueWithoutNotify(_currentData.sfxVolume);
+
+        // 3. 실제 사운드 시스템에 세팅을 적용(Apply)하고, 저장된 상태(_savedData)로 확정(Commit)
+        CommitChanges();
+    }
+
     // --- Commit & Revert ---
 
     // ConfigManager에서 Apply(저장)할 때 호출할 메서드
@@ -91,6 +105,7 @@ public class SoundConfigController : MonoBehaviour
     {
         _savedData = _currentData.Clone();
         _isChanged = false;
+        ApplySoundSettingsToUnity();
     }
 
     // 되돌리기(Revert) 버튼 또는 창 닫을 때 호출할 메서드
@@ -108,6 +123,6 @@ public class SoundConfigController : MonoBehaviour
         if (sfxSlider != null) sfxSlider.SetValueWithoutNotify(_currentData.sfxVolume);
 
         // 3. 실제 사운드 볼륨도 원래 상태(저장되어 있던 상태)로 다시 롤백
-        ApplySoundSettingsToUnity();
+        //ApplySoundSettingsToUnity();
     }
 }

@@ -134,8 +134,10 @@ public class AgentActionController : MonoBehaviour
         }
         if (Input.GetMouseButtonDown(1))
         {
-            _tileMng.TryGetTileFromWorldPosition(Camera.main.ScreenToWorldPoint(Input.mousePosition), out TileData tile);
-            StartCoroutine(MoveToRoutine(tile.coord));
+            if(_tileMng.TryGetTileFromWorldPosition(Camera.main.ScreenToWorldPoint(Input.mousePosition), out TileData tile))
+            {
+                StartCoroutine(MoveToRoutine(tile.coord));
+            }
         }
     }
 

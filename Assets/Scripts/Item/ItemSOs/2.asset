@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 2
   itemName: Carrot seeds
+  itemDesc: "\uBC2D\uC5D0 \uC2EC\uC73C\uBA74 \uC8FC\uD669\uBE5B \uB2F9\uADFC\uC774
+    \uC790\uB77C\uB098\uB294 \uC791\uACE0 \uAC00\uBCBC\uC6B4 \uC528\uC557\uC785\uB2C8\uB2E4."
   itemType: 0
   icon: {fileID: -5392625257635239999, guid: 7d4a6044f8fd3fa40854f8f8f98abd4f, type: 3}
   stackable: 1

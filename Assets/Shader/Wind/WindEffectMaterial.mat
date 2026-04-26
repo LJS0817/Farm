@@ -42,15 +42,15 @@ Material:
     m_Ints: []
     m_Floats:
     - PixelSnap: 0
-    - _Detail: 0.5
+    - _Detail: 1.2
     - _EnableExternalAlpha: 0
-    - _HeightOffset: 0.503
-    - _Interval: 4.73
-    - _MaxStrength: 0.033
-    - _MinStrength: 0.001
+    - _HeightOffset: 0.852
+    - _Interval: 0
+    - _MaxStrength: 0.09
+    - _MinStrength: 0.09
     - _Offset: 0
-    - _Speed: 1
-    - _StrengthScale: 186.36
+    - _Speed: 11.2
+    - _StrengthScale: 0.77
     - _ZWrite: 0
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}

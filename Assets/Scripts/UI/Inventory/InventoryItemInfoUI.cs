@@ -53,8 +53,7 @@ public class InventoryItemInfoUI : MonoBehaviour
         if (item != null && item.item != null)
         {
             _itemName.SetText(item.item.itemName);
-            _itemDesc.SetText("아이템 설명 1234\n아이템 설명 1234567");
-            //_itemDesc.SetText(item.item.itemDesc);
+            _itemDesc.SetText(item.item.itemDesc);
         }
     }
 }

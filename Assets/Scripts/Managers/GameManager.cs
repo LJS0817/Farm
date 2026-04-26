@@ -25,4 +25,12 @@ public class GameManager : MonoBehaviour
         title_Menu.SetActive(false);
     }
 
+
+    public void ShowLogo()
+    {
+        userInfo.CloseUI();
+        menu.anchoredPosition = new Vector2(0, -300);
+        title_Tile.SetActive(true);
+        title_Menu.SetActive(true);
+    }
 }

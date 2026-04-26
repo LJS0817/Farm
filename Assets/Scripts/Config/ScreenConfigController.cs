@@ -116,7 +116,6 @@ public class ScreenConfigController : MonoBehaviour
 
     private void ApplyScreenSettingsToUnity()
     {
-        // 해상도와 창 모드 즉시 적용
         Screen.SetResolution(_currentData.resolutionWidth, _currentData.resolutionHeight, _currentData.screenMode);
     }
 
@@ -132,7 +131,7 @@ public class ScreenConfigController : MonoBehaviour
             _isChanged = true;
 
             // 값 변경 시 실제 화면에 즉시 반영
-            ApplyScreenSettingsToUnity();
+            //ApplyScreenSettingsToUnity();
         }
     }
 
@@ -151,7 +150,7 @@ public class ScreenConfigController : MonoBehaviour
             _isChanged = true;
 
             // 값 변경 시 실제 화면에 즉시 반영
-            ApplyScreenSettingsToUnity();
+            //ApplyScreenSettingsToUnity();
         }
     }
 
@@ -168,9 +167,23 @@ public class ScreenConfigController : MonoBehaviour
     //    }
     //}
 
+    // --- Load Data ---
+    public void ApplyLoadedData(ScreenData loadedData)
+    {
+        // 1. 불러온 데이터를 현재 데이터로 깊은 복사(Clone)
+        _currentData = loadedData.Clone();
+
+        // 2. 불러온 데이터에 맞춰 드롭다운 UI 갱신
+        UpdateUIFromData();
+
+        // 3. 실제 화면에 세팅을 적용(Apply)하고, 저장된 상태(_savedData)로 확정(Commit)
+        CommitChanges();
+    }
+
     // --- Commit & Revert ---
     public void CommitChanges()
     {
+        ApplyScreenSettingsToUnity();
         _savedData = _currentData.Clone();
         _isChanged = false;
     }
@@ -186,8 +199,7 @@ public class ScreenConfigController : MonoBehaviour
         // 2. UI를 복구된 데이터에 맞게 다시 업데이트
         UpdateUIFromData();
 
-        // 3. ⭐ 화면도 원래 상태(저장되어 있던 상태)로 다시 되돌리기
-        ApplyScreenSettingsToUnity();
+        //ApplyScreenSettingsToUnity();
         //QualitySettings.vSyncCount = _currentData.vSyncCount;
     }
 
