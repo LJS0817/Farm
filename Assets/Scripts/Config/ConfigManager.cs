@@ -74,7 +74,7 @@ public class ConfigManager : MonoBehaviour
         soundController.CommitChanges();
         screenController.CommitChanges();
 
-        Debug.Log($"[PC Save] 파일로 저장되었습니다.\n경로: {mergedJson}");
+        Debug.Log($"[PC Save] 파일로 저장되었습니다.\n경로: {savePath}");
     }
 
     public void OnRevertButtonClicked()

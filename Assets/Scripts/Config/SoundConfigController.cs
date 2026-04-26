@@ -32,11 +32,7 @@ public class SoundConfigController : MonoBehaviour
     {
         _currentData = new SoundData();
         _savedData = new SoundData();
-    }
 
-    private void Start()
-    {
-        // 초기 셋업이 끝나면 현재 상태를 저장된 원본 상태로 커밋
         CommitChanges();
     }
 

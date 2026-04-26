@@ -37,10 +37,7 @@ public class ScreenConfigController : MonoBehaviour
     {
         _currentData = new ScreenData();
         _savedData = new ScreenData();
-    }
 
-    private void Start()
-    {
         InitResolutionOptions();
         InitScreenModeOptions();
 
