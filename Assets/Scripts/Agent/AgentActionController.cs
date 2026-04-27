@@ -194,20 +194,19 @@ public class AgentActionController : MonoBehaviour
         { 
             AgentCommand currentCommand = GetValidCommand(commands[i]);
             Stopwatch commandStopwatch = Stopwatch.StartNew();
-
             switch (currentCommand.Action)
             {
                 case ACTION_TYPE.MoveTo:
-                    yield return StartCoroutine(MoveToRoutine(currentCommand.TargetGridPos));
+                    yield return MoveToRoutine(currentCommand.TargetGridPos);
                     break;
                 case ACTION_TYPE.Plant:
-                    yield return StartCoroutine(PlantRoutine(currentCommand.TargetGridPos, currentCommand.Crop));
+                    yield return PlantRoutine(currentCommand.TargetGridPos, currentCommand.Crop);
                     break;
                 case ACTION_TYPE.Harvest:
-                    yield return StartCoroutine(HarvestRoutine(currentCommand.TargetGridPos));
+                    yield return HarvestRoutine(currentCommand.TargetGridPos);
                     break;
                 case ACTION_TYPE.Eat:
-                    yield return StartCoroutine(EatRoutine(currentCommand.Crop));
+                    yield return EatRoutine(currentCommand.Crop);
                     break;
             }
 
@@ -221,7 +220,7 @@ public class AgentActionController : MonoBehaviour
         ChangeState(AgentState.Idle);
         ResetDirection();
         totalStopwatch.Stop();
-        UnityEngine.Debug.Log($"[AI Timing] Action.Total: {totalStopwatch.ElapsedMilliseconds}ms | commandCount={commands.Count}");
+        Debug.Log($"[AI Timing] Action.Total: {totalStopwatch.ElapsedMilliseconds}ms | commandCount={commands.Count}");
         callback?.Invoke(commands);
     }
 
@@ -232,23 +231,23 @@ public class AgentActionController : MonoBehaviour
             ChangeState(AgentState.Walk);
 
             Vector2 targetWorldPos = tile.transform.position;
-            SetFacingDirection(targetWorldPos.x);
 
             bool isMovementDone = false;
 
-            _pathFinder.MoveToTarget(targetWorldPos, _moveSpeed, () =>
-            {
-                isMovementDone = true;
-            });
+            _pathFinder.MoveToTarget(
+                targetWorldPos,
+                _moveSpeed,
+                () => isMovementDone = true,
+                SetFacingDirectionByDelta
+            );
 
-            yield return new WaitUntil(() => isMovementDone);
+            while (!isMovementDone)
+            {
+                yield return null;
+            }
 
             _agentOffset.position = targetWorldPos;
             ChangeState(AgentState.Idle);
-        }
-        else
-        {
-            yield return null;
         }
     }
 
@@ -332,11 +331,11 @@ public class AgentActionController : MonoBehaviour
         }
     }
 
-    private void SetFacingDirection(float targetX)
+    private void SetFacingDirectionByDelta(float deltaX)
     {
         Vector3 scale = _agent.localScale;
 
-        float desiredX = (targetX < _agent.position.x) ? -_agentScale.x : _agentScale.x;
+        float desiredX = (deltaX < 0) ? -_agentScale.x : _agentScale.x;
 
         if (scale.x != desiredX)
         {

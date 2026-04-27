@@ -13,7 +13,7 @@ public class AgentPathFinder : MonoBehaviour
         seeker = GetComponent<Seeker>();
     }
 
-    public void MoveToTarget(Vector3 targetPosition, float speed, Action onComplete = null)
+    public void MoveToTarget(Vector3 targetPosition, float speed, Action onComplete = null, Action<float> onDirectionChange = null)
     {
         if (IsMoving) return;
         IsMoving = true;
@@ -22,7 +22,7 @@ public class AgentPathFinder : MonoBehaviour
         {
             if (!p.error)
             {
-                StartCoroutine(FollowPath(p, speed, onComplete));
+                StartCoroutine(FollowPath(p, speed, onComplete, onDirectionChange));
             }
             else
             {
@@ -38,7 +38,7 @@ public class AgentPathFinder : MonoBehaviour
         IsMoving = false;
     }
 
-    private IEnumerator FollowPath(Path p, float speed, Action onComplete)
+    private IEnumerator FollowPath(Path p, float speed, Action onComplete, Action<float> onDirectionChange)
     {
         for (int i = 0; i < p.vectorPath.Count; i++)
         {
@@ -46,6 +46,13 @@ public class AgentPathFinder : MonoBehaviour
 
             while ((transform.position - currentWaypoint).sqrMagnitude > 0.004f)
             {
+                float deltaX = currentWaypoint.x - transform.position.x;
+
+                if (Mathf.Abs(deltaX) > 0.001f)
+                {
+                    onDirectionChange?.Invoke(deltaX);
+                }
+
                 transform.position = Vector3.MoveTowards(transform.position, currentWaypoint, speed * Time.deltaTime);
                 yield return null;
             }

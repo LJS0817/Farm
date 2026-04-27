@@ -26,6 +26,8 @@ public class TileManager : MonoBehaviour
     public TileData[,] tiles;
     public TileView[,] tileViews;
 
+    CustomTileController _customTileContoller;
+
 
     private void Awake()
     {
@@ -48,6 +50,8 @@ public class TileManager : MonoBehaviour
         middleDB.EnsureInitialized();
         tiles = new TileData[middleDB.Width, middleDB.Height];
         tileViews = new TileView[middleDB.Width, middleDB.Height];
+
+        _customTileContoller = GetComponent<CustomTileController>();
     }
 
     private void Start()
@@ -404,7 +408,7 @@ public class TileManager : MonoBehaviour
                 TileView tileView = tileViews[x, y];
                 if (tileView != null)
                 {
-                    tileView.Refresh();
+                    tileView.Refresh(_customTileContoller.GetTilePrefab);
                 }
             }
         }
