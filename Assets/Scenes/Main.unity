@@ -3302,7 +3302,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0, y: -0.5}
+  m_AnchoredPosition: {x: 0, y: -0.5}
   m_SizeDelta: {x: -8, y: -7}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &314877579
@@ -4984,7 +4984,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8983031945290737577, guid: 0027937279f75254381ba3f10063ceb8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.00022888184
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 9065562917122220410, guid: 0027937279f75254381ba3f10063ceb8, type: 3}
@@ -9465,6 +9465,10 @@ PrefabInstance:
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1596951048}
+    - target: {fileID: 8983031945290737577, guid: 0027937279f75254381ba3f10063ceb8, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0.00024414062
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -16808,7 +16812,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: -161.43, y: -241.2664}
+  m_AnchoredPosition: {x: -161.43, y: -241.26642}
   m_SizeDelta: {x: 423.29, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1297750094
@@ -18271,7 +18275,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 180}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0.000015258789, y: 7.775116}
+  m_AnchoredPosition: {x: 0.000015258789, y: 7.775112}
   m_SizeDelta: {x: 33, y: 32}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1446717301
@@ -20928,11 +20932,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4265866787959534101, guid: 6df0d465107004f25957575e270ef9de, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4265866787959534101, guid: 6df0d465107004f25957575e270ef9de, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4265866787959534101, guid: 6df0d465107004f25957575e270ef9de, type: 3}
       propertyPath: m_AnchorMin.x
@@ -21094,6 +21098,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ItemEffectPool
       objectReference: {fileID: 0}
+    - target: {fileID: 8860962191868900859, guid: 6df0d465107004f25957575e270ef9de, type: 3}
+      propertyPath: _canvas
+      value: 
+      objectReference: {fileID: 1439699767}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

@@ -108,5 +108,6 @@ public class MenuUIManager : MonoBehaviour
     public void OnClickReturnMenu()
     {
         //SceneManager.LoadScene(1);
+        if (_prevActiveUI != null) closeUI(_prevActiveUI);
     }
 }
