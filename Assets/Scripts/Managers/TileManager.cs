@@ -134,8 +134,6 @@ public class TileManager : MonoBehaviour
                 Vector2Int coord = new Vector2Int(x, y);
                 GameObject tileObject = Instantiate(tilePrefab, GetTilePosition(x, y), Quaternion.identity, lineParent);
                 tileObject.name = $"({x},{y})";
-                ApplyLineSorting(tileObject, y);
-
                 TileData tileData = tileObject.GetComponent<TileData>();
                 if (tileData == null)
                 {
@@ -147,6 +145,7 @@ public class TileManager : MonoBehaviour
                 tileData.coord = coord;
 
                 middleDB.ApplyStateToTile(tileData);
+                ApplyLineSorting(tileObject, y, tileData.tileType);
 
                 // SpriteRenderer spriteRenderer = tileObject.GetComponent<SpriteRenderer>();
                 // if (spriteRenderer != null)
@@ -182,9 +181,8 @@ public class TileManager : MonoBehaviour
 
             tiles[tile.coord.x, tile.coord.y] = tile;
             tileViews[tile.coord.x, tile.coord.y] = tile.GetComponent<TileView>();
-            ApplyLineSorting(tile.gameObject, tile.coord.y);
-
             middleDB.ApplyStateToTile(tile);
+            ApplyLineSorting(tile.gameObject, tile.coord.y, tile.tileType);
         }
     }
 
@@ -239,6 +237,7 @@ public class TileManager : MonoBehaviour
         }
 
         middleDB.ApplyStateToTile(tile);
+        ApplyLineSorting(tile.gameObject, tile.coord.y, tile.tileType);
         ApplyTileLayer(tile.gameObject, tile.tileType);
 
         TileView tileView = tileViews[coord.x, coord.y];
@@ -403,6 +402,7 @@ public class TileManager : MonoBehaviour
                 }
 
                 middleDB.ApplyStateToTile(tile);
+                ApplyLineSorting(tile.gameObject, tile.coord.y, tile.tileType);
                 ApplyTileLayer(tile.gameObject, tile.tileType);
 
                 TileView tileView = tileViews[x, y];
@@ -582,7 +582,7 @@ public class TileManager : MonoBehaviour
         return lineObject.transform;
     }
 
-    private void ApplyLineSorting(GameObject tileObject, int lineIndex)
+    private void ApplyLineSorting(GameObject tileObject, int lineIndex, TileData.TileType tileType)
     {
         if (tileObject == null)
         {
@@ -596,6 +596,10 @@ public class TileManager : MonoBehaviour
         }
 
         int targetBaseOrder = lineSortingBaseOrder + lineIndex;
+        if (tileType == TileData.TileType.Rock)
+        {
+            targetBaseOrder += 1;
+        }
         int minOriginalOrder = renderers[0].sortingOrder;
 
         for (int i = 1; i < renderers.Length; i++)
