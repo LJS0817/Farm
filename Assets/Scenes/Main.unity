@@ -2320,6 +2320,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5537722458187237798, guid: d9af6f4866df2bd48ac057b279fae0b9, type: 3}
+      propertyPath: canvas
+      value: 
+      objectReference: {fileID: 1439699768}
+    - target: {fileID: 5537722458187237798, guid: d9af6f4866df2bd48ac057b279fae0b9, type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.size
       value: 1
       objectReference: {fileID: 0}
@@ -9341,6 +9345,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1856745340}
     m_Modifications:
+    - target: {fileID: 568012688260060235, guid: 0027937279f75254381ba3f10063ceb8, type: 3}
+      propertyPath: m_Value
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2339850273121292027, guid: 0027937279f75254381ba3f10063ceb8, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -9467,7 +9475,7 @@ PrefabInstance:
       objectReference: {fileID: 1596951048}
     - target: {fileID: 8983031945290737577, guid: 0027937279f75254381ba3f10063ceb8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.00024414062
+      value: -0.0000076293945
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -14919,6 +14927,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5537722458187237798, guid: d9af6f4866df2bd48ac057b279fae0b9, type: 3}
+      propertyPath: canvas
+      value: 
+      objectReference: {fileID: 1439699768}
+    - target: {fileID: 5537722458187237798, guid: d9af6f4866df2bd48ac057b279fae0b9, type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.size
       value: 1
       objectReference: {fileID: 0}
@@ -16638,7 +16650,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1287412874}
   m_Enabled: 1
-  m_Alpha: 0
+  m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -17034,6 +17046,10 @@ PrefabInstance:
       propertyPath: value
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5537722458187237798, guid: d9af6f4866df2bd48ac057b279fae0b9, type: 3}
+      propertyPath: canvas
+      value: 
+      objectReference: {fileID: 1439699768}
     - target: {fileID: 5537722458187237798, guid: d9af6f4866df2bd48ac057b279fae0b9, type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.size
       value: 1
@@ -20656,8 +20672,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2018189718}
   - {fileID: 1345941787}
+  - {fileID: 2018189718}
   - {fileID: 994213688}
   m_Father: {fileID: 390480636}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

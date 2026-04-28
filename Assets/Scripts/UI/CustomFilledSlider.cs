@@ -11,6 +11,7 @@ public class CustomSlicedSlider : MonoBehaviour, IDragHandler, IPointerDownHandl
     public RectTransform handleArea;
     public RectTransform handle;
     public TMP_Text valueText;
+    public RectTransform canvas;
 
     public Image handleImage;
     public Color normalColor = Color.white;
@@ -118,10 +119,10 @@ public class CustomSlicedSlider : MonoBehaviour, IDragHandler, IPointerDownHandl
         if (fillMask != null)
         {
             float fullWidth = handleArea.rect.width;
-            float currentScaleX = fillMask.rectTransform.lossyScale.x;
+            float currentScaleX = fillMask.rectTransform.lossyScale.x / canvas.lossyScale.x;
+            float halfHandle = handle.rect.width * handle.lossyScale.x / canvas.lossyScale.x * 0.5f;
 
-            float paddingRight = (fullWidth * currentScaleX) * (1f - value) + handle.rect.width * currentScaleX * 0.5f;
-
+            float paddingRight = halfHandle + ((fullWidth * currentScaleX) * (1f - value));
             fillMask.padding = new Vector4(0, 0, paddingRight, 0);
         }
 
