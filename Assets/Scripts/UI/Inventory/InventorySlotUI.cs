@@ -68,6 +68,7 @@ public class InventorySlotUI : MonoBehaviour
     }
 
     public InventorySlot GetItemInfo() => _currentItem;
+    public bool IsEmptySlot() => _currentItem == null;
 
     public void OnSlotClicked() => OnSlotClickedEvent?.Invoke(this);
     public void OnPointerEnter() => OnPointerEnterEvent?.Invoke(this);

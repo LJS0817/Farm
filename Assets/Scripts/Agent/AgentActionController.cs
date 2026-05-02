@@ -322,6 +322,17 @@ public class AgentActionController : MonoBehaviour
         _inventoryMng.RemoveItem(cropData.harvestItem);
     }
 
+    public void EatDirectly()
+    {
+        ItemSO item = _inventoryMng.GetFocusedItem();
+        TileData.CropType crop = item.itemName switch
+        {
+            "Cherry" => TileData.CropType.Cherry,
+            "Carrot" => TileData.CropType.Carrot,
+            _ => TileData.CropType.IsEmpty
+        };
+        ReceiveCommands(new List<AgentCommand>(1) { new AgentCommand(ACTION_TYPE.Eat, Vector2Int.zero, crop) }, null);
+    }
 
     private void ChangeState(AgentState newState)
     {

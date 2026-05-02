@@ -118,9 +118,10 @@ public class CustomSlicedSlider : MonoBehaviour, IDragHandler, IPointerDownHandl
     {
         if (fillMask != null)
         {
+            float scaleX = canvas == null ? (Screen.width / 1920.0f) : canvas.lossyScale.x;
             float fullWidth = handleArea.rect.width;
-            float currentScaleX = fillMask.rectTransform.lossyScale.x / canvas.lossyScale.x;
-            float halfHandle = handle.rect.width * handle.lossyScale.x / canvas.lossyScale.x * 0.5f;
+            float currentScaleX = fillMask.rectTransform.lossyScale.x / scaleX;
+            float halfHandle = handle.rect.width * handle.lossyScale.x / scaleX * 0.5f;
 
             float paddingRight = halfHandle + ((fullWidth * currentScaleX) * (1f - value));
             fillMask.padding = new Vector4(0, 0, paddingRight, 0);
