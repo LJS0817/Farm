@@ -4,9 +4,10 @@ using System.IO;
 [System.Serializable]
 public class PlayerConfigData
 {
-    // 두 개의 데이터를 하나로 묶는 최상위 클래스
+    // 설정 데이터를 하나로 묶는 최상위 클래스
     public SoundData soundData;
     public ScreenData screenData;
+    public LanguageData languageData;
 }
 
 public class ConfigManager : MonoBehaviour
@@ -14,13 +15,37 @@ public class ConfigManager : MonoBehaviour
     [Header("Controllers")]
     public SoundConfigController soundController;
     public ScreenConfigController screenController;
+    public LanguageConfigController languageController;
 
     private const string CONFIG_FILE_NAME = "playerConfig.json";
+
+    private void Awake()
+    {
+        ResolveControllerReferences();
+    }
 
     private void Start()
     {
         // 게임 시작 시 자동으로 설정 불러오기
         LoadConfig();
+    }
+
+    private void ResolveControllerReferences()
+    {
+        if (soundController == null)
+        {
+            soundController = FindFirstObjectByType<SoundConfigController>();
+        }
+
+        if (screenController == null)
+        {
+            screenController = FindFirstObjectByType<ScreenConfigController>();
+        }
+
+        if (languageController == null)
+        {
+            languageController = FindFirstObjectByType<LanguageConfigController>();
+        }
     }
 
     public void LoadConfig()
@@ -39,8 +64,9 @@ public class ConfigManager : MonoBehaviour
 
             PlayerConfigData loadedData = JsonUtility.FromJson<PlayerConfigData>(json);
 
-            if (loadedData.soundData != null) soundController.ApplyLoadedData(loadedData.soundData);
-            if (loadedData.screenData != null) screenController.ApplyLoadedData(loadedData.screenData);
+            if (loadedData.soundData != null && soundController != null) soundController.ApplyLoadedData(loadedData.soundData);
+            if (loadedData.screenData != null && screenController != null) screenController.ApplyLoadedData(loadedData.screenData);
+            if (loadedData.languageData != null && languageController != null) languageController.ApplyLoadedData(loadedData.languageData);
 
             Debug.Log("[PC Load] 설정을 성공적으로 불러와 적용했습니다.");
         }
@@ -52,8 +78,19 @@ public class ConfigManager : MonoBehaviour
 
     public void OnApplyButtonClicked()
     {
+        ResolveControllerReferences();
+
+        if (languageController != null)
+        {
+            languageController.SyncCurrentDataFromUI();
+        }
+
         // 1. 소리나 화면 중 하나라도 변경된 사항이 있는지 체크
-        if (!soundController.IsChanged && !screenController.IsChanged)
+        bool soundChanged = soundController != null && soundController.IsChanged;
+        bool screenChanged = screenController != null && screenController.IsChanged;
+        bool languageChanged = languageController != null && languageController.NeedsApply;
+
+        if (!soundChanged && !screenChanged && !languageChanged)
         {
             Debug.Log("변경된 설정이 없어 저장을 건너뜁니다.");
             return;
@@ -61,8 +98,9 @@ public class ConfigManager : MonoBehaviour
 
         // 2. 최상위 데이터 객체 생성 및 각 컨트롤러의 데이터 할당
         PlayerConfigData mergedConfig = new PlayerConfigData();
-        mergedConfig.soundData = soundController.CurrentData;
-        mergedConfig.screenData = screenController.CurrentData;
+        if (soundController != null) mergedConfig.soundData = soundController.CurrentData;
+        if (screenController != null) mergedConfig.screenData = screenController.CurrentData;
+        if (languageController != null) mergedConfig.languageData = languageController.CurrentData;
 
         // 3. 통합된 데이터를 단일 JSON 문자열로 변환 (true: 보기 좋게 줄바꿈 적용)
         string mergedJson = JsonUtility.ToJson(mergedConfig, true);
@@ -71,8 +109,9 @@ public class ConfigManager : MonoBehaviour
         string savePath = Path.Combine(Application.persistentDataPath, CONFIG_FILE_NAME);
         File.WriteAllText(savePath, mergedJson);
 
-        soundController.CommitChanges();
-        screenController.CommitChanges();
+        if (soundController != null) soundController.CommitChanges();
+        if (screenController != null) screenController.CommitChanges();
+        if (languageController != null) languageController.CommitChanges();
 
         Debug.Log($"[PC Save] 파일로 저장되었습니다.\n경로: {savePath}");
     }
@@ -80,7 +119,8 @@ public class ConfigManager : MonoBehaviour
     public void OnRevertButtonClicked()
     {
         // 각 컨트롤러가 가지고 있는 수정 전 상태로 스스로를 되돌림
-        soundController.RevertChanges();
-        screenController.RevertChanges();
+        if (soundController != null) soundController.RevertChanges();
+        if (screenController != null) screenController.RevertChanges();
+        if (languageController != null) languageController.RevertChanges();
     }
 }

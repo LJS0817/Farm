@@ -34,6 +34,51 @@ MonoBehaviour:
     m_Localized: Quit
     m_Metadata:
       m_Items: []
+  - m_Id: 304638816411648
+    m_Localized: Welcome!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 304676925857792
+    m_Localized: Each crop can take a different amount of time to grow!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 304724459905024
+    m_Localized: Harvest crops and add them to your inventory!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 304842370179072
+    m_Localized: Harvested crops are added to your inventory as reward items!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 304898141839360
+    m_Localized: Touch a tile to check its current status!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 304975103123456
+    m_Localized: If your inventory is full, you might not be able to collect every
+      item!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305036323184640
+    m_Localized: Build your very own farm!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305089423073280
+    m_Localized: If you are not sure what to do first, try planting a crop on an
+      empty tile!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305586037055488
+    m_Localized: 'If there is existing progress data, it will be overwritten.
+
+      If
+      you want to start a new game, press the Start button below!'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305748528586752
+    m_Localized: Start
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

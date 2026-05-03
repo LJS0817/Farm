@@ -31,6 +31,46 @@ MonoBehaviour:
     m_Key: quit
     m_Metadata:
       m_Items: []
+  - m_Id: 304638816411648
+    m_Key: tip_welcome
+    m_Metadata:
+      m_Items: []
+  - m_Id: 304676925857792
+    m_Key: tip_crop_growth_times
+    m_Metadata:
+      m_Items: []
+  - m_Id: 304724459905024
+    m_Key: tip_harvest_to_inventory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 304842370179072
+    m_Key: tip_harvest_rewards
+    m_Metadata:
+      m_Items: []
+  - m_Id: 304898141839360
+    m_Key: tip_touch_tiles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 304975103123456
+    m_Key: tip_inventory_full
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305036323184640
+    m_Key: tip_complete_farm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305089423073280
+    m_Key: tip_first_step
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305586037055488
+    m_Key: new_game_desc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305748528586752
+    m_Key: new_game_start
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

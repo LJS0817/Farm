@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections.Generic;
 using TMPro;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 [System.Serializable]
 public class ScreenData
@@ -22,6 +24,12 @@ public class ScreenConfigController : MonoBehaviour
     [SerializeField] private TMP_Dropdown resolutionDropdown;
     [SerializeField] private TMP_Dropdown screenModeDropdown;
 
+    [Header("Localization")]
+    [SerializeField] private string settingsTableName = "Settings";
+    [SerializeField] private string fullscreenWindowKey = "settings.screen_mode.fullscreen_window";
+    [SerializeField] private string exclusiveFullscreenKey = "settings.screen_mode.exclusive_fullscreen";
+    [SerializeField] private string windowedKey = "settings.screen_mode.windowed";
+
     private bool _isChanged = false;
 
     private ScreenData _savedData;
@@ -42,6 +50,16 @@ public class ScreenConfigController : MonoBehaviour
         InitScreenModeOptions();
 
         CommitChanges();
+    }
+
+    private void OnEnable()
+    {
+        LocalizationSettings.SelectedLocaleChanged += HandleSelectedLocaleChanged;
+    }
+
+    private void OnDisable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= HandleSelectedLocaleChanged;
     }
 
     private void InitResolutionOptions()
@@ -94,7 +112,7 @@ public class ScreenConfigController : MonoBehaviour
         if (screenModeDropdown == null) return;
 
         screenModeDropdown.ClearOptions();
-        List<string> optionsTextList = new List<string>(3) { "전체 창모드", "전체화면", "창모드" };
+        List<string> optionsTextList = BuildScreenModeOptions();
         screenModeDropdown.AddOptions(optionsTextList);
 
         int currentModeIndex = Screen.fullScreenMode switch
@@ -109,6 +127,46 @@ public class ScreenConfigController : MonoBehaviour
 
         _currentData.screenMode = Screen.fullScreenMode;
         //_currentData.vSyncCount = QualitySettings.vSyncCount;
+    }
+
+    private void HandleSelectedLocaleChanged(Locale locale)
+    {
+        RefreshScreenModeOptions();
+    }
+
+    private void RefreshScreenModeOptions()
+    {
+        if (screenModeDropdown == null)
+        {
+            return;
+        }
+
+        int currentValue = screenModeDropdown.value;
+        screenModeDropdown.ClearOptions();
+        screenModeDropdown.AddOptions(BuildScreenModeOptions());
+        screenModeDropdown.SetValueWithoutNotify(currentValue);
+        screenModeDropdown.RefreshShownValue();
+    }
+
+    private List<string> BuildScreenModeOptions()
+    {
+        return new List<string>(3)
+        {
+            GetLocalizedScreenModeText(fullscreenWindowKey, "전체 창모드"),
+            GetLocalizedScreenModeText(exclusiveFullscreenKey, "전체화면"),
+            GetLocalizedScreenModeText(windowedKey, "창모드")
+        };
+    }
+
+    private string GetLocalizedScreenModeText(string entryKey, string fallback)
+    {
+        if (string.IsNullOrEmpty(settingsTableName) || string.IsNullOrEmpty(entryKey))
+        {
+            return fallback;
+        }
+
+        string localized = LocalizationSettings.StringDatabase.GetLocalizedString(settingsTableName, entryKey);
+        return string.IsNullOrEmpty(localized) ? fallback : localized;
     }
 
     private void ApplyScreenSettingsToUnity()
@@ -203,7 +261,7 @@ public class ScreenConfigController : MonoBehaviour
     private void UpdateUIFromData()
     {
         int resIndex = _filteredResolutions.FindIndex(r => r.width == _currentData.resolutionWidth && r.height == _currentData.resolutionHeight);
-        if (resIndex >= 0)
+        if (resolutionDropdown != null && resIndex >= 0)
         {
             resolutionDropdown.SetValueWithoutNotify(resIndex);
             resolutionDropdown.RefreshShownValue();
@@ -215,7 +273,11 @@ public class ScreenConfigController : MonoBehaviour
             FullScreenMode.Windowed => 2,
             _ => 0
         };
-        screenModeDropdown.SetValueWithoutNotify(modeIndex);
-        screenModeDropdown.RefreshShownValue();
+
+        if (screenModeDropdown != null)
+        {
+            screenModeDropdown.SetValueWithoutNotify(modeIndex);
+            screenModeDropdown.RefreshShownValue();
+        }
     }
 }
