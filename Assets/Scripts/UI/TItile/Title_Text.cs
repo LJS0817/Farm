@@ -1,20 +1,23 @@
 using TMPro;
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class Title_Text : MonoBehaviour
 {
-    [TextArea(2, 4)]
-    private string[] textPresets =
+    [SerializeField] private string textPresetTableName = "Title";
+    [SerializeField] private string[] textPresetKeys =
     {
-        "환영해요!",
-        "작물마다 성장 시간이 다를 수 있어요!",
-        "작물을 수확해서 인벤토리에 담아보세요!",
-        "수확이 끝난 작물은 보상 아이템으로 인벤토리에 들어가요!",
-        "타일을 터치하면 현재 상태를 확인할 수 있어요!",
-        "인벤토리가 가득 차면 아이템을 모두 담지 못할 수도 있어요!",
-        "나만의 농장을 완성해 보세요!",
-        "무엇을 먼저 해야 할지 고민된다면, 빈 땅에 작물을 심는 것부터 시작해 보세요!"
+        "tip_welcome",
+        "tip_crop_growth_times",
+        "tip_harvest_to_inventory",
+        "tip_harvest_rewards",
+        "tip_touch_tiles",
+        "tip_inventory_full",
+        "tip_complete_farm",
+        "tip_first_step"
     };
     public TMP_Text ai_Text;
     public GameObject loadingObject;
@@ -22,6 +25,16 @@ public class Title_Text : MonoBehaviour
     [SerializeField] private float loadingDuration = 1f;
 
     private bool isShowingText;
+
+    private void OnEnable()
+    {
+        LocalizationSettings.SelectedLocaleChanged += HandleSelectedLocaleChanged;
+    }
+
+    private void OnDisable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= HandleSelectedLocaleChanged;
+    }
 
     private void Start()
     {
@@ -43,10 +56,22 @@ public class Title_Text : MonoBehaviour
         StartCoroutine(ShowRandomTitleTextRoutine());
     }
 
+    private void HandleSelectedLocaleChanged(Locale locale)
+    {
+        if (!isShowingText && ai_Text != null && !string.IsNullOrEmpty(ai_Text.text))
+        {
+            ShowRandomTitleText();
+        }
+    }
+
     private IEnumerator ShowRandomTitleTextRoutine()
     {
         isShowingText = true;
-        ai_Text.text = "";
+        if (ai_Text != null)
+        {
+            ai_Text.text = "";
+        }
+
         if (loadingObject != null)
         {
             loadingObject.SetActive(true);
@@ -59,12 +84,32 @@ public class Title_Text : MonoBehaviour
             loadingObject.SetActive(false);
         }
 
-        if (ai_Text != null && textPresets != null && textPresets.Length > 0)
+        if (ai_Text != null && textPresetKeys != null && textPresetKeys.Length > 0)
         {
-            int randomIndex = Random.Range(0, textPresets.Length);
-            ai_Text.text = textPresets[randomIndex];
+            int randomIndex = Random.Range(0, textPresetKeys.Length);
+            yield return SetLocalizedPresetText(textPresetKeys[randomIndex]);
         }
 
         isShowingText = false;
+    }
+
+    private IEnumerator SetLocalizedPresetText(string entryKey)
+    {
+        if (string.IsNullOrEmpty(textPresetTableName) || string.IsNullOrEmpty(entryKey))
+        {
+            yield break;
+        }
+
+        AsyncOperationHandle<string> handle = LocalizationSettings.StringDatabase.GetLocalizedStringAsync(textPresetTableName, entryKey);
+        yield return handle;
+
+        if (handle.Status == AsyncOperationStatus.Succeeded && !string.IsNullOrEmpty(handle.Result))
+        {
+            ai_Text.text = handle.Result;
+        }
+        else
+        {
+            ai_Text.text = entryKey;
+        }
     }
 }

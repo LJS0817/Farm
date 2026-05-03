@@ -1,5 +1,8 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
 // 선택한 타일의 상태를 보여주고, 심기/수확 같은 액션을 연결하는 UI 패널.
@@ -26,6 +29,11 @@ public class TileInfoPanel : MonoBehaviour
     [SerializeField] private Transform plusInfoLayer;
     [SerializeField] private TileInfo_Plus tileInfoPlusPrefab;
 
+    [Header("Localization")]
+    [SerializeField] private string tileInfoTableName = "TileInfo";
+
+    private bool hasSelectedTile;
+
     private void Awake()
     {
         if (middleDB == null)
@@ -44,6 +52,16 @@ public class TileInfoPanel : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        LocalizationSettings.SelectedLocaleChanged += HandleSelectedLocaleChanged;
+    }
+
+    private void OnDisable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= HandleSelectedLocaleChanged;
+    }
+
     private void Start()
     {
         ClearPanel();
@@ -60,6 +78,18 @@ public class TileInfoPanel : MonoBehaviour
         RefreshGrowthUI();
     }
 
+    private void HandleSelectedLocaleChanged(Locale locale)
+    {
+        if (IsOpen && hasSelectedTile)
+        {
+            OnClickTileInfoPanel(cacheID);
+        }
+        else
+        {
+            ClearPanel();
+        }
+    }
+
 
     // 선택된 타일 ID를 기준으로 패널의 텍스트, 이미지, 수확 버튼 상태를 갱신한다.
     public void OnClickTileInfoPanel(int tileID)
@@ -72,30 +102,41 @@ public class TileInfoPanel : MonoBehaviour
         if (middleDB == null)
         {
             Debug.LogError("MiddleDB reference is missing.", this);
-            SetTexts("Tile Info", "Unknown", "데이터를 찾을 수 없습니다.", "-");
+            SetTexts(
+                L("tile_info.title", "Tile Info"),
+                L("tile_info.unknown", "Unknown"),
+                L("tile_info.no_data", "데이터를 찾을 수 없습니다."),
+                "-");
             SetTileImage(null);
             SetSliderValue(0f);
+            hasSelectedTile = false;
             return;
         }
 
         if (!middleDB.TryGetTileStateById(tileID, out MiddleDB.TileState state))
         {
             Debug.LogWarning($"Tile info not found. tileID: {tileID}", this);
-            SetTexts($"Tile #{tileID}", "Unknown", "존재하지 않는 타일입니다.", "-");
+            SetTexts(
+                L("tile_info.tile_name.fallback", $"Tile #{tileID}", Args(("id", tileID))),
+                L("tile_info.unknown", "Unknown"),
+                L("tile_info.tile_not_found", "존재하지 않는 타일입니다."),
+                "-");
             SetTileImage(null);
             SetSliderValue(0f);
+            hasSelectedTile = false;
             return;
         }
         cacheID = tileID;
+        hasSelectedTile = true;
 
         string tileName = GetTileDisplayName(state);
-        string location = $" 위치 : ({state.coord.x}, {state.coord.y})";
+        string location = L("tile_info.location", $" 위치 : ({state.coord.x}, {state.coord.y})", Args(("x", state.coord.x), ("y", state.coord.y)));
         string tileState = GetTileStateText(state.cropType, state.isFarmable, state.cropState);
         string timeText = state.cropState == TileData.CropState.IsGrowing
-            ? $"성장 남은 시간 : {state.growDuration:0.0}"
+            ? GetGrowRemainingText(state.growDuration)
             : state.cropState == TileData.CropState.IsHarvastable
-                ? "수확 가능합니다."
-                : "성장 중인 작물이 없습니다.";
+                ? GetHarvestAvailableText()
+                : GetNoGrowingCropText();
 
         SetTexts(tileName, location, tileState, timeText);
         SetTileImage(GetTileSprite(state));
@@ -207,7 +248,7 @@ public class TileInfoPanel : MonoBehaviour
 
             if (Text_Time != null)
             {
-                Text_Time.text = "수확 가능합니다.";
+                Text_Time.text = GetHarvestAvailableText();
             }
 
             return;
@@ -221,7 +262,7 @@ public class TileInfoPanel : MonoBehaviour
 
             if (Text_Time != null)
             {
-                Text_Time.text = "성장 중인 작물이 없습니다.";
+                Text_Time.text = GetNoGrowingCropText();
             }
 
             return;
@@ -239,7 +280,7 @@ public class TileInfoPanel : MonoBehaviour
 
         if (Text_Time != null)
         {
-            Text_Time.text = $"성장 남은 시간 : {tile.GrowDuration:0.0}";
+            Text_Time.text = GetGrowRemainingText(tile.GrowDuration);
         }
     }
 
@@ -250,11 +291,16 @@ public class TileInfoPanel : MonoBehaviour
 
     public void ClearPanel()
     {
-        SetTexts("Tile Info", "-", "선택된 타일이 없습니다.", "-");
+        SetTexts(
+            L("tile_info.title", "Tile Info"),
+            "-",
+            L("tile_info.no_selected_tile", "선택된 타일이 없습니다."),
+            "-");
         SetTileImage(null);
         SetSliderValue(0f);
         SetHarvestButton(false);
         ClearPlusInfos();
+        hasSelectedTile = false;
     }
 
     // 현재 선택된 타일의 작물을 수확하고 인벤토리에 지급한다.
@@ -316,11 +362,11 @@ public class TileInfoPanel : MonoBehaviour
     {
         return state.tileType switch
         {
-            TileData.TileType.Weed => $"타일명 : 잔디",
-            TileData.TileType.Water => $"타일명 : 물",
-            TileData.TileType.Tree => $"타일명 : 나무",
-            TileData.TileType.Rock => $"타일명 : 돌",
-            _ => $"Tile #{state.id}"
+            TileData.TileType.Weed => L("tile_info.tile_name.weed", "타일명 : 잔디"),
+            TileData.TileType.Water => L("tile_info.tile_name.water", "타일명 : 물"),
+            TileData.TileType.Tree => L("tile_info.tile_name.tree", "타일명 : 나무"),
+            TileData.TileType.Rock => L("tile_info.tile_name.rock", "타일명 : 돌"),
+            _ => L("tile_info.tile_name.fallback", $"Tile #{state.id}", Args(("id", state.id)))
         };
     }
 
@@ -328,9 +374,9 @@ public class TileInfoPanel : MonoBehaviour
     {
         return cropType switch
         {
-            TileData.CropType.IsEmpty => "없음",
-            TileData.CropType.Carrot => "당근",
-            TileData.CropType.Cherry => "체리",
+            TileData.CropType.IsEmpty => L("tile_info.crop.empty", "없음"),
+            TileData.CropType.Carrot => L("tile_info.crop.carrot", "당근"),
+            TileData.CropType.Cherry => L("tile_info.crop.cherry", "체리"),
             _ => cropType.ToString()
         };
     }
@@ -339,16 +385,68 @@ public class TileInfoPanel : MonoBehaviour
     {
         return cropState switch
         {
-            TileData.CropState.IsEmpty => "비어 있음",
-            TileData.CropState.IsGrowing => "성장 중",
-            TileData.CropState.IsHarvastable => "수확 가능",
+            TileData.CropState.IsEmpty => L("tile_info.crop_state.empty", "비어 있음"),
+            TileData.CropState.IsGrowing => L("tile_info.crop_state.growing", "성장 중"),
+            TileData.CropState.IsHarvastable => L("tile_info.crop_state.harvestable", "수확 가능"),
             _ => cropState.ToString()
         };
     }
 
     private string GetTileStateText(TileData.CropType cropType, bool isFarmable, TileData.CropState cropState)
     {
-        return $"<b>작물 :</b> {GetCropDisplayName(cropType)}\n<b>경작 가능 :</b> {(isFarmable ? "예" : "아니오")}\n<b>상태 :</b> {GetCropStateDisplayName(cropState)}";
+        string crop = GetCropDisplayName(cropType);
+        string farmable = isFarmable ? L("tile_info.yes", "예") : L("tile_info.no", "아니오");
+        string state = GetCropStateDisplayName(cropState);
+
+        return L(
+            "tile_info.state_block",
+            $"<b>작물 :</b> {crop}\n<b>경작 가능 :</b> {farmable}\n<b>상태 :</b> {state}",
+            Args(("crop", crop), ("farmable", farmable), ("state", state)));
+    }
+
+    private string GetGrowRemainingText(float seconds)
+    {
+        return L("tile_info.grow_remaining", $"성장 남은 시간 : {seconds:0.0}", Args(("seconds", seconds)));
+    }
+
+    private string GetHarvestAvailableText()
+    {
+        return L("tile_info.harvest_available", "수확 가능합니다.");
+    }
+
+    private string GetNoGrowingCropText()
+    {
+        return L("tile_info.no_growing_crop", "성장 중인 작물이 없습니다.");
+    }
+
+    private string L(string entryKey, string fallback)
+    {
+        return L(entryKey, fallback, null);
+    }
+
+    private string L(string entryKey, string fallback, Dictionary<string, object> arguments)
+    {
+        if (string.IsNullOrEmpty(tileInfoTableName) || string.IsNullOrEmpty(entryKey))
+        {
+            return fallback;
+        }
+
+        string localized = arguments == null
+            ? LocalizationSettings.StringDatabase.GetLocalizedString(tileInfoTableName, entryKey)
+            : LocalizationSettings.StringDatabase.GetLocalizedString(tileInfoTableName, entryKey, null, FallbackBehavior.UseProjectSettings, arguments);
+
+        return string.IsNullOrEmpty(localized) ? fallback : localized;
+    }
+
+    private Dictionary<string, object> Args(params (string key, object value)[] values)
+    {
+        Dictionary<string, object> arguments = new Dictionary<string, object>(values.Length);
+        for (int i = 0; i < values.Length; i++)
+        {
+            arguments[values[i].key] = values[i].value;
+        }
+
+        return arguments;
     }
 
     private void SetTexts(string tileName, string location, string tileState, string timeText)
