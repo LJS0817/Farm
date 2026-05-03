@@ -72,6 +72,30 @@ public class InventoryUI : MonoBehaviour
         }
     }
 
+    public void ResetInventoryUIState()
+    {
+        // 1. 선택(포커스)된 슬롯 초기화
+        if (_focusedSlot != null)
+        {
+            _focusedSlot.UnfocusSlot(); // 슬롯 포커스 알파값 0으로
+            _focusedSlot = null;        // 변수 비우기
+        }
+
+        // 2. 마우스 호버 상태 초기화
+        if (_hoveredSlot != null)
+        {
+            // OnPointerExit()을 강제로 호출하면 슬롯의 호버 알파값이 0이 되고, 
+            // 연결된 이벤트를 통해 _infoUI 데이터도 지워지며 _hoveredSlot 변수도 null로 정리됩니다.
+            _hoveredSlot.OnPointerExit();
+        }
+
+        // 3. 우측 정보창(Info UI) 잠금 해제 및 데이터 초기화 (페이드 아웃)
+        if (_infoUI != null)
+        {
+            _infoUI.UnlockInfo();
+        }
+    }
+
     public void OnFocusSlot(InventorySlotUI clickedSlot)
     {
         if (_focusedSlot == clickedSlot) return; // Unity에서는 오버로딩된 == 연산자 사용이 안전함

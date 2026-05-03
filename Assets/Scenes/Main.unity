@@ -10514,7 +10514,7 @@ PrefabInstance:
       objectReference: {fileID: 1596951048}
     - target: {fileID: 8983031945290737577, guid: 0027937279f75254381ba3f10063ceb8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.00019836426
+      value: -0.00008010864
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -11558,6 +11558,7 @@ GameObject:
   - component: {fileID: 720513964}
   - component: {fileID: 720513965}
   - component: {fileID: 720513966}
+  - component: {fileID: 720513967}
   m_Layer: 5
   m_Name: InfoPanel
   m_TagString: Untagged
@@ -11626,6 +11627,18 @@ MonoBehaviour:
   m_ChildScaleWidth: 1
   m_ChildScaleHeight: 1
   m_ReverseArrangement: 0
+--- !u!225 &720513967
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 720513963}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &727798092
 GameObject:
   m_ObjectHideFlags: 0
