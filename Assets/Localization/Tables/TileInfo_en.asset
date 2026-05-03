@@ -17,7 +17,103 @@ MonoBehaviour:
   m_SharedData: {fileID: 11400000, guid: d90095eae25fc4dae8d9fb1bca0ee539, type: 2}
   m_Metadata:
     m_Items: []
-  m_TableData: []
+  m_TableData:
+  - m_Id: 100000000001
+    m_Localized: Tile Info
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000002
+    m_Localized: Unknown
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000003
+    m_Localized: Data not found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000004
+    m_Localized: This tile does not exist.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000005
+    m_Localized: No tile selected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000006
+    m_Localized: "Location: ({x}, {y})"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000007
+    m_Localized: "Time remaining: {seconds:0.0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000008
+    m_Localized: Ready to harvest.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000009
+    m_Localized: No crop is currently growing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000010
+    m_Localized: "Tile Name: Grass"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000011
+    m_Localized: "Tile Name: Water"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000012
+    m_Localized: "Tile Name: Tree"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000013
+    m_Localized: "Tile Name: Rock"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000014
+    m_Localized: "Tile #{id}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000015
+    m_Localized: None
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000016
+    m_Localized: Carrot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000017
+    m_Localized: Cherry
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000018
+    m_Localized: Empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000019
+    m_Localized: Growing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000020
+    m_Localized: Ready to harvest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000021
+    m_Localized: "Yes"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000022
+    m_Localized: "No"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000023
+    m_Localized: "<b>Crop:</b> {crop}\n<b>Farmable:</b> {farmable}\n<b>Status:</b> {state}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 100000000024
+    m_Localized: "<b>Moist</b>: Adjacent water tiles double the harvest yield."
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

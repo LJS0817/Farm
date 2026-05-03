@@ -31,6 +31,30 @@ MonoBehaviour:
     m_Key: setting
     m_Metadata:
       m_Items: []
+  - m_Id: 5609263980544
+    m_Key: close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5649403469824
+    m_Key: apply
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6373717827584
+    m_Key: resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6415300157440
+    m_Key: savedata
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6465422090240
+    m_Key: returnmenu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6593298030592
+    m_Key: gamepaused
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

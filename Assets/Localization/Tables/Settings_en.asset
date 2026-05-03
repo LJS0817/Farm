@@ -34,6 +34,30 @@ MonoBehaviour:
     m_Localized: Settings
     m_Metadata:
       m_Items: []
+  - m_Id: 5609263980544
+    m_Localized: Close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5649403469824
+    m_Localized: Apply
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6373717827584
+    m_Localized: Resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6415300157440
+    m_Localized: Save Data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6465422090240
+    m_Localized: Return title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6593298030592
+    m_Localized: Game Paused
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
