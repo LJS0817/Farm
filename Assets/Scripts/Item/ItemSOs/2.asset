@@ -23,4 +23,4 @@ MonoBehaviour:
   buyPrice: 100
   sellPrice: 0
   canBuy: 1
-  canSell: 0
+  canSell: 1
