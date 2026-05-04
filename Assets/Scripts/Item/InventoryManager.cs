@@ -268,4 +268,59 @@ public class InventoryManager : MonoBehaviour
 
         RefreshUI();
     }
+
+    public void OnClickSellItemButton()
+    {
+        InventorySlot selectedSlot = _inventoryUI.GetFocusedSlotItem();
+
+        // 2. 예외 처리 (선택된 게 없거나 빈 슬롯이면 무시)
+        if (selectedSlot == null || selectedSlot.IsEmpty) return;
+
+        ItemSO itemToSell = selectedSlot.item;
+
+        // 4. 아이템 1개 차감 및 재화 증가
+        if (RemoveItem(itemToSell, 1))
+        {
+            int earnedGold = itemToSell.sellPrice;
+
+            // TODO: 이곳에 플레이어의 재화(골드)를 증가시키는 로직을 추가하세요.
+            // 예: GameManager.Instance.AddGold(earnedGold);
+
+            Debug.Log($"[InventoryManager] {itemToSell.itemName} 1개 판매 완료. (+{earnedGold} G)");
+        }
+    }
+
+    public void OnClickSellAllSelectedItemButton()
+    {
+        InventorySlot selectedSlot = _inventoryUI.GetFocusedSlotItem();
+
+        if (selectedSlot == null || selectedSlot.IsEmpty) return;
+
+        ItemSO itemToSell = selectedSlot.item;
+
+        if (!itemToSell.canSell)
+        {
+            Debug.LogWarning($"[InventoryManager] {itemToSell.itemName}은(는) 판매할 수 없는 아이템입니다.");
+            return;
+        }
+
+        // 선택된 슬롯에 있는 아이템의 '전체 개수'
+        int sellCount = selectedSlot.count;
+
+        int totalEarnedGold = itemToSell.sellPrice * sellCount;
+
+        // 아이템 일괄 차감 및 재화 증가
+        if (RemoveItem(itemToSell, sellCount))
+        {
+            // TODO: 이곳에 플레이어의 재화(골드)를 증가시키는 로직을 추가하세요.
+            // 예: GameManager.Instance.AddGold(totalEarnedGold);
+
+            Debug.Log($"[InventoryManager] {itemToSell.itemName} {sellCount}개 일괄 판매 완료. (+{totalEarnedGold} G)");
+        }
+    }
+
+    public ItemSO GetFocusedItem()
+    {
+        return GetItemSoWithName(_inventoryUI.GetFocusedSlotItem().item.itemName);
+    }
 }
