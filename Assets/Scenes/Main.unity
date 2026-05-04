@@ -9664,6 +9664,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1378939255104725748, guid: 31a6080662223490e85d7e9564443aa1, type: 3}
       propertyPath: m_fontSize
+<<<<<<< HEAD
       value: 26.7
       objectReference: {fileID: 0}
     - target: {fileID: 1378939255104725748, guid: 31a6080662223490e85d7e9564443aa1, type: 3}
@@ -9671,6 +9672,11 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: 707c7c3e6748648598a50d33e40f4377, type: 2}
     - target: {fileID: 1378939255104725748, guid: 31a6080662223490e85d7e9564443aa1, type: 3}
+=======
+      value: 29
+      objectReference: {fileID: 0}
+    - target: {fileID: 1378939255104725748, guid: 31a6080662223490e85d7e9564443aa1, type: 3}
+>>>>>>> parent of 23bdf1e (병합)
       propertyPath: m_fontSizeMax
       value: 40
       objectReference: {fileID: 0}
@@ -9679,6 +9685,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1378939255104725748, guid: 31a6080662223490e85d7e9564443aa1, type: 3}
+<<<<<<< HEAD
       propertyPath: m_sharedMaterial
       value: 
       objectReference: {fileID: -506383290404394328, guid: 707c7c3e6748648598a50d33e40f4377, type: 2}
@@ -9687,6 +9694,8 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1378939255104725748, guid: 31a6080662223490e85d7e9564443aa1, type: 3}
+=======
+>>>>>>> parent of 23bdf1e (병합)
       propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
       value: 1801810542
       objectReference: {fileID: 0}
@@ -9809,9 +9818,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7765488801804226672, guid: 31a6080662223490e85d7e9564443aa1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 668281500}
+<<<<<<< HEAD
     - targetCorrespondingSourceObject: {fileID: 4600860595661928393, guid: 31a6080662223490e85d7e9564443aa1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1655010250}
+=======
+>>>>>>> parent of 23bdf1e (병합)
   m_SourcePrefab: {fileID: 100100000, guid: 31a6080662223490e85d7e9564443aa1, type: 3}
 --- !u!224 &668281497 stripped
 RectTransform:
@@ -12369,10 +12381,13 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+<<<<<<< HEAD
     - target: {fileID: 2339850273121292027, guid: 0027937279f75254381ba3f10063ceb8, type: 3}
       propertyPath: m_AnchorMin.y
       value: 0
       objectReference: {fileID: 0}
+=======
+>>>>>>> parent of 23bdf1e (병합)
     - target: {fileID: 3708946062133986494, guid: 0027937279f75254381ba3f10063ceb8, type: 3}
       propertyPath: m_Name
       value: Dropdown
@@ -12503,7 +12518,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8983031945290737577, guid: 0027937279f75254381ba3f10063ceb8, type: 3}
       propertyPath: m_AnchoredPosition.y
+<<<<<<< HEAD
       value: 0.00002670288
+=======
+      value: 0.0001373291
+>>>>>>> parent of 23bdf1e (병합)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -16852,6 +16871,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1238710656}
   m_CullTransparentMesh: 1
+<<<<<<< HEAD
 --- !u!1 &1251334954 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 9215228047433685482, guid: f3d5b1ab0f8364de0b558497f7361ff1, type: 3}
@@ -16908,6 +16928,8 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+=======
+>>>>>>> parent of 23bdf1e (병합)
 --- !u!1 &1257951606
 GameObject:
   m_ObjectHideFlags: 0
@@ -17094,10 +17116,17 @@ PrefabInstance:
     - target: {fileID: 8263801799701995642, guid: f0b2faed36e684f10bd5482dfb04d570, type: 3}
       propertyPath: m_sharedMaterial
       value: 
+<<<<<<< HEAD
       objectReference: {fileID: -506383290404394328, guid: 707c7c3e6748648598a50d33e40f4377, type: 2}
     - target: {fileID: 8263801799701995642, guid: f0b2faed36e684f10bd5482dfb04d570, type: 3}
       propertyPath: m_hasFontAssetChanged
       value: 0
+=======
+      objectReference: {fileID: -2541358223234043902, guid: 19426f30c7354417eb13e66b390972a8, type: 2}
+    - target: {fileID: 8263801799701995642, guid: f0b2faed36e684f10bd5482dfb04d570, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 1
+>>>>>>> parent of 23bdf1e (병합)
       objectReference: {fileID: 0}
     - target: {fileID: 8263801799701995642, guid: f0b2faed36e684f10bd5482dfb04d570, type: 3}
       propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
@@ -18770,6 +18799,7 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+<<<<<<< HEAD
 --- !u!114 &1439699769
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18793,6 +18823,8 @@ MonoBehaviour:
   searchRoot: {fileID: 0}
   includeInactiveObjects: 1
   logDebugInfo: 0
+=======
+>>>>>>> parent of 23bdf1e (병합)
 --- !u!1 &1446717299
 GameObject:
   m_ObjectHideFlags: 0
@@ -20064,6 +20096,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5987644222195289303, guid: f3d5b1ab0f8364de0b558497f7361ff1, type: 3}
       propertyPath: m_fontSize
+<<<<<<< HEAD
       value: 26.7
       objectReference: {fileID: 0}
     - target: {fileID: 5987644222195289303, guid: f3d5b1ab0f8364de0b558497f7361ff1, type: 3}
@@ -20071,10 +20104,16 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: 707c7c3e6748648598a50d33e40f4377, type: 2}
     - target: {fileID: 5987644222195289303, guid: f3d5b1ab0f8364de0b558497f7361ff1, type: 3}
+=======
+      value: 29
+      objectReference: {fileID: 0}
+    - target: {fileID: 5987644222195289303, guid: f3d5b1ab0f8364de0b558497f7361ff1, type: 3}
+>>>>>>> parent of 23bdf1e (병합)
       propertyPath: m_RaycastTarget
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5987644222195289303, guid: f3d5b1ab0f8364de0b558497f7361ff1, type: 3}
+<<<<<<< HEAD
       propertyPath: m_sharedMaterial
       value: 
       objectReference: {fileID: -506383290404394328, guid: 707c7c3e6748648598a50d33e40f4377, type: 2}
@@ -20083,6 +20122,8 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5987644222195289303, guid: f3d5b1ab0f8364de0b558497f7361ff1, type: 3}
+=======
+>>>>>>> parent of 23bdf1e (병합)
       propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
       value: 1801810542
       objectReference: {fileID: 0}
@@ -20093,9 +20134,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3169995017952804435, guid: f3d5b1ab0f8364de0b558497f7361ff1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1547084746}
+<<<<<<< HEAD
     - targetCorrespondingSourceObject: {fileID: 9215228047433685482, guid: f3d5b1ab0f8364de0b558497f7361ff1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1251334958}
+=======
+>>>>>>> parent of 23bdf1e (병합)
   m_SourcePrefab: {fileID: 100100000, guid: f3d5b1ab0f8364de0b558497f7361ff1, type: 3}
 --- !u!224 &1547084743 stripped
 RectTransform:
@@ -22306,6 +22350,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+<<<<<<< HEAD
 --- !u!1 &1655010246 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4600860595661928393, guid: 31a6080662223490e85d7e9564443aa1, type: 3}
@@ -22362,6 +22407,8 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+=======
+>>>>>>> parent of 23bdf1e (병합)
 --- !u!224 &1655349751 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5999206068126171905, guid: 7e745389e31de418eb039bd59d2d3ea1, type: 3}
@@ -33877,7 +33924,6 @@ MonoBehaviour:
   weedPanelSprite: {fileID: 21300000, guid: 958ed1b0d26dd964cb936ec19507986b, type: 3}
   plusInfoLayer: {fileID: 444515590}
   tileInfoPlusPrefab: {fileID: 4010995237439514884, guid: d438644fe644440ea9d87c518910acdf, type: 3}
-  tileInfoTableName: TileInfo
 --- !u!114 &2820641700534858826
 MonoBehaviour:
   m_ObjectHideFlags: 0
