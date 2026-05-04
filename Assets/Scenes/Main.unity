@@ -12875,6 +12875,7 @@ MonoBehaviour:
   _inventoryUI: {fileID: 1582804444}
   _itemFeedback: {fileID: 1608371191}
   _feedbackOffset: {fileID: 821020938}
+  _goldMng: {fileID: 808483898}
 --- !u!1 &808483895
 GameObject:
   m_ObjectHideFlags: 0

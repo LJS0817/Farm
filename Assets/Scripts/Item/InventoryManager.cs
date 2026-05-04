@@ -17,6 +17,8 @@ public class InventoryManager : MonoBehaviour
     ItemFeedbackUIController _itemFeedback;
     [SerializeField]
     Transform _feedbackOffset;
+    [SerializeField]
+    GoldManager _goldMng;
 
     private void Awake()
     {
@@ -285,7 +287,7 @@ public class InventoryManager : MonoBehaviour
 
             // TODO: 이곳에 플레이어의 재화(골드)를 증가시키는 로직을 추가하세요.
             // 예: GameManager.Instance.AddGold(earnedGold);
-
+            _goldMng.AddGold(earnedGold);
             Debug.Log($"[InventoryManager] {itemToSell.itemName} 1개 판매 완료. (+{earnedGold} G)");
         }
     }
@@ -314,6 +316,7 @@ public class InventoryManager : MonoBehaviour
         {
             // TODO: 이곳에 플레이어의 재화(골드)를 증가시키는 로직을 추가하세요.
             // 예: GameManager.Instance.AddGold(totalEarnedGold);
+            _goldMng.AddGold(totalEarnedGold);
 
             Debug.Log($"[InventoryManager] {itemToSell.itemName} {sellCount}개 일괄 판매 완료. (+{totalEarnedGold} G)");
         }
