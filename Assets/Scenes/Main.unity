@@ -25283,6 +25283,7 @@ MonoBehaviour:
   _moveSpeed: 2
   _sortingLayerName: Default
   _lineSortingBaseOrder: 12
+  _tokenMng: {fileID: 609170320}
 --- !u!4 &1671378090
 Transform:
   m_ObjectHideFlags: 0
