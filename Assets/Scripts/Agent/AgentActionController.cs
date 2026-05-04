@@ -89,6 +89,8 @@ public class AgentActionController : MonoBehaviour
     string _sortingLayerName = "Default";
     [SerializeField]
     int _lineSortingBaseOrder = 11;
+    [SerializeField]
+    TokenManager _tokenMng;
 
     Animator _ani;
 
@@ -319,6 +321,7 @@ public class AgentActionController : MonoBehaviour
         else
             yield return new WaitForSeconds(1f);
 
+        _tokenMng.AddToken(1);
         _inventoryMng.RemoveItem(cropData.harvestItem);
     }
 
