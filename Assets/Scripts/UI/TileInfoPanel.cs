@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Localization;
@@ -433,9 +435,14 @@ public class TileInfoPanel : MonoBehaviour
 
         string localized = arguments == null
             ? LocalizationSettings.StringDatabase.GetLocalizedString(tileInfoTableName, entryKey)
-            : LocalizationSettings.StringDatabase.GetLocalizedString(tileInfoTableName, entryKey, null, FallbackBehavior.UseProjectSettings, arguments);
+            : LocalizationSettings.StringDatabase.GetLocalizedString(tileInfoTableName, entryKey);
 
-        return string.IsNullOrEmpty(localized) ? fallback : localized;
+        if (string.IsNullOrEmpty(localized))
+        {
+            localized = fallback;
+        }
+
+        return arguments == null ? localized : ApplyArguments(localized, arguments);
     }
 
     private Dictionary<string, object> Args(params (string key, object value)[] values)
@@ -447,6 +454,30 @@ public class TileInfoPanel : MonoBehaviour
         }
 
         return arguments;
+    }
+
+    private string ApplyArguments(string text, Dictionary<string, object> arguments)
+    {
+        foreach (KeyValuePair<string, object> argument in arguments)
+        {
+            string value = FormatArgumentValue(argument.Value, null);
+            text = text.Replace("{" + argument.Key + "}", value);
+
+            string oneDecimalValue = FormatArgumentValue(argument.Value, "0.0");
+            text = text.Replace("{" + argument.Key + ":0.0}", oneDecimalValue);
+        }
+
+        return text;
+    }
+
+    private string FormatArgumentValue(object value, string format)
+    {
+        if (value is IFormattable formattable)
+        {
+            return formattable.ToString(format, CultureInfo.InvariantCulture);
+        }
+
+        return value != null ? value.ToString() : string.Empty;
     }
 
     private void SetTexts(string tileName, string location, string tileState, string timeText)
