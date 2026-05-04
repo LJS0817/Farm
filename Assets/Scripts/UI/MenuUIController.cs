@@ -33,6 +33,7 @@ public class MenuUIManager : MonoBehaviour
         else closeUI(ui);
         _prevActiveUI = ui;
     }
+
     void openUI(RectTransform ui)
     {
         ui.anchoredPosition = ui.pivot.x == 0.5f ? Vector2.zero : new Vector2(-30f, 30f);
@@ -47,6 +48,11 @@ public class MenuUIManager : MonoBehaviour
 
     void closeUI(RectTransform ui)
     {
+        if (ui.TryGetComponent(out InventoryUI inventoryUI))
+        {
+            inventoryUI.ResetInventoryUIState();
+        }
+
         CanvasGroup cg = ui.GetComponent<CanvasGroup>();
         if (cg != null)
         {
