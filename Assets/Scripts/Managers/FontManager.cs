@@ -13,6 +13,7 @@ public class FontManager : MonoBehaviour
         public TMP_FontAsset defaultFont;
         public TMP_FontAsset titleFont;
         public TMP_FontAsset descFont;
+        public TMP_FontAsset shopFont;
 
         public TMP_FontAsset GetFont(LocalizedFontTarget.FontRole role)
         {
@@ -20,6 +21,7 @@ public class FontManager : MonoBehaviour
             {
                 LocalizedFontTarget.FontRole.Title => titleFont != null ? titleFont : defaultFont,
                 LocalizedFontTarget.FontRole.Desc => descFont != null ? descFont : defaultFont,
+                LocalizedFontTarget.FontRole.Shop => shopFont != null ? shopFont : defaultFont,
                 _ => defaultFont
             };
         }

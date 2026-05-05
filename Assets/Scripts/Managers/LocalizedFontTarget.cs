@@ -6,7 +6,8 @@ public class LocalizedFontTarget : MonoBehaviour
     {
         Default,
         Title,
-        Desc
+        Desc,
+        Shop
     }
 
     [SerializeField] private FontRole fontRole = FontRole.Default;

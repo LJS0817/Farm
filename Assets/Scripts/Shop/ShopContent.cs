@@ -1,6 +1,8 @@
 using TMPro;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
 public class ShopContent : MonoBehaviour
@@ -44,6 +46,8 @@ public class ShopContent : MonoBehaviour
         {
             _goldManager.GoldChanged += HandleGoldChanged;
         }
+
+        LocalizationSettings.SelectedLocaleChanged += HandleSelectedLocaleChanged;
     }
 
     void OnDisable()
@@ -52,6 +56,8 @@ public class ShopContent : MonoBehaviour
         {
             _goldManager.GoldChanged -= HandleGoldChanged;
         }
+
+        LocalizationSettings.SelectedLocaleChanged -= HandleSelectedLocaleChanged;
     }
 
     public void Initialize(ItemSO item)
@@ -72,7 +78,7 @@ public class ShopContent : MonoBehaviour
 
         if (_itemNameText != null)
         {
-            _itemNameText.SetText(_item.itemName);
+            UpdateItemNameText();
         }
 
         if (_priceText != null)
@@ -132,6 +138,21 @@ public class ShopContent : MonoBehaviour
     void HandleGoldChanged(int currentGold)
     {
         UpdatePriceColor();
+    }
+
+    void HandleSelectedLocaleChanged(Locale locale)
+    {
+        UpdateItemNameText();
+    }
+
+    void UpdateItemNameText()
+    {
+        if (_itemNameText == null || _item == null)
+        {
+            return;
+        }
+
+        _itemNameText.SetText(_item.GetLocalizedName());
     }
 
     void UpdatePriceColor()

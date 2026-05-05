@@ -1,6 +1,8 @@
 using System.Collections; // 코루틴 사용을 위해 추가
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
 public class InventoryItemInfoUI : MonoBehaviour
@@ -21,6 +23,7 @@ public class InventoryItemInfoUI : MonoBehaviour
 
     GameObject _itemValueObj;
     bool _lockInfo;
+    InventorySlotUI _currentItemSlot;
     Coroutine _fadeCoroutine; // 페이드 코루틴 추적용
 
     const float _yOffset = 140f;
@@ -44,6 +47,16 @@ public class InventoryItemInfoUI : MonoBehaviour
         _infoCanvas.blocksRaycasts = false;
 
         _itemValueObj = _itemValue.transform.parent.gameObject;
+    }
+
+    void OnEnable()
+    {
+        LocalizationSettings.SelectedLocaleChanged += HandleSelectedLocaleChanged;
+    }
+
+    void OnDisable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= HandleSelectedLocaleChanged;
     }
 
     public void LockInfo(InventorySlotUI item)
@@ -70,7 +83,7 @@ public class InventoryItemInfoUI : MonoBehaviour
         if (!_itemNameUI.gameObject.activeSelf)
             _itemNameUI.gameObject.SetActive(true);
 
-        _itemNameUIText.SetText(itemSlot.GetItemInfo().item.itemName);
+        _itemNameUIText.SetText(itemSlot.GetItemInfo().item.GetLocalizedName());
         _itemNameUI.position = itemSlot.transform.position;
         _itemNameUI.anchoredPosition += new Vector2(0, -_yOffset);
     }
@@ -79,6 +92,7 @@ public class InventoryItemInfoUI : MonoBehaviour
     {
         if (_lockInfo) return;
 
+        _currentItemSlot = itemSlot;
         InventorySlot itemInfo = itemSlot?.GetItemInfo();
         var itemData = itemInfo?.item; // 중복 접근을 막기 위한 캐싱
 
@@ -95,8 +109,8 @@ public class InventoryItemInfoUI : MonoBehaviour
             FadeTo(1f);
 
         _itemIcon.sprite = itemData.icon;
-        _itemName.SetText(itemData.itemName);
-        _itemDesc.SetText(itemData.itemDesc);
+        _itemName.SetText(itemData.GetLocalizedName());
+        _itemDesc.SetText(itemData.GetLocalizedDesc());
 
         // 판매 가능 여부에 따른 UI 처리 최적화
         bool canSell = itemData.canSell;
@@ -117,10 +131,30 @@ public class InventoryItemInfoUI : MonoBehaviour
             _useButton.SetActive(canUse);
         }
 
-        _itemAmountText.SetText($"{itemInfo.count}개");
-        _itemTypeText.SetText(GetItemTypeKorean(itemData.itemType));
+        _itemAmountText.SetText($"{itemInfo.count}");
+        _itemTypeText.SetText(itemData.GetLocalizedTypeName());
         _itemTypeText.color = GetItemTypeColor(itemData.itemType);
 
+        LayoutRebuilder.ForceRebuildLayoutImmediate(_infoUI);
+    }
+
+    void HandleSelectedLocaleChanged(Locale locale)
+    {
+        if (_currentItemSlot == null)
+        {
+            return;
+        }
+
+        InventorySlot itemInfo = _currentItemSlot.GetItemInfo();
+        ItemSO itemData = itemInfo?.item;
+        if (itemData == null)
+        {
+            return;
+        }
+
+        _itemName.SetText(itemData.GetLocalizedName());
+        _itemDesc.SetText(itemData.GetLocalizedDesc());
+        _itemTypeText.SetText(itemData.GetLocalizedTypeName());
         LayoutRebuilder.ForceRebuildLayoutImmediate(_infoUI);
     }
 
@@ -165,16 +199,6 @@ public class InventoryItemInfoUI : MonoBehaviour
         }
 
         _fadeCoroutine = null;
-    }
-
-    public string GetItemTypeKorean(ItemType type)
-    {
-        return type switch
-        {
-            ItemType.Seed => "씨앗",
-            ItemType.Usable => "사용 아이템",
-            _ => "알 수 없음"
-        };
     }
 
     public Color GetItemTypeColor(ItemType type)
