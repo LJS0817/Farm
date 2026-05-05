@@ -135,6 +135,14 @@ public class InventoryItemInfoUI : MonoBehaviour
         _itemTypeText.SetText(itemData.GetLocalizedTypeName());
         _itemTypeText.color = GetItemTypeColor(itemData.itemType);
 
+        StartCoroutine(RebuildLayoutRoutine());
+    }
+
+    private IEnumerator RebuildLayoutRoutine()
+    {
+        // UI 컴포넌트들이 크기를 계산할 시간을 한 프레임 줍니다.
+        yield return null; // 또는 yield return new WaitForEndOfFrame();
+        
         LayoutRebuilder.ForceRebuildLayoutImmediate(_infoUI);
     }
 
