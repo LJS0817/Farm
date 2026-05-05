@@ -4,6 +4,36 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
+
+public enum AgentLanguage
+{
+    Korean,
+    English
+}
+
+public static class AgentLanguageUtility
+{
+    public static AgentLanguage CurrentLanguage
+    {
+        get
+        {
+            Locale locale = LocalizationSettings.SelectedLocale;
+            string code = locale != null ? locale.Identifier.Code : string.Empty;
+            return code.StartsWith("en") ? AgentLanguage.English : AgentLanguage.Korean;
+        }
+    }
+
+    public static bool IsEnglish => CurrentLanguage == AgentLanguage.English;
+
+    public static string ReplyLanguageName => IsEnglish ? "English" : "Korean";
+
+    public static string Select(string korean, string english)
+    {
+        return IsEnglish ? english : korean;
+    }
+}
 
 [JsonConverter(typeof(StringEnumConverter))]
 public enum AgentIntentType
@@ -369,19 +399,7 @@ public static class AgentLLMModelUtils
 
         string normalized = rawValue.Trim();
 
-        if (normalized.EndsWith(" seeds", StringComparison.OrdinalIgnoreCase))
-        {
-            normalized = normalized[..^6].Trim();
-        }
-        else if (normalized.EndsWith(" seed", StringComparison.OrdinalIgnoreCase))
-        {
-            normalized = normalized[..^5].Trim();
-        }
-        else if (normalized.EndsWith("씨앗", StringComparison.OrdinalIgnoreCase))
-        {
-            normalized = normalized[..^2].Trim();
-        }
-
+        normalized = StripSeedSuffix(normalized);
         normalized = normalized switch
         {
             "당근" => nameof(TileData.CropType.Carrot),
@@ -390,6 +408,49 @@ public static class AgentLLMModelUtils
             _ => normalized,
         };
 
-        return Enum.TryParse(normalized, true, out cropType);
+        return Enum.TryParse(normalized, true, out cropType)
+            || TryResolveCropFromText(rawValue, out cropType);
+    }
+
+    public static bool TryResolveCropFromText(string rawText, out TileData.CropType cropType)
+    {
+        cropType = TileData.CropType.IsEmpty;
+
+        if (string.IsNullOrWhiteSpace(rawText))
+        {
+            return false;
+        }
+
+        string normalized = StripSeedSuffix(rawText).ToLowerInvariant().Replace(" ", string.Empty);
+        bool mentionsCarrot = normalized.Contains("당근") || normalized.Contains("carrot");
+        bool mentionsCherry = normalized.Contains("체리") || normalized.Contains("cherry");
+
+        if (mentionsCarrot == mentionsCherry)
+        {
+            return false;
+        }
+
+        cropType = mentionsCherry ? TileData.CropType.Cherry : TileData.CropType.Carrot;
+        return true;
+    }
+
+    private static string StripSeedSuffix(string rawValue)
+    {
+        string value = rawValue.Trim();
+
+        if (value.EndsWith(" seeds", StringComparison.OrdinalIgnoreCase))
+        {
+            value = value[..^6].Trim();
+        }
+        else if (value.EndsWith(" seed", StringComparison.OrdinalIgnoreCase))
+        {
+            value = value[..^5].Trim();
+        }
+        else if (value.EndsWith("씨앗", StringComparison.OrdinalIgnoreCase))
+        {
+            value = value[..^2].Trim();
+        }
+
+        return value;
     }
 }

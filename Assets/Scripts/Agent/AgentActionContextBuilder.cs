@@ -13,8 +13,8 @@ public class AgentActionContextBuilder : MonoBehaviour
     private static readonly Regex CoordinateRegex =
         new Regex(@"\(?\s*(?<x>-?\d+)\s*[,，]\s*(?<y>-?\d+)\s*\)?", RegexOptions.Compiled);
     private static readonly Regex RelativeMoveRegex =
-        new Regex(@"(?:(?<countBefore>\d+|한|두|세|네|다섯|여섯|일곱|여덟|아홉|열)\s*칸\s*)?(?<direction>오른쪽|왼쪽|위|위로|아래|아래로)(?:\s*으로?)?(?:\s*(?<countAfter>\d+|한|두|세|네|다섯|여섯|일곱|여덟|아홉|열)\s*칸)?\s*(?:가|이동|가자|가보자|이동하자|가줘)?",
-            RegexOptions.Compiled);
+        new Regex(@"(?:(?<countBefore>\d+|한|두|세|네|다섯|여섯|일곱|여덟|아홉|열|one|two|three|four|five|six|seven|eight|nine|ten)\s*(?:칸|steps?|tiles?|spaces?)?\s*)?(?<direction>오른쪽|왼쪽|위|위로|아래|아래로|right|left|up|down)(?:\s*으로?)?(?:\s*(?<countAfter>\d+|한|두|세|네|다섯|여섯|일곱|여덟|아홉|열|one|two|three|four|five|six|seven|eight|nine|ten)\s*(?:칸|steps?|tiles?|spaces?)?)?\s*(?:가|이동|가자|가보자|이동하자|가줘|go|move|walk)?",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private void Awake()
     {
@@ -227,7 +227,7 @@ public class AgentActionContextBuilder : MonoBehaviour
             return false;
         }
 
-        string normalized = userInput.Replace(" ", string.Empty);
+        string normalized = userInput.Replace(" ", string.Empty).ToLowerInvariant();
         int width = _tileMng.tiles.GetLength(0);
         int height = _tileMng.tiles.GetLength(1);
 
@@ -236,28 +236,36 @@ public class AgentActionContextBuilder : MonoBehaviour
             || normalized.Contains("왼쪽맨위")
             || normalized.Contains("왼쪽위")
             || normalized.Contains("맨왼쪽위")
-            || normalized.Contains("좌측상단");
+            || normalized.Contains("좌측상단")
+            || normalized.Contains("topleft")
+            || normalized.Contains("upperleft");
 
         bool isTopRight =
             normalized.Contains("우상단")
             || normalized.Contains("오른쪽맨위")
             || normalized.Contains("오른쪽위")
             || normalized.Contains("맨오른쪽위")
-            || normalized.Contains("우측상단");
+            || normalized.Contains("우측상단")
+            || normalized.Contains("topright")
+            || normalized.Contains("upperright");
 
         bool isBottomLeft =
             normalized.Contains("좌하단")
             || normalized.Contains("왼쪽맨아래")
             || normalized.Contains("왼쪽아래")
             || normalized.Contains("맨왼쪽아래")
-            || normalized.Contains("좌측하단");
+            || normalized.Contains("좌측하단")
+            || normalized.Contains("bottomleft")
+            || normalized.Contains("lowerleft");
 
         bool isBottomRight =
             normalized.Contains("우하단")
             || normalized.Contains("오른쪽맨아래")
             || normalized.Contains("오른쪽아래")
             || normalized.Contains("맨오른쪽아래")
-            || normalized.Contains("우측하단");
+            || normalized.Contains("우측하단")
+            || normalized.Contains("bottomright")
+            || normalized.Contains("lowerright");
 
         if (isTopLeft)
         {
@@ -288,14 +296,19 @@ public class AgentActionContextBuilder : MonoBehaviour
 
     private static Vector2Int ParseDirection(string rawDirection)
     {
-        return rawDirection switch
+        string normalized = rawDirection.ToLowerInvariant();
+        return normalized switch
         {
             "오른쪽" => Vector2Int.right,
+            "right" => Vector2Int.right,
             "왼쪽" => Vector2Int.left,
+            "left" => Vector2Int.left,
             "위" => new Vector2Int(0, -1),
             "위로" => new Vector2Int(0, -1),
+            "up" => new Vector2Int(0, -1),
             "아래" => new Vector2Int(0, 1),
             "아래로" => new Vector2Int(0, 1),
+            "down" => new Vector2Int(0, 1),
             _ => Vector2Int.zero,
         };
     }
@@ -312,18 +325,29 @@ public class AgentActionContextBuilder : MonoBehaviour
             return numericCount;
         }
 
-        return rawCount switch
+        string normalized = rawCount.ToLowerInvariant();
+        return normalized switch
         {
             "한" => 1,
+            "one" => 1,
             "두" => 2,
+            "two" => 2,
             "세" => 3,
+            "three" => 3,
             "네" => 4,
+            "four" => 4,
             "다섯" => 5,
+            "five" => 5,
             "여섯" => 6,
+            "six" => 6,
             "일곱" => 7,
+            "seven" => 7,
             "여덟" => 8,
+            "eight" => 8,
             "아홉" => 9,
+            "nine" => 9,
             "열" => 10,
+            "ten" => 10,
             _ => 1,
         };
     }

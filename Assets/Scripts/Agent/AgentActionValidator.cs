@@ -59,13 +59,15 @@ public class AgentActionValidator : MonoBehaviour
             case AgentIntentType.GeneralChat:
                 result.status = AgentValidationStatus.Informational;
                 result.reasonCode = "GeneralChat";
-                result.infoMessage = "일반 대화 응답입니다.";
+                result.infoMessage = AgentLanguageUtility.Select("일반 대화 응답입니다.", "This is a general conversation reply.");
                 break;
 
             case AgentIntentType.QueryPosition:
                 result.status = AgentValidationStatus.Informational;
                 result.reasonCode = "PositionInfo";
-                result.infoMessage = $"현재 위치는 ({result.currentPosition.x}, {result.currentPosition.y})입니다.";
+                result.infoMessage = AgentLanguageUtility.Select(
+                    $"현재 위치는 ({result.currentPosition.x}, {result.currentPosition.y})입니다.",
+                    $"Current position is ({result.currentPosition.x}, {result.currentPosition.y}).");
                 break;
 
             case AgentIntentType.QueryToken:
@@ -75,13 +77,13 @@ public class AgentActionValidator : MonoBehaviour
             case AgentIntentType.QueryInventory:
                 result.status = AgentValidationStatus.Informational;
                 result.reasonCode = "InventoryInfo";
-                result.infoMessage = "인벤토리 정보를 확인했습니다.";
+                result.infoMessage = AgentLanguageUtility.Select("인벤토리 정보를 확인했습니다.", "I checked the inventory information.");
                 break;
 
             case AgentIntentType.QueryMap:
                 result.status = AgentValidationStatus.Informational;
                 result.reasonCode = "MapInfo";
-                result.infoMessage = "맵 상태를 확인했습니다.";
+                result.infoMessage = AgentLanguageUtility.Select("맵 상태를 확인했습니다.", "I checked the map state.");
                 break;
 
             case AgentIntentType.QueryTile:
@@ -107,7 +109,9 @@ public class AgentActionValidator : MonoBehaviour
             default:
                 result.status = AgentValidationStatus.Rejected;
                 result.reasonCode = "UnknownIntent";
-                result.infoMessage = "무엇을 해주면 되는지 조금만 더 자세히 말해 주세요.";
+                result.infoMessage = AgentLanguageUtility.Select(
+                    "무엇을 해주면 되는지 조금만 더 자세히 말해 주세요.",
+                    "Tell me a little more about what you'd like me to do.");
                 break;
         }
 
@@ -140,14 +144,14 @@ public class AgentActionValidator : MonoBehaviour
         {
             result.status = AgentValidationStatus.Rejected;
             result.reasonCode = "InvalidTargetTile";
-            result.infoMessage = "조회할 타일 좌표가 유효하지 않습니다.";
+            result.infoMessage = AgentLanguageUtility.Select("조회할 타일 좌표가 유효하지 않습니다.", "The tile coordinate to inspect is not valid.");
             return;
         }
 
         result.targetTile = tile;
         result.status = AgentValidationStatus.Informational;
         result.reasonCode = "TileInfo";
-        result.infoMessage = "타일 정보를 확인했습니다.";
+        result.infoMessage = AgentLanguageUtility.Select("타일 정보를 확인했습니다.", "I checked the tile information.");
     }
 
     private void ValidateTokenQuery(AgentValidationResult result)
@@ -156,13 +160,15 @@ public class AgentActionValidator : MonoBehaviour
         {
             result.status = AgentValidationStatus.Rejected;
             result.reasonCode = "TokenManagerMissing";
-            result.infoMessage = "지금은 토큰 정보를 확인할 수 없습니다.";
+            result.infoMessage = AgentLanguageUtility.Select("지금은 토큰 정보를 확인할 수 없습니다.", "I can't check token information right now.");
             return;
         }
 
         result.status = AgentValidationStatus.Informational;
         result.reasonCode = "TokenInfo";
-        result.infoMessage = $"현재 남은 토큰은 {_tokenManager.CurrentToken}개입니다. 최대 {_tokenManager.MaxTokenCount}개까지 보유할 수 있어요.";
+        result.infoMessage = AgentLanguageUtility.Select(
+            $"현재 남은 토큰은 {_tokenManager.CurrentToken}개입니다. 최대 {_tokenManager.MaxTokenCount}개까지 보유할 수 있어요.",
+            $"You currently have {_tokenManager.CurrentToken} tokens left. You can hold up to {_tokenManager.MaxTokenCount}.");
     }
 
     private AgentTokenContextDto BuildTokenContext()
@@ -186,7 +192,7 @@ public class AgentActionValidator : MonoBehaviour
         {
             result.status = AgentValidationStatus.Rejected;
             result.reasonCode = "TargetOutOfBounds";
-            result.infoMessage = "목표 좌표가 맵 범위를 벗어났습니다.";
+            result.infoMessage = AgentLanguageUtility.Select("목표 좌표가 맵 범위를 벗어났습니다.", "The target coordinate is outside the map.");
             return;
         }
 
@@ -194,7 +200,7 @@ public class AgentActionValidator : MonoBehaviour
         {
             result.status = AgentValidationStatus.Rejected;
             result.reasonCode = "TargetNotWalkable";
-            result.infoMessage = "해당 위치로 이동할 수 없습니다.";
+            result.infoMessage = AgentLanguageUtility.Select("해당 위치로 이동할 수 없습니다.", "I can't move to that location.");
             return;
         }
 
@@ -202,7 +208,7 @@ public class AgentActionValidator : MonoBehaviour
         {
             result.status = AgentValidationStatus.Rejected;
             result.reasonCode = "TargetTileMissing";
-            result.infoMessage = "목표 타일 정보를 찾을 수 없습니다.";
+            result.infoMessage = AgentLanguageUtility.Select("목표 타일 정보를 찾을 수 없습니다.", "I couldn't find information for the target tile.");
             return;
         }
 
@@ -211,7 +217,7 @@ public class AgentActionValidator : MonoBehaviour
         result.commands.Add(new AgentCommand(ACTION_TYPE.MoveTo, result.targetGridPos, TileData.CropType.IsEmpty));
         result.status = AgentValidationStatus.Executable;
         result.reasonCode = "Executable";
-        result.infoMessage = "이동 명령을 실행할 수 있습니다.";
+        result.infoMessage = AgentLanguageUtility.Select("이동 명령을 실행할 수 있습니다.", "The move command can be executed.");
     }
 
     private void ValidatePlant(AgentValidationResult result)
@@ -220,7 +226,7 @@ public class AgentActionValidator : MonoBehaviour
         {
             result.status = AgentValidationStatus.Rejected;
             result.reasonCode = "UnknownCrop";
-            result.infoMessage = "심을 작물을 확인할 수 없습니다.";
+            result.infoMessage = AgentLanguageUtility.Select("심을 작물을 확인할 수 없습니다.", "I can't tell which crop to plant.");
             return;
         }
 
@@ -228,7 +234,7 @@ public class AgentActionValidator : MonoBehaviour
         {
             result.status = AgentValidationStatus.Rejected;
             result.reasonCode = "InvalidTargetTile";
-            result.infoMessage = "심을 타일 좌표가 유효하지 않습니다.";
+            result.infoMessage = AgentLanguageUtility.Select("심을 타일 좌표가 유효하지 않습니다.", "The tile coordinate for planting is not valid.");
             return;
         }
 
@@ -240,7 +246,7 @@ public class AgentActionValidator : MonoBehaviour
         {
             result.status = AgentValidationStatus.Rejected;
             result.reasonCode = "MissingSeed";
-            result.infoMessage = "필요한 씨앗이 부족합니다.";
+            result.infoMessage = AgentLanguageUtility.Select("필요한 씨앗이 부족합니다.", "There aren't enough required seeds.");
             return;
         }
 
@@ -248,7 +254,7 @@ public class AgentActionValidator : MonoBehaviour
         {
             result.status = AgentValidationStatus.Rejected;
             result.reasonCode = "TargetNotWalkable";
-            result.infoMessage = "해당 위치로 이동할 수 없습니다.";
+            result.infoMessage = AgentLanguageUtility.Select("해당 위치로 이동할 수 없습니다.", "I can't move to that location.");
             return;
         }
 
@@ -256,7 +262,7 @@ public class AgentActionValidator : MonoBehaviour
         {
             result.status = AgentValidationStatus.Rejected;
             result.reasonCode = "TargetNotFarmable";
-            result.infoMessage = "해당 타일에는 지금 작물을 심을 수 없습니다.";
+            result.infoMessage = AgentLanguageUtility.Select("해당 타일에는 지금 작물을 심을 수 없습니다.", "I can't plant a crop on that tile right now.");
             return;
         }
 
@@ -264,7 +270,7 @@ public class AgentActionValidator : MonoBehaviour
         result.commands.Add(new AgentCommand(ACTION_TYPE.Plant, result.targetGridPos, result.requestedCrop));
         result.status = AgentValidationStatus.Executable;
         result.reasonCode = "Executable";
-        result.infoMessage = "심기 명령을 실행할 수 있습니다.";
+        result.infoMessage = AgentLanguageUtility.Select("심기 명령을 실행할 수 있습니다.", "The planting command can be executed.");
     }
 
     private void ValidateHarvest(AgentValidationResult result)
@@ -273,7 +279,7 @@ public class AgentActionValidator : MonoBehaviour
         {
             result.status = AgentValidationStatus.Rejected;
             result.reasonCode = "InvalidTargetTile";
-            result.infoMessage = "수확할 타일 좌표가 유효하지 않습니다.";
+            result.infoMessage = AgentLanguageUtility.Select("수확할 타일 좌표가 유효하지 않습니다.", "The tile coordinate for harvesting is not valid.");
             return;
         }
 
@@ -283,7 +289,7 @@ public class AgentActionValidator : MonoBehaviour
         {
             result.status = AgentValidationStatus.Rejected;
             result.reasonCode = "TargetNotWalkable";
-            result.infoMessage = "해당 위치로 이동할 수 없습니다.";
+            result.infoMessage = AgentLanguageUtility.Select("해당 위치로 이동할 수 없습니다.", "I can't move to that location.");
             return;
         }
 
@@ -291,7 +297,7 @@ public class AgentActionValidator : MonoBehaviour
         {
             result.status = AgentValidationStatus.Rejected;
             result.reasonCode = "NothingToHarvest";
-            result.infoMessage = "수확할 작물이 없습니다.";
+            result.infoMessage = AgentLanguageUtility.Select("수확할 작물이 없습니다.", "There is no crop to harvest.");
             return;
         }
 
@@ -300,8 +306,8 @@ public class AgentActionValidator : MonoBehaviour
             result.status = AgentValidationStatus.Rejected;
             result.reasonCode = tile.cropState == TileData.CropState.IsGrowing ? "CropStillGrowing" : "NothingToHarvest";
             result.infoMessage = tile.cropState == TileData.CropState.IsGrowing
-                ? "작물이 아직 자라고 있습니다."
-                : "수확할 작물이 없습니다.";
+                ? AgentLanguageUtility.Select("작물이 아직 자라고 있습니다.", "The crop is still growing.")
+                : AgentLanguageUtility.Select("수확할 작물이 없습니다.", "There is no crop to harvest.");
             return;
         }
 
@@ -309,7 +315,7 @@ public class AgentActionValidator : MonoBehaviour
         result.commands.Add(new AgentCommand(ACTION_TYPE.Harvest, result.targetGridPos, TileData.CropType.IsEmpty));
         result.status = AgentValidationStatus.Executable;
         result.reasonCode = "Executable";
-        result.infoMessage = "수확 명령을 실행할 수 있습니다.";
+        result.infoMessage = AgentLanguageUtility.Select("수확 명령을 실행할 수 있습니다.", "The harvest command can be executed.");
     }
 
     private void ValidateEat(AgentValidationResult result)
@@ -318,7 +324,7 @@ public class AgentActionValidator : MonoBehaviour
         {
             result.status = AgentValidationStatus.Rejected;
             result.reasonCode = "UnknownCrop";
-            result.infoMessage = "먹을 작물을 확인할 수 없습니다.";
+            result.infoMessage = AgentLanguageUtility.Select("먹을 작물을 확인할 수 없습니다.", "I can't tell which crop to eat.");
             return;
         }
 
@@ -329,14 +335,14 @@ public class AgentActionValidator : MonoBehaviour
         {
             result.status = AgentValidationStatus.Rejected;
             result.reasonCode = "MissingFood";
-            result.infoMessage = "먹을 수 있는 작물이 없습니다.";
+            result.infoMessage = AgentLanguageUtility.Select("먹을 수 있는 작물이 없습니다.", "There is no edible crop available.");
             return;
         }
 
         result.commands.Add(new AgentCommand(ACTION_TYPE.Eat, result.currentPosition, result.requestedCrop));
         result.status = AgentValidationStatus.Executable;
         result.reasonCode = "Executable";
-        result.infoMessage = "먹기 명령을 실행할 수 있습니다.";
+        result.infoMessage = AgentLanguageUtility.Select("먹기 명령을 실행할 수 있습니다.", "The eat command can be executed.");
     }
 
     private bool TryGetTargetTile(Vector2Int coord, out TileData tile)

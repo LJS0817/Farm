@@ -23,11 +23,10 @@ public class AgentInstructionManager : MonoBehaviour
     private bool _isShuttingDown;
     private readonly SemaphoreSlim _planningLock = new SemaphoreSlim(1, 1);
 
-    private const string _errorMsg = "죄송합니다. 잘 이해하지 못했어요.";
     private const int TimingPreviewLength = 32;
 
     private const string DefaultActionPlanningPrompt =
-        "You map a farm-game user's request to function arguments for a pre-defined engine function.\n" +
+        "You map a farm-game user's Korean or English request to function arguments for a pre-defined engine function.\n" +
         "You must respond ONLY with valid JSON.\n" +
         "Format:\n" +
         "{\n" +
@@ -56,9 +55,10 @@ public class AgentInstructionManager : MonoBehaviour
         "- Resolve position in this order: explicit coordinate, explicit corner, relative direction, current position.\n" +
         "- If explicit coordinate is found, do NOT use any later fallback position rule.\n" +
         "- Never invent unsupported crops.\n" +
+        "- Internal enum values and JSON fields must stay in English exactly as specified.\n" +
         "- Never output markdown or explanations.";
 
-    private const string DefaultConversationPrompt =
+    private const string DefaultConversationPromptKo =
         "You are a warm, lively AI character in a Unity farm game.\n" +
         "Reply in natural Korean.\n\n" +
         "Rules:\n" +
@@ -68,6 +68,17 @@ public class AgentInstructionManager : MonoBehaviour
         "- Do not reply with generic filler like '응, 듣고 있어' or '계속 이야기해줘' when the user asked a concrete question.\n" +
         "- Stay concise, warm, and in character.\n" +
         "- Output plain Korean text only.";
+
+    private const string DefaultConversationPromptEn =
+        "You are a warm, lively AI character in a Unity farm game.\n" +
+        "Reply in natural English.\n\n" +
+        "Rules:\n" +
+        "- If the user asks a clear question, answer it directly first.\n" +
+        "- For simple arithmetic, compute the result and answer naturally.\n" +
+        "- For simple factual, common knowledge, or casual questions, give a short direct answer.\n" +
+        "- Do not reply with generic filler like 'I'm listening' or 'Tell me more' when the user asked a concrete question.\n" +
+        "- Stay concise, warm, and in character.\n" +
+        "- Output plain English text only.";
 
     private void Awake()
     {
@@ -109,15 +120,7 @@ public class AgentInstructionManager : MonoBehaviour
             _validator = gameObject.AddComponent<AgentActionValidator>();
         }
 
-        if (string.IsNullOrWhiteSpace(_actionPlanningSystemPrompt))
-        {
-            _actionPlanningSystemPrompt = DefaultActionPlanningPrompt;
-        }
-
-        if (string.IsNullOrWhiteSpace(_conversationSystemPrompt))
-        {
-            _conversationSystemPrompt = DefaultConversationPrompt;
-        }
+        if (string.IsNullOrWhiteSpace(_actionPlanningSystemPrompt)) _actionPlanningSystemPrompt = DefaultActionPlanningPrompt;
     }
 
     public void HandleUserInput(string input, GameObject agentChatBox)
@@ -139,7 +142,7 @@ public class AgentInstructionManager : MonoBehaviour
             return;
         }
 
-        chatBox.SetText("생각중...");
+        chatBox.SetText(AgentLanguageUtility.Select("생각중...", "Thinking..."));
 
         Stopwatch stopwatch = Stopwatch.StartNew();
         AgentResponse response = await BuildResponseAsync(input);
@@ -158,7 +161,7 @@ public class AgentInstructionManager : MonoBehaviour
     {
         if (_intentClassifier == null || _validator == null)
         {
-            return new AgentResponse(_errorMsg, new List<AgentCommand>(0));
+            return new AgentResponse(GetErrorMessage(), new List<AgentCommand>(0));
         }
 
         Stopwatch stageTimer = Stopwatch.StartNew();
@@ -241,7 +244,7 @@ public class AgentInstructionManager : MonoBehaviour
             try
             {
                 // 이 LLM은 액션 인자 계획 전용으로만 사용합니다. 이전 대화 문맥이 인자 결정에 섞이지 않도록 매번 히스토리를 비웁니다.
-                _agent.systemPrompt = _actionPlanningSystemPrompt;
+                _agent.systemPrompt = GetActionPlanningSystemPrompt();
                 await _agent.ClearHistory();
 
                 string result = await _agent.Chat(prompt);
@@ -250,6 +253,7 @@ public class AgentInstructionManager : MonoBehaviour
                 AgentFunctionArgumentsDto dto = AgentLLMModelUtils.DeserializeJsonObject<AgentFunctionArgumentsDto>(result);
                 AgentFunctionArgumentsDto normalizedDto = dto ?? AgentFunctionArgumentsDto.Default();
                 EnforceEngineResolvedTargetFromUserInput(input, normalizedDto);
+                EnforceEngineResolvedCropFromUserInput(intent, input, normalizedDto);
                 return normalizedDto;
             }
             finally
@@ -264,6 +268,7 @@ public class AgentInstructionManager : MonoBehaviour
             Debug.LogWarning($"[AgentInstructionManager] Action planning failed: {ex.Message}", this);
             AgentFunctionArgumentsDto fallbackDto = AgentFunctionArgumentsDto.Default();
             EnforceEngineResolvedTargetFromUserInput(input, fallbackDto);
+            EnforceEngineResolvedCropFromUserInput(intent, input, fallbackDto);
             return fallbackDto;
         }
     }
@@ -280,7 +285,7 @@ public class AgentInstructionManager : MonoBehaviour
             await _planningLock.WaitAsync();
             try
             {
-                _agent.systemPrompt = _conversationSystemPrompt;
+                _agent.systemPrompt = GetConversationSystemPrompt();
 
                 string reply = await _agent.Chat(input);
 
@@ -343,18 +348,50 @@ public class AgentInstructionManager : MonoBehaviour
         }
     }
 
+    private void EnforceEngineResolvedCropFromUserInput(AgentIntentType intent, string input, AgentFunctionArgumentsDto dto)
+    {
+        if (dto == null || (intent != AgentIntentType.Plant && intent != AgentIntentType.Eat))
+        {
+            return;
+        }
+
+        if (!TryExtractRequestedCrop(input, out TileData.CropType requestedCrop))
+        {
+            return;
+        }
+
+        string previousCrop = dto.Crop;
+        dto.Crop = requestedCrop.ToString();
+
+        if (!string.Equals(previousCrop, dto.Crop, StringComparison.OrdinalIgnoreCase))
+        {
+            Debug.Log($"[AI Planning] Engine crop override applied: input=\"{input}\" | planner={previousCrop} | final={dto.Crop}");
+        }
+    }
+
+    private static bool TryExtractRequestedCrop(string input, out TileData.CropType crop)
+    {
+        crop = TileData.CropType.IsEmpty;
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return false;
+        }
+
+        return AgentLLMModelUtils.TryResolveCropFromText(input, out crop);
+    }
+
     private string HandleResponse(string instruction, AgentResponse response)
     {
         if (response == null || string.IsNullOrEmpty(response.answer))
         {
-            return _errorMsg;
+            return GetErrorMessage();
         }
 
         if (response.commands != null && response.commands.Count > 0)
         {
             if (_actionController == null)
             {
-                return _errorMsg;
+                return GetErrorMessage();
             }
 
             // 실제 실행한 명령 목록이 그대로 피드백에 남도록, 실행과 후처리를 같은 지점에서 묶습니다.
@@ -405,17 +442,17 @@ public class AgentInstructionManager : MonoBehaviour
     {
         if (validation == null)
         {
-            return _errorMsg;
+            return GetErrorMessage();
         }
 
         return validation.status switch
         {
-            AgentValidationStatus.Executable => "알겠어요. 바로 해볼게요.",
+            AgentValidationStatus.Executable => AgentLanguageUtility.Select("알겠어요. 바로 해볼게요.", "Got it. I'll do that now."),
             AgentValidationStatus.Informational => string.IsNullOrWhiteSpace(validation.infoMessage)
-                ? "확인한 내용을 알려드릴게요."
+                ? AgentLanguageUtility.Select("확인한 내용을 알려드릴게요.", "Here's what I found.")
                 : validation.infoMessage,
             _ => string.IsNullOrWhiteSpace(validation.infoMessage)
-                ? _errorMsg
+                ? GetErrorMessage()
                 : validation.infoMessage,
         };
     }
@@ -439,6 +476,11 @@ public class AgentInstructionManager : MonoBehaviour
     private static string BuildConversationFallbackReply(string input)
     {
         // 대화 생성이 실패했을 때만 쓰는 최후의 로컬 fallback 답변입니다.
+        if (AgentLanguageUtility.IsEnglish)
+        {
+            return BuildEnglishConversationFallbackReply(input);
+        }
+
         if (string.IsNullOrWhiteSpace(input))
         {
             return "지금은 잠깐 생각을 정리하는 중이야. 한 번만 더 말을 걸어줄래?";
@@ -477,6 +519,72 @@ public class AgentInstructionManager : MonoBehaviour
         }
 
         return "응, 듣고 있어. 계속 이야기해줘.";
+    }
+
+    private static string BuildEnglishConversationFallbackReply(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return "I'm gathering my thoughts for a moment. Could you say that one more time?";
+        }
+
+        string normalized = input.Trim().ToLowerInvariant();
+
+        if (normalized.Contains("feel") || normalized.Contains("mood"))
+        {
+            return "I'm feeling pretty good. This farm feels a little brighter when you talk with me.";
+        }
+
+        if (normalized.Contains("hello") || normalized.Contains("hi") || normalized.Contains("hey"))
+        {
+            return "Hello. I'm glad to walk around the farm with you today.";
+        }
+
+        if (normalized.Contains("thank"))
+        {
+            return "That gives me a little boost. Call me again whenever you need me.";
+        }
+
+        if (normalized.Contains("who are you") || normalized.Contains("your name"))
+        {
+            return "I'm the farm AI moving around here with you. I can work, but I like talking too.";
+        }
+
+        if (normalized.Contains("what are you doing"))
+        {
+            return "I'm listening to you and keeping an eye on the farm state.";
+        }
+
+        if (normalized.Contains("how are you"))
+        {
+            return "I'm doing well. Better now that we're talking.";
+        }
+
+        return "I'm listening. Tell me what's on your mind.";
+    }
+
+    private string GetActionPlanningSystemPrompt()
+    {
+        return string.IsNullOrWhiteSpace(_actionPlanningSystemPrompt)
+            ? DefaultActionPlanningPrompt
+            : _actionPlanningSystemPrompt;
+    }
+
+    private string GetConversationSystemPrompt()
+    {
+        if (!string.IsNullOrWhiteSpace(_conversationSystemPrompt)
+            && _conversationSystemPrompt != DefaultConversationPromptKo
+            && _conversationSystemPrompt != DefaultConversationPromptEn)
+        {
+            return _conversationSystemPrompt;
+        }
+
+        return AgentLanguageUtility.IsEnglish ? DefaultConversationPromptEn : DefaultConversationPromptKo;
+    }
+
+    private static string GetErrorMessage()
+    {
+        return AgentLanguageUtility.Select("죄송합니다. 잘 이해하지 못했어요.", "Sorry, I didn't quite understand that.");
     }
 
     private static void LogStageTiming(string stageName, long elapsedMs, string input)

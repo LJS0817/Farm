@@ -92,7 +92,8 @@ public class AgentCommandConverter : JsonConverter<AgentCommand>
         }
 
         string normalizedValue = NormalizeCropValue(rawValue);
-        return Enum.TryParse(normalizedValue, true, out cropType);
+        return Enum.TryParse(normalizedValue, true, out cropType)
+            || AgentLLMModelUtils.TryResolveCropFromText(rawValue, out cropType);
     }
 
     private static string NormalizeCropValue(string rawValue)

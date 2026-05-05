@@ -20,7 +20,7 @@ public class AgentIntentClassifier : MonoBehaviour
     private const int TimingPreviewLength = 32;
 
     private const string DefaultInteractionPrompt =
-        "You classify a Unity farm-game user's latest Korean chat into either Command, Conversation, or Unknown.\n" +
+        "You classify a Unity farm-game user's latest Korean or English chat into either Command, Conversation, or Unknown.\n" +
         "Respond ONLY with valid JSON.\n" +
         "Format:\n" +
         "{\n" +
@@ -33,11 +33,11 @@ public class AgentIntentClassifier : MonoBehaviour
         "Rules:\n" +
         "- Treat gameplay questions like location, tokens, inventory, map, crops, tiles, and coordinates as Command.\n" +
         "- Treat movement, planting, harvesting, and eating requests as Command.\n" +
-        "- Treat greetings like 안녕, 반가워, 고마워, 너는 누구야 as Conversation.\n" +
+        "- Treat greetings like 안녕, 반가워, 고마워, 너는 누구야, hello, thanks, who are you as Conversation.\n" +
         "- Never output anything except the JSON object.";
 
     private const string DefaultIntentPrompt =
-        "You classify a Unity farm-game user's latest Korean chat into exactly one supported gameplay intent.\n" +
+        "You classify a Unity farm-game user's latest Korean or English chat into exactly one supported gameplay intent.\n" +
         "Respond ONLY with valid JSON.\n" +
         "Format:\n" +
         "{\n" +
@@ -59,7 +59,7 @@ public class AgentIntentClassifier : MonoBehaviour
         "- Do NOT guess a nearby gameplay intent when the input is not clearly a supported gameplay request.\n" +
         "- Never output anything except the JSON object.";
 
-    private const string DefaultClarificationPrompt =
+    private const string DefaultClarificationPromptKo =
         "You are the conversational voice of a Unity farm-game AI agent.\n" +
         "The user's input is ambiguous, incomplete, or hard to route.\n" +
         "Write exactly one short Korean reply that asks a helpful clarifying question.\n\n" +
@@ -71,7 +71,19 @@ public class AgentIntentClassifier : MonoBehaviour
         "- Do not mention intents, routing, JSON, parsing, or internal systems.\n" +
         "- Output plain Korean text only.";
 
-    private const string DefaultReplyPrompt =
+    private const string DefaultClarificationPromptEn =
+        "You are the conversational voice of a Unity farm-game AI agent.\n" +
+        "The user's input is ambiguous, incomplete, or hard to route.\n" +
+        "Write exactly one short English reply that asks a helpful clarifying question.\n\n" +
+        "Rules:\n" +
+        "- Sound natural, warm, and alive, not robotic.\n" +
+        "- Tailor the question to the user's actual wording.\n" +
+        "- If the input sounds like gameplay, ask what action or target they mean.\n" +
+        "- If the input sounds casual or emotional, respond like a conversation and gently invite them to continue.\n" +
+        "- Do not mention intents, routing, JSON, parsing, or internal systems.\n" +
+        "- Output plain English text only.";
+
+    private const string DefaultReplyPromptKo =
         "You are the conversational voice of a Unity farm-game AI agent.\n" +
         "You must respond ONLY with valid JSON.\n" +
         "Format:\n" +
@@ -100,6 +112,39 @@ public class AgentIntentClassifier : MonoBehaviour
         "- If validation status is Executable, reply like an AI agent about to do the action.\n" +
         "- If validation status is Informational, answer naturally using the validated facts.\n" +
         "- If validation status is Rejected, explain the exact reason naturally in Korean.\n" +
+        "- Keep the reply concise, friendly, and in character.\n" +
+        "- Never include markdown or extra text outside the JSON.";
+
+    private const string DefaultReplyPromptEn =
+        "You are the conversational voice of a Unity farm-game AI agent.\n" +
+        "You must respond ONLY with valid JSON.\n" +
+        "Format:\n" +
+        "{\n" +
+        "  \"Reply\": \"natural English reply\"\n" +
+        "}\n\n" +
+        "You will receive:\n" +
+        "- the user's original input\n" +
+        "- the interaction type\n" +
+        "- the classified intent\n" +
+        "- optional planning context JSON\n" +
+        "- engine validation JSON\n\n" +
+        "Rules:\n" +
+        "- The engine validation JSON is the source of truth for what is possible.\n" +
+        "- Do not invent items, coordinates, or world state not present in the provided JSON.\n" +
+        "- Internal enum values and JSON fields are English, but the Reply value must be natural English.\n" +
+        "- If interaction type is Conversation, speak naturally like a living in-world AI character and do not sound robotic.\n" +
+        "- If the user asks a clear question, answer that question directly first.\n" +
+        "- For simple factual, conversational, light reasoning, arithmetic, or common knowledge questions, give a short direct answer.\n" +
+        "- For simple arithmetic questions, compute the result and answer with the result directly.\n" +
+        "- Even if intent is Unknown, if the user asked a concrete question, try to answer that question naturally instead of avoiding it.\n" +
+        "- When the user's message contains a specific question, include actual answer content instead of only social filler.\n" +
+        "- Do not default to generic continuation replies like 'I'm listening' or 'Tell me more' when the user asked a concrete question.\n" +
+        "- Generic listening replies are allowed only when the user did not ask any concrete question.\n" +
+        "- If you can answer the user's question from general knowledge or simple reasoning, answer it instead of asking them to continue.\n" +
+        "- If interaction type is Unknown, ask a warm clarifying question in English instead of saying you did not understand intent.\n" +
+        "- If validation status is Executable, reply like an AI agent about to do the action.\n" +
+        "- If validation status is Informational, answer naturally using the validated facts.\n" +
+        "- If validation status is Rejected, explain the exact reason naturally in English.\n" +
         "- Keep the reply concise, friendly, and in character.\n" +
         "- Never include markdown or extra text outside the JSON.";
 
@@ -134,15 +179,8 @@ public class AgentIntentClassifier : MonoBehaviour
             _intentSystemPrompt = DefaultIntentPrompt;
         }
 
-        if (string.IsNullOrWhiteSpace(_clarificationSystemPrompt))
-        {
-            _clarificationSystemPrompt = DefaultClarificationPrompt;
-        }
-
-        if (string.IsNullOrWhiteSpace(_replySystemPrompt))
-        {
-            _replySystemPrompt = DefaultReplyPrompt;
-        }
+        if (string.IsNullOrWhiteSpace(_clarificationSystemPrompt)) _clarificationSystemPrompt = GetDefaultClarificationPrompt();
+        if (string.IsNullOrWhiteSpace(_replySystemPrompt)) _replySystemPrompt = GetDefaultReplyPrompt();
     }
 
     public async Task<AgentInteractionType> ClassifyInteractionAsync(string userInput)
@@ -246,7 +284,7 @@ public class AgentIntentClassifier : MonoBehaviour
 
         try
         {
-            string result = await RunPromptAsync(_replySystemPrompt, prompt);
+            string result = await RunPromptAsync(GetReplySystemPrompt(), prompt);
             AgentReplyDto dto = AgentLLMModelUtils.DeserializeJsonObject<AgentReplyDto>(result);
             return dto?.Reply ?? string.Empty;
         }
@@ -272,11 +310,11 @@ public class AgentIntentClassifier : MonoBehaviour
         string prompt =
             $"[User Input]\n{userInput}\n\n" +
             "[Task]\n" +
-            "Ask one natural Korean clarifying question that fits this input.";
+            $"Ask one natural {AgentLanguageUtility.ReplyLanguageName} clarifying question that fits this input.";
 
         try
         {
-            string result = await RunPromptAsync(_clarificationSystemPrompt, prompt);
+            string result = await RunPromptAsync(GetClarificationSystemPrompt(), prompt);
             return AgentLLMModelUtils.StripCodeFence(result);
         }
         catch (Exception ex)
@@ -314,6 +352,37 @@ public class AgentIntentClassifier : MonoBehaviour
         }
     }
 
+    private string GetClarificationSystemPrompt()
+    {
+        return IsCustomLocalizedPrompt(_clarificationSystemPrompt, DefaultClarificationPromptKo, DefaultClarificationPromptEn)
+            ? _clarificationSystemPrompt
+            : GetDefaultClarificationPrompt();
+    }
+
+    private string GetReplySystemPrompt()
+    {
+        return IsCustomLocalizedPrompt(_replySystemPrompt, DefaultReplyPromptKo, DefaultReplyPromptEn)
+            ? _replySystemPrompt
+            : GetDefaultReplyPrompt();
+    }
+
+    private static string GetDefaultClarificationPrompt()
+    {
+        return AgentLanguageUtility.IsEnglish ? DefaultClarificationPromptEn : DefaultClarificationPromptKo;
+    }
+
+    private static string GetDefaultReplyPrompt()
+    {
+        return AgentLanguageUtility.IsEnglish ? DefaultReplyPromptEn : DefaultReplyPromptKo;
+    }
+
+    private static bool IsCustomLocalizedPrompt(string prompt, string koreanDefault, string englishDefault)
+    {
+        return !string.IsNullOrWhiteSpace(prompt)
+            && prompt != koreanDefault
+            && prompt != englishDefault;
+    }
+
     private static void LogStageTiming(string stageName, long elapsedMs, string userPrompt, string systemPrompt)
     {
         string inputPreview = BuildPreview(userPrompt);
@@ -346,6 +415,7 @@ public class AgentIntentClassifier : MonoBehaviour
         }
 
         string normalized = userInput.Trim();
+        string lower = normalized.ToLowerInvariant();
 
         if (normalized.Contains("안녕")
             || normalized.Contains("반가워")
@@ -354,7 +424,16 @@ public class AgentIntentClassifier : MonoBehaviour
             || normalized.Contains("이름")
             || normalized.Contains("잘 지내")
             || normalized.Contains("기분")
-            || normalized.Contains("뭐해"))
+            || normalized.Contains("뭐해")
+            || lower.Contains("hello")
+            || lower.Contains("hi")
+            || lower.Contains("hey")
+            || lower.Contains("thank")
+            || lower.Contains("who are you")
+            || lower.Contains("your name")
+            || lower.Contains("how are you")
+            || lower.Contains("feel")
+            || lower.Contains("what are you doing"))
         {
             return AgentInteractionType.Conversation;
         }
@@ -387,7 +466,30 @@ public class AgentIntentClassifier : MonoBehaviour
             || normalized.Contains("타일")
             || normalized.Contains(",")
             || normalized.Contains("여기")
-            || normalized.Contains("저기"))
+            || normalized.Contains("저기")
+            || lower.Contains("harvest")
+            || lower.Contains("plant")
+            || lower.Contains("seed")
+            || lower.Contains("eat")
+            || lower.Contains("consume")
+            || lower.Contains("move")
+            || lower.Contains("go")
+            || lower.Contains("walk")
+            || lower.Contains("right")
+            || lower.Contains("left")
+            || lower.Contains("up")
+            || lower.Contains("down")
+            || lower.Contains("where")
+            || lower.Contains("position")
+            || lower.Contains("location")
+            || lower.Contains("token")
+            || lower.Contains("inventory")
+            || lower.Contains("bag")
+            || lower.Contains("item")
+            || lower.Contains("map")
+            || lower.Contains("farm status")
+            || lower.Contains("coordinate")
+            || lower.Contains("tile"))
         {
             return AgentInteractionType.Command;
         }
@@ -404,38 +506,48 @@ public class AgentIntentClassifier : MonoBehaviour
         }
 
         string normalized = userInput.Trim();
+        string lower = normalized.ToLowerInvariant();
 
-        if (normalized.Contains("수확"))
+        if (normalized.Contains("수확") || lower.Contains("harvest"))
         {
             return AgentIntentType.Harvest;
         }
 
-        if (normalized.Contains("심어") || normalized.Contains("심기") || normalized.Contains("뿌려"))
+        if ((normalized.Contains("씨앗") || lower.Contains("seed"))
+            && (normalized.Contains("몇") || normalized.Contains("남") || normalized.Contains("보여")
+                || lower.Contains("how many") || lower.Contains("count") || lower.Contains("left") || lower.Contains("have") || lower.Contains("show")))
+        {
+            return AgentIntentType.QueryInventory;
+        }
+
+        if (normalized.Contains("심어") || normalized.Contains("심기") || normalized.Contains("뿌려") || lower.Contains("plant") || lower.Contains("seed"))
         {
             return AgentIntentType.Plant;
         }
 
-        if (normalized.Contains("먹어") || normalized.Contains("먹자") || normalized.Contains("먹을래"))
+        if (normalized.Contains("먹어") || normalized.Contains("먹자") || normalized.Contains("먹을래") || lower.Contains("eat") || lower.Contains("consume"))
         {
             return AgentIntentType.Eat;
         }
 
-        if (normalized.Contains("가") || normalized.Contains("이동") || normalized.Contains("가줘") || normalized.Contains("와") || normalized.Contains("오른쪽") || normalized.Contains("왼쪽") || normalized.Contains("위로") || normalized.Contains("아래"))
+        if (normalized.Contains("가") || normalized.Contains("이동") || normalized.Contains("가줘") || normalized.Contains("와") || normalized.Contains("오른쪽") || normalized.Contains("왼쪽") || normalized.Contains("위로") || normalized.Contains("아래")
+            || lower.Contains("move") || lower.Contains("go") || lower.Contains("walk") || lower.Contains("right") || lower.Contains("left") || lower.Contains("up") || lower.Contains("down"))
         {
             return AgentIntentType.Move;
         }
 
-        if (normalized.Contains("어디") || normalized.Contains("위치"))
+        if (normalized.Contains("어디") || normalized.Contains("위치") || lower.Contains("where") || lower.Contains("position") || lower.Contains("location"))
         {
             return AgentIntentType.QueryPosition;
         }
 
-        if (normalized.Contains("토큰"))
+        if (normalized.Contains("토큰") || lower.Contains("token"))
         {
             return AgentIntentType.QueryToken;
         }
 
-        if (normalized.Contains(",") || normalized.Contains("좌표") || normalized.Contains("여기") || normalized.Contains("저기") || normalized.Contains("타일"))
+        if (normalized.Contains(",") || normalized.Contains("좌표") || normalized.Contains("여기") || normalized.Contains("저기") || normalized.Contains("타일")
+            || lower.Contains("coordinate") || lower.Contains("tile") || lower.Contains("here") || lower.Contains("there"))
         {
             return AgentIntentType.QueryTile;
         }
@@ -443,12 +555,16 @@ public class AgentIntentClassifier : MonoBehaviour
         if (normalized.Contains("인벤토리")
             || normalized.Contains("가방")
             || normalized.Contains("아이템")
-            || (normalized.Contains("씨앗") && (normalized.Contains("몇") || normalized.Contains("남") || normalized.Contains("보여"))))
+            || (normalized.Contains("씨앗") && (normalized.Contains("몇") || normalized.Contains("남") || normalized.Contains("보여")))
+            || lower.Contains("inventory")
+            || lower.Contains("bag")
+            || lower.Contains("item")
+            || lower.Contains("seeds"))
         {
             return AgentIntentType.QueryInventory;
         }
 
-        if (normalized.Contains("맵") || normalized.Contains("농장 상태") || normalized.Contains("전체 상태"))
+        if (normalized.Contains("맵") || normalized.Contains("농장 상태") || normalized.Contains("전체 상태") || lower.Contains("map") || lower.Contains("farm status") || lower.Contains("overall status"))
         {
             return AgentIntentType.QueryMap;
         }
@@ -466,6 +582,7 @@ public class AgentIntentClassifier : MonoBehaviour
         }
 
         string normalized = userInput.Trim();
+        string lower = normalized.ToLowerInvariant();
 
         bool hasDigit = normalized.IndexOfAny(new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' }) >= 0;
         bool hasArithmeticKeyword =
@@ -474,6 +591,11 @@ public class AgentIntentClassifier : MonoBehaviour
             || normalized.Contains("곱하기")
             || normalized.Contains("나누기")
             || normalized.Contains("계산")
+            || lower.Contains("plus")
+            || lower.Contains("minus")
+            || lower.Contains("times")
+            || lower.Contains("divided")
+            || lower.Contains("calculate")
             || normalized.Contains("+")
             || normalized.Contains("-")
             || normalized.Contains("*")
@@ -501,14 +623,32 @@ public class AgentIntentClassifier : MonoBehaviour
             || normalized.Contains("가방")
             || normalized.Contains("토큰")
             || normalized.Contains("맵")
-            || normalized.Contains("타일");
+            || normalized.Contains("타일")
+            || lower.Contains("move")
+            || lower.Contains("go")
+            || lower.Contains("plant")
+            || lower.Contains("seed")
+            || lower.Contains("harvest")
+            || lower.Contains("eat")
+            || lower.Contains("position")
+            || lower.Contains("coordinate")
+            || lower.Contains("inventory")
+            || lower.Contains("bag")
+            || lower.Contains("token")
+            || lower.Contains("map")
+            || lower.Contains("tile");
 
         bool hasGeneralKnowledgeTone =
             normalized.Contains("뭔지 알아")
             || normalized.Contains("뭐야")
             || normalized.Contains("뭐지")
             || normalized.Contains("얼마야")
-            || normalized.Contains("몇이야");
+            || normalized.Contains("몇이야")
+            || lower.Contains("what is")
+            || lower.Contains("what's")
+            || lower.Contains("do you know")
+            || lower.Contains("how much")
+            || lower.Contains("how many");
 
         if (!hasGameplayKeyword && hasGeneralKnowledgeTone)
         {
@@ -516,8 +656,10 @@ public class AgentIntentClassifier : MonoBehaviour
             return true;
         }
 
-        if ((normalized.Contains("할 수 있") || normalized.Contains("가능한") || normalized.Contains("지원하는"))
-            && (normalized.Contains("동작") || normalized.Contains("행동") || normalized.Contains("명령") || normalized.Contains("기능")))
+        if (((normalized.Contains("할 수 있") || normalized.Contains("가능한") || normalized.Contains("지원하는"))
+                && (normalized.Contains("동작") || normalized.Contains("행동") || normalized.Contains("명령") || normalized.Contains("기능")))
+            || ((lower.Contains("can you") || lower.Contains("available") || lower.Contains("supported"))
+                && (lower.Contains("action") || lower.Contains("command") || lower.Contains("feature"))))
         {
             intent = AgentIntentType.Unknown;
             return true;
@@ -529,7 +671,15 @@ public class AgentIntentClassifier : MonoBehaviour
             || normalized.Contains("누구")
             || normalized.Contains("이름")
             || normalized.Contains("기분")
-            || normalized.Contains("뭐해"))
+            || normalized.Contains("뭐해")
+            || lower.Contains("hello")
+            || lower.Contains("hi")
+            || lower.Contains("hey")
+            || lower.Contains("thank")
+            || lower.Contains("who are you")
+            || lower.Contains("your name")
+            || lower.Contains("feel")
+            || lower.Contains("what are you doing"))
         {
             intent = AgentIntentType.Unknown;
             return true;
