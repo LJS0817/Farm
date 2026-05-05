@@ -1,6 +1,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
 public class ProcessingUIController : MonoBehaviour
@@ -13,6 +14,8 @@ public class ProcessingUIController : MonoBehaviour
     TMP_Text _processTimeText;
     [SerializeField]
     RectMask2D _processMask;
+    [SerializeField]
+    string _processingTableName = "Agent";
 
     float _width = -1f;
     
@@ -21,12 +24,18 @@ public class ProcessingUIController : MonoBehaviour
     /// </summary>
     public IEnumerator ProcessTaskRoutine(string actionName, float processTime)
     {
+        string entryKey = GetDefaultActionEntryKey(actionName);
+        yield return ProcessTaskRoutine(actionName, _processingTableName, entryKey, processTime);
+    }
+
+    public IEnumerator ProcessTaskRoutine(string fallbackActionName, string tableName, string entryKey, float processTime)
+    {
         // UI 활성화
         gameObject.SetActive(true);
 
         if(_width < 0f) _width = _processBar.rect.width * _processBar.localScale.x;
 
-        _actionText.SetText(actionName);
+        _actionText.SetText(GetLocalizedActionName(fallbackActionName, tableName, entryKey));
 
         float currentTime = processTime + Time.deltaTime;
 
@@ -46,5 +55,27 @@ public class ProcessingUIController : MonoBehaviour
         }
 
         gameObject.SetActive(false);
+    }
+
+    string GetLocalizedActionName(string fallbackActionName, string tableName, string entryKey)
+    {
+        if (string.IsNullOrEmpty(tableName) || string.IsNullOrEmpty(entryKey))
+        {
+            return fallbackActionName;
+        }
+
+        string localized = LocalizationSettings.StringDatabase.GetLocalizedString(tableName, entryKey);
+        return string.IsNullOrEmpty(localized) ? fallbackActionName : localized;
+    }
+
+    string GetDefaultActionEntryKey(string actionName)
+    {
+        return actionName switch
+        {
+            "Planting" => "agent.processing.planting",
+            "Harvesting" => "agent.processing.harvesting",
+            "Eating" => "agent.processing.eating",
+            _ => string.Empty
+        };
     }
 }

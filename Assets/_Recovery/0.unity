@@ -4712,7 +4712,6 @@ MonoBehaviour:
   _actionText: {fileID: 1978005371}
   _processTimeText: {fileID: 1651932455}
   _processMask: {fileID: 280467978}
-  _processingTableName: Agent
 --- !u!1 &412949555
 GameObject:
   m_ObjectHideFlags: 0
@@ -19171,7 +19170,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 20.95
+  m_fontSize: 20.6
   m_fontSizeBase: 27.3
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -33796,7 +33795,6 @@ GameObject:
   - component: {fileID: 1978005370}
   - component: {fileID: 1978005372}
   - component: {fileID: 1978005371}
-  - component: {fileID: 1978005373}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -33923,19 +33921,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1978005369}
   m_CullTransparentMesh: 1
---- !u!114 &1978005373
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1978005369}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ffc7014f32e74ca3b94b140047a9a74e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LocalizedFontTarget
-  fontRole: 3
 --- !u!1 &2002400093
 GameObject:
   m_ObjectHideFlags: 0
